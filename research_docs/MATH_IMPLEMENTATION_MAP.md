@@ -25,10 +25,13 @@ named test passes in the current repository. Later phases extend this table.
 | (46)–(47) | Raw and normalized mode-belief entropy | `src/d5freq/estimation/mode_belief_filter.py`: `ModeBeliefUpdate`; `src/d5freq/estimation/online_diagnostic.py`: `DiagnosticOutput` | `test_mode_belief_filter.py`, `test_online_diagnostic.py` | Verified Phase 4 |
 | (48)–(50) | Minimum standardized residual and finite-sample split-conformal OOD p-value | `src/d5freq/estimation/ood_detector.py`: `minimum_standardized_residual_score`, `calibration_scores_from_residuals`, `split_conformal_pvalue` | `test_ood_detector.py`, `test_phase4_pipeline.py` | Verified Phase 4 |
 | (51) | Strict-threshold, four-state OOD confirmation and recovery hysteresis | `src/d5freq/estimation/ood_detector.py`: `OODHysteresisStateMachine`, `ConformalOODDetector` | `test_ood_detector.py`, `test_online_diagnostic.py` | Verified Phase 4 |
-| (62)–(64) | Shared SG/IBR command bounds and command-rate constraints | `src/d5freq/optimization/linear_mpc.py`: `LinearMPC.solve`, `MPCBounds` | `test_mpc_constraints.py`, `test_fixed_model_mpc.py` | Verified Phase 2 bootstrap |
-| (70) | OOD/solver/slack/timeout fallback disjunction | `src/d5freq/controllers/base.py`: `FallbackTrigger`, `fallback_required` | `test_fallback.py` | Verified Phase 2 |
-| (71) | Rate-limited IBR withdrawal toward zero | `src/d5freq/controllers/base.py`: `withdraw_toward_zero` | `test_fallback.py`, `test_lqi_fallback.py` | Verified Phase 2 |
-| (72)–(75) | Reduced four-state LQI, disturbance-equilibrium translation, saturation and SG rate limiting | `src/d5freq/controllers/lqi_fallback.py`: `reduced_discrete_grid_matrices`, `design_lqi_gain`, `LQIFallbackController` | `test_lqi_fallback.py`, `test_fallback.py` | Verified Phase 2 |
+| (52)–(56) | Native-component parallel prediction from one ten-state initial condition with one shared SG/IBR sequence and control increments | `src/d5freq/optimization/mpc_problem.py`: `build_sd_bmpc_problem`, `SDBMPCProblem`; joint matrices from `joint_prediction.py` | `test_sd_bmpc_problem.py`, `test_sd_bmpc_reference_solution.py` | Verified Phase 5 |
+| (57)–(61) | Per-mode convex cost, all-component belief expectation, entropy-dependent worst-risk-mode epigraph, and three shared slack penalties | `src/d5freq/optimization/mpc_problem.py`: residual-vector cost construction and binary risk-mask constraints | `test_sd_bmpc_problem.py`, `test_sd_bmpc_reference_solution.py` | Verified Phase 5 |
+| (62)–(66) | Shared command/rate limits and risk-set frequency, RoCoF, external-power and directional-power-rate constraints | `src/d5freq/optimization/mpc_problem.py`: `SDBMPCBounds`, `credible_mode_indices`, `build_sd_bmpc_problem` | `test_sd_bmpc_constraints.py`, `test_sd_bmpc_problem.py` | Verified Phase 5 |
+| (67)–(69) | Lead-indexed validation q95 tightening in native Hz and Hz/s units | `src/d5freq/optimization/mpc_problem.py`: `_lead_q95`, `modes_from_library`, `build_sd_bmpc_problem` | `test_sd_bmpc_constraints.py`, `test_sd_bmpc_problem.py` | Verified Phase 5 |
+| (70) | OOD-active/recovery, estimator/diagnostic error, non-exact solver status, timeout, non-finite solution, excessive slack or execution-constraint rejection enters a fresh LQI fallback action | `src/d5freq/controllers/sd_bmpc.py`: `SDBMPCController.act`, `_solve_mpc`, `_enter_or_extend_fallback`; strict status policy in `solver_utils.py` | `test_sd_bmpc.py`, `test_solver_utils.py`, `test_fallback.py` | Verified Phase 5 |
+| (71) | Rate-limited IBR withdrawal recomputed at every fallback, hold and blend timestamp | `src/d5freq/controllers/base.py`: `withdraw_toward_zero`; orchestration in `src/d5freq/controllers/sd_bmpc.py` | `test_sd_bmpc.py`, `test_fallback.py`, `test_lqi_fallback.py` | Verified Phase 5 |
+| (72)–(75) | Reduced four-state LQI, disturbance-equilibrium translation, saturation and SG rate limiting with the continuously shared grid estimate | `src/d5freq/controllers/lqi_fallback.py`: `reduced_discrete_grid_matrices`, `design_lqi_gain`, `LQIFallbackController`; `SDBMPCController._fallback_action` | `test_sd_bmpc.py`, `test_lqi_fallback.py`, `test_fallback.py` | Verified Phase 5 |
 | (76) | Per-episode regression matrix and target construction | `src/d5freq/identification/arx.py`: `build_arx_regression`; `src/d5freq/identification/mode_discovery.py`: `fit_local_episode_models` | `test_arx_recovery.py`, `test_global_arx_refit.py`, `test_offline_mode_discovery_pipeline.py` | Verified Phase 3 |
 | (77)–(78) | Local ridge estimate and residual-variance denominator | `src/d5freq/identification/arx.py`: `fit_arx_ridge`, `fit_arx_ridge_from_regression`, `ARXFitResult` | `test_arx_recovery.py`, `test_offline_mode_discovery_pipeline.py` | Verified Phase 3 |
 | (79) | Eight-dimensional local feature and training-only standardization | `src/d5freq/identification/mode_discovery.py`: `build_raw_feature`, `FeatureStandardizer`, `fit_local_episode_models`, `assign_episodes_with_frozen_discovery` | `test_feature_standardization.py`, `test_offline_mode_discovery_pipeline.py` | Verified Phase 3 |
@@ -142,3 +145,40 @@ for disjointness before evaluation.  Any aggregation from six discovered
 components to the four simulator reference classes is a many-to-one,
 evaluation-only operation performed after the runtime log has been saved and
 hashed; it never changes the native component posterior or OOD score.
+
+## Phase 5 control and numerical boundaries
+
+The production controller consumes the frozen native K=6 library without
+renaming or merging components.  `SDBMPCController.from_project_files` binds
+the exact model-library file and canonical logical hashes to the Phase-4 OOD
+calibration artifact before constructing the controller.  Its runtime API is
+only `act(measurement)`; simulator mode truth and the evaluation package are
+absent from the controller module.
+
+For numerical stability, equation (57) is factored exactly as
+`J_m = C(U, U_previous) + ||v_m||^2`, where the common term contains every
+input and input-increment penalty and `v_m` contains all mode-dependent
+frequency, integral, RoCoF and terminal residuals.  Since beliefs sum to one,
+equation (58) becomes `C + sum_m b_m ||v_m||^2`.  With an exact binary risk
+mask, equation (59) is represented as
+`C + mask_m ||v_m||^2 <= t`; inactive constraints reduce to the redundant
+`C <= t`.  This one-template form is DCP and DPP, is algebraically equivalent
+to equations (57)--(61), and avoids weakly anchored auxiliary cost epigraphs
+when a belief is zero or at its `1e-12` floor.
+
+Frequency and RoCoF q95 tables are indexed by future leads `1..Np` and are
+already expressed in Hz and Hz/s.  They are therefore not multiplied by
+`f0_hz` a second time.  The persisted power-error q95 table remains model
+validation evidence; equations (65)--(66) use only frequency/RoCoF q95
+tightening, while external IBR power and directional rate constraints use
+training/validation capability bounds plus the one shared nonnegative power
+slack.
+
+Only exact solver status `optimal` is executable.  Native solver time limits
+and post-return wall-time rejection implement a cooperative soft deadline;
+they do not provide process-level hard real-time preemption.  Any late,
+inaccurate, infeasible, unbounded, non-finite or exceptional result is cleared
+and cannot become an action.  The composite controller performs one diagnostic
+and one grid-estimator update per distinct timestamp, keeps `OOD_ACTIVE` and
+`RECOVERY` in fallback, recomputes LQI/IBR withdrawal on every fallback and
+recovery step, and logs each fallback reason, step count and duration.
