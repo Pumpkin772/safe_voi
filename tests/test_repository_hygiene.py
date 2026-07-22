@@ -64,3 +64,14 @@ def test_controller_source_does_not_import_truth_config_names() -> None:
             violations.append(str(path.relative_to(ROOT)))
     assert not violations, f"controller imports simulator truth config: {violations}"
 
+
+def test_production_source_uses_no_numpy_global_random_draws() -> None:
+    forbidden_global_rng = re.compile(
+        r"\bnp\.random\.(?!(?:Generator|PCG64|SeedSequence|default_rng)\b)"
+    )
+    violations: list[str] = []
+    source_root = ROOT / "src"
+    for path in source_root.rglob("*.py"):
+        if forbidden_global_rng.search(path.read_text(encoding="utf-8")):
+            violations.append(str(path.relative_to(ROOT)))
+    assert not violations, f"NumPy global RNG use found in: {violations}"
