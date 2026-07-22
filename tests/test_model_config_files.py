@@ -2,7 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from d5freq.models import GridParams, IBRModeParams, SinusoidalDelayProfile
+import numpy as np
+
+from d5freq.estimation import GridKalmanFilter
+from d5freq.models import (
+    GridFrequencyModel,
+    GridParams,
+    IBRModeParams,
+    SinusoidalDelayProfile,
+)
 from d5freq.utils.config import load_yaml
 
 
@@ -40,3 +48,16 @@ def test_all_versioned_physical_model_configs_build() -> None:
     }
     assert isinstance(modes["time_varying_delay"].delay_profile, SinusoidalDelayProfile)
 
+    kalman = base["estimation"]["grid_kalman"]
+    estimator = GridKalmanFilter(
+        GridFrequencyModel(grid),
+        process_noise_covariance=np.diag(kalman["process_noise_diagonal"]),
+        measurement_noise_covariance=np.diag(
+            kalman["measurement_noise_diagonal"]
+        ),
+        initial_covariance=np.diag(kalman["initial_covariance_diagonal"]),
+        load_random_walk_std_pu_per_s=kalman[
+            "load_random_walk_std_pu_per_s"
+        ],
+    )
+    assert estimator.process_noise_covariance.shape == (5, 5)

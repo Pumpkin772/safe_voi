@@ -44,6 +44,27 @@ simulation:
   strict_control_period_zoh: true
   retain_failed_episodes: true
 
+estimation:
+  grid_kalman:
+    # Calibrated for the 0.5 s controller period. Experiments construct these
+    # diagonal covariance matrices explicitly; they do not rely on code defaults.
+    process_noise_diagonal:
+      - 1.0e-12
+      - 1.0e-10
+      - 1.0e-9
+      - 1.0e-12
+      - 0.0
+    measurement_noise_diagonal:
+      - 1.0e-8
+      - 4.0e-8
+    initial_covariance_diagonal:
+      - 1.0e-6
+      - 1.0e-5
+      - 1.0e-4
+      - 1.0e-3
+      - 1.0e-3
+    load_random_walk_std_pu_per_s: 1.0e-4
+
 identification:
   trajectories_per_mode: 40
   trajectory_duration_s: 180.0

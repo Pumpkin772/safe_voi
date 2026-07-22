@@ -10,6 +10,11 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 SCANNED_ROOTS = (ROOT / "src", ROOT / "scripts", ROOT / "configs")
+CONTROLLER_RUNTIME_ROOTS = (
+    ROOT / "src" / "d5freq" / "controllers",
+    ROOT / "src" / "d5freq" / "estimation",
+    ROOT / "src" / "d5freq" / "optimization",
+)
 
 
 def _text_files() -> list[Path]:
@@ -63,6 +68,25 @@ def test_controller_source_does_not_import_truth_config_names() -> None:
         if "modes_known" in text or "modes_ood" in text:
             violations.append(str(path.relative_to(ROOT)))
     assert not violations, f"controller imports simulator truth config: {violations}"
+
+
+def test_controller_runtime_tree_has_no_truth_label_or_evaluation_dependency() -> None:
+    forbidden = (
+        "true_mode",
+        "modes_known",
+        "modes_ood",
+        "d5freq.evaluation",
+    )
+    violations: list[str] = []
+    for directory in CONTROLLER_RUNTIME_ROOTS:
+        for path in directory.rglob("*.py"):
+            text = path.read_text(encoding="utf-8").lower()
+            matched = [token for token in forbidden if token in text]
+            if matched:
+                violations.append(
+                    f"{path.relative_to(ROOT)}: {', '.join(matched)}"
+                )
+    assert not violations, f"runtime information-boundary violations: {violations}"
 
 
 def test_production_source_uses_no_numpy_global_random_draws() -> None:
