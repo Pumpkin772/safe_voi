@@ -355,7 +355,13 @@ def _truth_timeline(
             raise ValueError("true_mode_eval_only must be non-empty")
         if times and time_s < times[-1] - tolerance:
             raise ValueError("truth point times must be non-decreasing")
-        if times and abs(time_s - times[-1]) <= tolerance:
+        # Only an equal (or microscopically regressed) timestamp is a
+        # duplicate.  A strictly later point remains a real right-hand
+        # boundary sample even when it is only a few ulps after the preceding
+        # integration endpoint.  In particular, at a mode switch the former
+        # may carry the old mode while the latter carries the right-continuous
+        # new mode.
+        if times and time_s <= times[-1]:
             if mode != modes[-1]:
                 raise ValueError("duplicate truth time carries conflicting modes")
             continue

@@ -760,7 +760,12 @@ def _deduplicate_truth(
             previous_time = float(result[-1]["time_s"])
             if time_s < previous_time - _FLOAT_TOLERANCE:
                 raise RunIntegrityError("replayed truth points are not ordered")
-            if abs(time_s - previous_time) <= _FLOAT_TOLERANCE:
+            # Preserve a strictly later point even when it lies within the
+            # comparison tolerance.  Such pairs occur when floating-point
+            # integration stops a few ulps before an exact right-continuous
+            # event boundary.  Equal or microscopically regressed timestamps
+            # are the only duplicate records.
+            if time_s <= previous_time:
                 previous = result[-1]
                 if set(previous) != set(current):
                     raise RunIntegrityError("duplicate replay truth schemas differ")

@@ -160,6 +160,70 @@ def test_sg_and_ibr_constraints_include_initial_to_first_slew() -> None:
         )
 
 
+def test_command_constraint_audit_tolerates_only_binary64_roundoff() -> None:
+    truth = HighFrequencyTruthTrace(
+        time_s=[0.0, 0.5, 1.0],
+        delta_frequency_hz=[0.0, 0.0, 0.0],
+        rocof_true_hz_per_s=[0.0, 0.0, 0.0],
+    )
+    config = ClosedLoopMetricConfig(
+        safety_frequency_limit_hz=2.0,
+        settling_band_hz=0.1,
+        sg_command_min_pu=-0.12,
+        sg_command_max_pu=0.12,
+        sg_slew_limit_pu_per_s=0.02,
+        ibr_command_min_pu=-0.04,
+        ibr_command_max_pu=0.04,
+        command_sample_period_s=0.5,
+        command_violation_persistence_s=0.5,
+    )
+
+    # These values are one representable binary64 step above the configured
+    # limits.  The SG sequence also exercises both initial-to-first and later
+    # slew transitions (0.010000000000000002 pu per 0.5 s).
+    roundoff_only = ControlRateTrace(
+        time_s=[0.0, 0.5, 1.0],
+        u_sg_pu=[
+            0.010000000000000002,
+            0.020000000000000004,
+            0.030000000000000006,
+        ],
+        u_ibr_pu=[np.nextafter(0.04, np.inf)] * 3,
+        p_ibr_pu=[0.0, 0.0, 0.0],
+        u_sg_initial_pu=0.0,
+        u_ibr_initial_pu=0.0,
+    )
+    metrics = compute_closed_loop_metrics(
+        truth,
+        roundoff_only,
+        config,
+        run_completed=True,
+    )
+    assert metrics.sg_command_violation_count == 0
+    assert metrics.ibr_command_violation_count == 0
+    assert not metrics.catastrophic_persistent_command_violation
+
+    # A still-tiny 1e-12 physical overrun remains far outside the narrow
+    # round-off envelope and must be reported for both slew and magnitude.
+    actual_overrun = ControlRateTrace(
+        time_s=[0.0, 0.5, 1.0],
+        u_sg_pu=[0.01 + 1e-12, 0.02 + 2e-12, 0.03 + 3e-12],
+        u_ibr_pu=[0.04 + 1e-12] * 3,
+        p_ibr_pu=[0.0, 0.0, 0.0],
+        u_sg_initial_pu=0.0,
+        u_ibr_initial_pu=0.0,
+    )
+    metrics = compute_closed_loop_metrics(
+        truth,
+        actual_overrun,
+        config,
+        run_completed=True,
+    )
+    assert metrics.sg_command_violation_count == 1
+    assert metrics.ibr_command_violation_count == 1
+    assert metrics.catastrophic_persistent_command_violation
+
+
 def test_rocof_is_derived_from_nonuniform_high_frequency_trace_not_control_steps() -> None:
     truth = HighFrequencyTruthTrace(
         time_s=[0.0, 0.1, 0.4, 1.0],
@@ -482,3 +546,24 @@ def test_truth_point_builder_coalesces_consistent_control_step_boundaries() -> N
                 {"time_s": 0.0, "omega_true_pu": 0.1},
             ]
         )
+
+
+def test_truth_point_builder_preserves_strictly_later_event_boundary() -> None:
+    left_time = 1.0 - 1.0e-14
+    trace = HighFrequencyTruthTrace.from_points(
+        [
+            {
+                "time_s": left_time,
+                "omega_true_pu": 0.0,
+                "rocof_true_hz_per_s": 0.0,
+            },
+            {
+                "time_s": 1.0,
+                "omega_true_pu": 0.0,
+                "rocof_true_hz_per_s": -0.25,
+            },
+        ]
+    )
+
+    assert trace.time_s.tolist() == [left_time, 1.0]
+    assert trace.rocof_true_hz_per_s.tolist() == [0.0, -0.25]

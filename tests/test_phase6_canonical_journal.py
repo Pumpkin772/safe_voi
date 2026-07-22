@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -16,6 +17,7 @@ from d5freq.evaluation.experiment_store import (
     RunIntegrityError,
 )
 from d5freq.evaluation.phase6_canonical_journal import (
+    _deduplicate_truth,
     load_and_verify_canonical_decision_journal,
     make_canonical_decision_journal_writer,
     replay_simulator_from_canonical_journal,
@@ -133,6 +135,86 @@ def _canonical_run(tmp_path: Path):
         ),
     )
     return outcome, controller, grid, mode, scenario, store
+
+
+def test_replay_truth_dedup_preserves_right_continuous_switch_boundary() -> None:
+    left = {
+        "time_s": 4.499999999999989,
+        "omega_true_pu": 0.0,
+        "true_mode_eval_only": "nominal",
+    }
+    right = {
+        "time_s": 4.5,
+        "omega_true_pu": 0.0,
+        "true_mode_eval_only": "asymmetric_limit",
+    }
+
+    retained = _deduplicate_truth((left, right, right))
+
+    assert tuple(point["time_s"] for point in retained) == (
+        4.499999999999989,
+        4.5,
+    )
+    assert tuple(point["true_mode_eval_only"] for point in retained) == (
+        "nominal",
+        "asymmetric_limit",
+    )
+    with pytest.raises(RunIntegrityError, match="differs"):
+        _deduplicate_truth((right, {**right, "true_mode_eval_only": "nominal"}))
+
+
+def test_forced_replay_preserves_real_floating_drift_mode_boundary(
+    tmp_path: Path,
+) -> None:
+    grid, nominal, _ = _system()
+    held_out = replace(nominal, name="asymmetric_limit", p_max_neg_pu=0.02)
+    scenario = Scenario(
+        PiecewiseConstantModeSchedule.from_pairs(
+            "nominal", [(4.5, "asymmetric_limit")]
+        ),
+        duration_s=5.0,
+    )
+    identity = RunIdentity("journal-switch", "floating-boundary", "P", 7)
+    stage_root = tmp_path / "switch"
+    outcome = run_closed_loop_episode(
+        identity=identity,
+        simulator=HiddenModeFrequencySimulator(
+            grid, {"nominal": nominal, "asymmetric_limit": held_out}
+        ),
+        scenario=scenario,
+        controller=_RecordedController(),
+        metric_config=ClosedLoopMetricConfig(),
+        store=PerRunExperimentStore(stage_root / "per_run"),
+        runner_config=EpisodeRunnerConfig(expected_duration_s=5.0),
+        immutable_run_artifact_writer=make_canonical_decision_journal_writer(
+            stage_root=stage_root,
+            stage="smoke",
+            identity=identity,
+        ),
+    )
+    assert outcome.episode_result.run_completed
+    assert outcome.episode_result.metrics_complete
+    assert outcome.episode_result.failure_stage is None
+
+    replay = replay_simulator_from_canonical_journal(
+        identity=identity,
+        scenario=scenario,
+        simulator=HiddenModeFrequencySimulator(
+            grid, {"nominal": nominal, "asymmetric_limit": held_out}
+        ),
+        journal=load_and_verify_canonical_decision_journal(outcome.stored_run),
+    )
+
+    boundary = tuple(
+        (point["time_s"], point["true_mode_eval_only"])
+        for point in replay.high_frequency_truth
+        if 4.5 - 1.0e-9 < float(point["time_s"]) <= 4.5
+    )
+    assert len(boundary) == 2
+    assert boundary[0][1] == "nominal"
+    assert 0.0 < 4.5 - float(boundary[0][0]) <= 1.0e-12
+    assert boundary[1] == (4.5, "asymmetric_limit")
+    assert replay.consistency_audit["max_abs_truth_difference"] == 0.0
 
 
 def test_forced_replay_uses_only_canonical_actions_and_verifies_every_endpoint(

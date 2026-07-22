@@ -28,6 +28,13 @@ from numpy.typing import ArrayLike, NDArray
 FloatArray = NDArray[np.float64]
 BoolArray = NDArray[np.bool_]
 
+# Constraint audits compare values produced by several floating-point
+# operations (notably command differences divided by the sample period).
+# Permit only a small round-off envelope: eight binary64 epsilons relative to
+# the configured, non-zero constraint.  This is about 1.8e-17 at a 0.01-pu
+# limit and therefore does not relax the physical/protocol constraint.
+_COMMAND_AUDIT_RELATIVE_ROUNDOFF = 8.0 * np.finfo(np.float64).eps
+
 
 def _finite_scalar(value: object, name: str) -> float:
     if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
@@ -171,11 +178,13 @@ class HighFrequencyTruthTrace:
         """Build from simulator points, coalescing identical step-boundary times.
 
         Adjacent control steps normally repeat their shared boundary point.
-        Repeated times are accepted only when their truth values agree within
-        ``duplicate_tolerance``; disagreement is an evaluator data-integrity
-        error, not something to average away.  Exact RoCoF is optional for
-        compatibility with externally supplied traces, but its presence must
-        be consistent across all points.
+        Equal or microscopically regressed times are accepted only when their
+        truth values agree within ``duplicate_tolerance``; disagreement is an
+        evaluator data-integrity error, not something to average away.  A
+        strictly later point is retained even within that tolerance because it
+        can be the right side of a real event discontinuity.  Exact RoCoF is
+        optional for compatibility with externally supplied traces, but its
+        presence must be consistent across all points.
         """
 
         if not points:
@@ -209,7 +218,7 @@ class HighFrequencyTruthTrace:
                 )
             if times and point_time < times[-1] - tolerance:
                 raise ValueError("truth points must be in non-decreasing time order")
-            if times and abs(point_time - times[-1]) <= tolerance:
+            if times and point_time <= times[-1]:
                 if not (
                     (math.isnan(point_omega) and math.isnan(omega[-1]))
                     or math.isclose(point_omega, omega[-1], rel_tol=0.0, abs_tol=tolerance)
@@ -818,9 +827,11 @@ def _command_violation_mask(
 ) -> BoolArray:
     mask = np.zeros(command.size, dtype=np.bool_)
     if command_min_pu is not None:
-        mask |= command < command_min_pu
+        tolerance = _COMMAND_AUDIT_RELATIVE_ROUNDOFF * abs(command_min_pu)
+        mask |= command < command_min_pu - tolerance
     if command_max_pu is not None:
-        mask |= command > command_max_pu
+        tolerance = _COMMAND_AUDIT_RELATIVE_ROUNDOFF * abs(command_max_pu)
+        mask |= command > command_max_pu + tolerance
     if slew_limit_pu_per_s is not None:
         if initial_command_pu is None:
             raise ValueError(
@@ -830,10 +841,12 @@ def _command_violation_mask(
             raise ValueError("command sample period is required for complete slew audit")
         if command.size:
             initial_slew = abs(float(command[0]) - initial_command_pu) / sample_period_s
-            mask[0] |= initial_slew > slew_limit_pu_per_s
+            tolerance = _COMMAND_AUDIT_RELATIVE_ROUNDOFF * abs(slew_limit_pu_per_s)
+            mask[0] |= initial_slew > slew_limit_pu_per_s + tolerance
     if slew_limit_pu_per_s is not None and command.size >= 2:
         slew = np.abs(np.diff(command) / np.diff(time))
-        mask[1:] |= slew > slew_limit_pu_per_s
+        tolerance = _COMMAND_AUDIT_RELATIVE_ROUNDOFF * abs(slew_limit_pu_per_s)
+        mask[1:] |= slew > slew_limit_pu_per_s + tolerance
     return mask
 
 

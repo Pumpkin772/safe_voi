@@ -8,6 +8,8 @@ import pytest
 from d5freq.evaluation.closed_loop_diagnostics import (
     DIAGNOSTIC_EPISODE_FIELDS,
     ClosedLoopDiagnosticConfig,
+    _truth_at_exact_time,
+    _truth_timeline,
     evaluate_diagnostic_trace,
     evaluate_episode_diagnostics,
     make_closed_loop_diagnostic_evaluator,
@@ -69,6 +71,25 @@ def _one_hot(component: int, count: int = 6, confidence: float = 0.9) -> list[fl
     values = [remaining] * count
     values[component] = confidence
     return values
+
+
+def test_truth_timeline_preserves_right_continuous_mode_switch_within_tolerance() -> None:
+    truth = _truth(
+        [89.5, 89.99999999999991, 90.0, 90.0],
+        ["nominal", "nominal", "asymmetric_limit", "asymmetric_limit"],
+    )
+
+    times, modes = _truth_timeline(truth, tolerance=1.0e-9)
+
+    assert times.tolist() == [89.5, 89.99999999999991, 90.0]
+    assert modes == ("nominal", "nominal", "asymmetric_limit")
+    assert _truth_at_exact_time(90.0, times, modes, 1.0e-9) == "asymmetric_limit"
+
+    with pytest.raises(ValueError, match="conflicting modes"):
+        _truth_timeline(
+            _truth([90.0, 90.0], ["nominal", "asymmetric_limit"]),
+            tolerance=1.0e-9,
+        )
 
 
 def test_k6_beliefs_are_aggregated_and_switch_requires_three_consecutive_steps() -> None:
