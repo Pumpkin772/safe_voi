@@ -1,0 +1,54 @@
+schema_version: 1
+
+# Simulator-private truth used to generate unlabeled trajectories and evaluate
+# closed-loop runs. Controllers must never load this file at runtime.
+truth_access: simulator_and_evaluation_only
+
+known_modes:
+  nominal:
+    command_gain: 1.0
+    frequency_gain: 4.0
+    command_filter_time_s: 0.10
+    power_response_time_s: 0.20
+    delay_s: 0.10
+    p_max_pos_pu: 0.08
+    p_max_neg_pu: 0.08
+    ramp_up_pu_per_s: 0.05
+    ramp_down_pu_per_s: 0.05
+    deadband_pu: 0.0005
+
+  sluggish:
+    command_gain: 0.80
+    frequency_gain: 3.0
+    command_filter_time_s: 0.60
+    power_response_time_s: 1.00
+    delay_s: 0.50
+    p_max_pos_pu: 0.08
+    p_max_neg_pu: 0.08
+    ramp_up_pu_per_s: 0.020
+    ramp_down_pu_per_s: 0.020
+    deadband_pu: 0.001
+
+  derated:
+    command_gain: 1.0
+    frequency_gain: 4.0
+    command_filter_time_s: 0.15
+    power_response_time_s: 0.30
+    delay_s: 0.15
+    p_max_pos_pu: 0.035
+    p_max_neg_pu: 0.035
+    ramp_up_pu_per_s: 0.015
+    ramp_down_pu_per_s: 0.015
+    deadband_pu: 0.0005
+
+  unavailable:
+    command_gain: 0.08
+    frequency_gain: 0.3
+    command_filter_time_s: 0.40
+    power_response_time_s: 0.80
+    delay_s: 0.40
+    p_max_pos_pu: 0.008
+    p_max_neg_pu: 0.008
+    ramp_up_pu_per_s: 0.008
+    ramp_down_pu_per_s: 0.008
+    deadband_pu: 0.002

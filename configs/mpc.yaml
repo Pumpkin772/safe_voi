@@ -1,0 +1,39 @@
+schema_version: 1
+
+mpc:
+  horizon_steps: 20
+  q_freq: 3000.0
+  q_integral: 50.0
+  q_rocof: 50.0
+  r_sg: 1.0
+  r_ibr: 0.5
+  s_delta_sg: 20.0
+  s_delta_ibr: 10.0
+  q_terminal_freq: 6000.0
+  q_terminal_integral: 100.0
+  lambda_worst_base: 0.05
+  lambda_worst_entropy: 0.50
+  credible_mass: 0.99
+  entropy_use_all_modes: 0.70
+  rho_freq_slack: 1.0e7
+  rho_rocof_slack: 1.0e6
+  rho_power_slack: 1.0e6
+  max_acceptable_slack_hz: 0.02
+  solve_timeout_s: 0.20
+  use_constraint_tightening: true
+  warm_start: true
+  solver_priority:
+    - MOSEK
+    - GUROBI
+    - CLARABEL
+    - SCS
+
+fallback:
+  recovery_hold_steps: 10
+  return_blend_steps: 10
+  ibr_withdraw_rate_pu_per_s: 0.04
+  log_trigger_reason: true
+
+rls_baseline:
+  forgetting_factor: 0.995
+  covariance_initial_scale: 1000.0

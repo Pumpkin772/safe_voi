@@ -1,0 +1,30 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.pytest_tmp/
+.coverage
+coverage.xml
+test-results.xml
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.venv/
+build/
+dist/
+
+# Generated research outputs are indexed explicitly when retained.
+artifacts/**
+!artifacts/.gitkeep
+results/**
+!results/.gitkeep
+logs/**
+!logs/.gitkeep
+
+# Never commit solver credentials, local licenses, or secrets.
+*.lic
+mosek.lic
+gurobi.lic
+.env
+.env.*
+credentials*.json

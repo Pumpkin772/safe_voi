@@ -1,0 +1,80 @@
+schema_version: 1
+
+project:
+  name: d5_hidden_mode_frequency_from_scratch
+  seed: 20260722
+  output_root: results
+  artifact_root: artifacts
+  progress_root: progress
+
+environment:
+  python: "3.11"
+  conda_environment: topo_sfr
+  solver_primary: MOSEK
+  solver_fallback: GUROBI
+  solver_debug: CLARABEL
+
+determinism:
+  numpy_bit_generator: PCG64
+  require_explicit_generator: true
+  hash_algorithm: sha256
+
+grid:
+  f0_hz: 50.0
+  M_s: 8.0
+  D_pu: 1.0
+  T_t_s: 0.5
+  T_g_s: 0.2
+  R_pu: 0.08
+  control_period_s: 0.5
+  integration_step_s: 0.02
+  freq_limit_hz: 0.5
+  rocof_limit_hz_per_s: 0.5
+  u_sg_min_pu: -0.12
+  u_sg_max_pu: 0.12
+  u_sg_ramp_pu_per_s: 0.02
+
+ibr_command:
+  u_min_pu: -0.08
+  u_max_pu: 0.08
+  ramp_pu_per_s: 0.04
+
+simulation:
+  episode_duration_s: 180.0
+  strict_control_period_zoh: true
+  retain_failed_episodes: true
+
+identification:
+  trajectories_per_mode: 40
+  trajectory_duration_s: 180.0
+  arx_order_y: 2
+  arx_order_u: 2
+  arx_order_f: 2
+  ridge_lambda: 1.0e-5
+  gmm_k_min: 1
+  gmm_k_max: 6
+  gmm_restarts: 20
+  gmm_covariance_type: full
+
+belief:
+  switch_epsilon: 0.002
+  probability_floor: 1.0e-12
+  residual_variance_floor: 1.0e-8
+  detection_probability: 0.80
+  detection_hold_steps: 3
+  false_alarm_hold_steps: 3
+
+ood:
+  alpha_on: 0.01
+  alpha_off: 0.10
+  hold_on_steps: 3
+  hold_off_steps: 5
+  calibration_known_modes_only: true
+
+logging:
+  level: INFO
+  format: jsonl
+  save_resolved_config: true
+  save_environment_info: true
+  save_config_sha256: true
+  save_model_library_sha256: true

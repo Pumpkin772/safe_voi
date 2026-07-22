@@ -1,0 +1,118 @@
+schema_version: 1
+
+# Scenario truth is consumed only by the simulator and evaluation orchestrator.
+# The controller input assembled for each run must exclude this section.
+truth_access: simulator_and_evaluation_only
+
+experiments:
+  smoke_seeds: [0, 1]
+  tuning_seed_start: 100
+  tuning_seed_count: 10
+  final_seed_start: 1000
+  final_seed_count: 30
+  ood_final_seed_count: 50
+  retain_failed_episodes: true
+  save_step_trajectories_as: parquet
+
+  methods:
+    - lqi_only
+    - fixed_nominal_mpc
+    - rls_adaptive_mpc
+    - hard_map_mpc
+    - oracle_mpc
+    - sd_bmpc
+    - sd_bmpc_no_worst_case
+    - sd_bmpc_no_ood_fallback
+    - sd_bmpc_labeled_library
+
+data_splits:
+  - identification_train
+  - identification_validation
+  - ood_calibration
+  - closed_loop_validation
+  - closed_loop_test
+  - ood_test
+split_unit: trajectory
+
+noise_profiles:
+  low:
+    omega_std_pu: 1.0e-5
+    power_std_pu: 5.0e-4
+  medium:
+    omega_std_pu: 3.0e-5
+    power_std_pu: 1.0e-3
+  high:
+    omega_std_pu: 1.0e-4
+    power_std_pu: 3.0e-3
+
+scenarios:
+  S0_nominal:
+    family: S0
+    description: small stochastic load without a mode switch
+    load_event: stochastic
+    mode_schedule: nominal
+    noise_level: low
+    required_seeds: 30
+  S1_step:
+    family: S1
+    description: load step without a mode switch
+    load_event: step_0.06
+    mode_schedule: nominal
+    noise_level: low
+    required_seeds: 30
+  S2_slow:
+    family: S2
+    description: nominal to sluggish during a disturbance
+    load_event: step_0.06
+    mode_schedule: nominal_to_sluggish
+    noise_level: medium
+    required_seeds: 30
+  S3_derated:
+    family: S3
+    description: nominal to derated during a disturbance
+    load_event: step_0.06
+    mode_schedule: nominal_to_derated
+    noise_level: medium
+    required_seeds: 30
+  S4_exit:
+    family: S4
+    description: nominal to unavailable during a disturbance
+    load_event: step_0.06
+    mode_schedule: nominal_to_unavailable
+    noise_level: medium
+    required_seeds: 30
+  S5_multi:
+    family: S5
+    description: multiple known-mode switches
+    load_event: stochastic
+    mode_schedule: nominal_sluggish_derated_nominal
+    noise_level: medium
+    required_seeds: 30
+  S6_noise:
+    family: S6
+    description: known-mode switch under high measurement noise
+    load_event: step_0.06
+    mode_schedule: nominal_to_sluggish
+    noise_level: high
+    required_seeds: 30
+  S7_ood_asym:
+    family: S7
+    description: held-out asymmetric-limit behavior
+    load_event: step_0.06
+    mode_schedule: nominal_to_ood_asymmetric
+    noise_level: medium
+    required_seeds: 50
+  S8_ood_delay:
+    family: S8
+    description: held-out time-varying-delay behavior
+    load_event: step_0.06
+    mode_schedule: nominal_to_ood_varying_delay
+    noise_level: medium
+    required_seeds: 50
+  S9_compound:
+    family: S9
+    description: large disturbance coincident with mode unavailability
+    load_event: step_0.08
+    mode_schedule: nominal_to_unavailable_same_time
+    noise_level: medium
+    required_seeds: 50

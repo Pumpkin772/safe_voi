@@ -1,0 +1,38 @@
+schema_version: 1
+
+# Held-out simulator truth. These modes are excluded from identification
+# training, model-library fitting, and OOD threshold calibration. Controllers
+# must never load this file at runtime.
+truth_access: simulator_and_evaluation_only
+exclude_from_identification_training: true
+exclude_from_ood_calibration: true
+
+ood_modes:
+  asymmetric_limit:
+    command_gain: 1.0
+    frequency_gain: 4.0
+    command_filter_time_s: 0.15
+    power_response_time_s: 0.30
+    delay_s: 0.15
+    p_max_pos_pu: 0.020
+    p_max_neg_pu: 0.070
+    ramp_up_pu_per_s: 0.012
+    ramp_down_pu_per_s: 0.040
+    deadband_pu: 0.0005
+
+  time_varying_delay:
+    command_gain: 0.90
+    frequency_gain: 3.5
+    command_filter_time_s: 0.20
+    power_response_time_s: 0.35
+    delay_s: 0.10
+    p_max_pos_pu: 0.070
+    p_max_neg_pu: 0.070
+    ramp_up_pu_per_s: 0.035
+    ramp_down_pu_per_s: 0.035
+    deadband_pu: 0.0007
+    delay_profile:
+      kind: sinusoidal
+      min_delay_s: 0.10
+      max_delay_s: 1.10
+      period_s: 30.0
