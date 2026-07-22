@@ -68,14 +68,40 @@ estimation:
 identification:
   trajectories_per_mode: 40
   trajectory_duration_s: 180.0
+  generation:
+    command_abs_limit_pu: 0.06
+    command_rate_limit_pu_per_s: 0.03
+    frequency_abs_limit_hz: 0.10
+    power_measurement_noise_std_pu: 2.0e-4
+    minimum_command_std_pu: 5.0e-3
+    minimum_frequency_std_hz: 1.0e-2
+    maximum_regression_condition_number: 1.0e10
+    excitation_families:
+      - prbs
+      - band_limited
+      - multisine
+      - steps
+    split_counts_per_mode:
+      train: 24
+      validation: 8
+      ood_calibration: 4
+      test: 4
   arx_order_y: 2
   arx_order_u: 2
   arx_order_f: 2
   ridge_lambda: 1.0e-5
+  feature_variance_epsilon: 1.0e-12
+  residual_variance_floor: 1.0e-10
   gmm_k_min: 1
   gmm_k_max: 6
   gmm_restarts: 20
   gmm_covariance_type: full
+  gmm_max_iter: 500
+  gmm_reg_covar: 1.0e-5
+  lower_power_quantile: 0.01
+  upper_power_quantile: 0.99
+  directional_rate_quantile: 0.99
+  multi_step_horizon: 20
 
 belief:
   switch_epsilon: 0.002

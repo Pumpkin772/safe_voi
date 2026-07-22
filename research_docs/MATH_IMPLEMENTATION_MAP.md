@@ -15,11 +15,21 @@ named test passes in the current repository. Later phases extend this table.
 | (14) | Asymmetric internal-target saturation | `src/d5freq/models/hidden_mode_ibr.py`: `asymmetric_saturation` | `test_ibr_saturation.py` | Verified Phase 1 |
 | (15) | Output lag and asymmetric ramp limit | `src/d5freq/models/hidden_mode_ibr.py`: `ramp_limited_power_derivative`, `ibr_derivative` | `test_ibr_ramp_limit.py`, `test_ibr_saturation.py` | Verified Phase 1 |
 | (16) | Hidden-mode parameter set | `src/d5freq/models/hidden_mode_ibr.py`: `IBRModeParams` | `test_ibr_second_order.py`, `test_model_config_files.py` | Verified Phase 1 |
+| (17)–(20) | Second-order ARX convention, seven-parameter ordering, regressor, and one-step prediction | `src/d5freq/identification/arx.py`: `build_arx_regression`, `predict_arx_next`, `predict_arx_one_step_series`; persisted by `ARXModeModel` | `test_arx_recovery.py`, `test_offline_mode_discovery_pipeline.py` | Verified Phase 3 |
+| (21)–(26) | Five-state ARX realization, command/frequency channels, and output selectors | `src/d5freq/identification/arx.py`: `arx_state_from_history`, `arx_to_state_space`; `src/d5freq/optimization/joint_prediction.py`: `ARX_POWER_OUTPUT`, `GRID_FREQUENCY_OUTPUT` | `test_arx_state_space.py`, `test_hungarian_evaluation_only.py` | Verified Phase 3 |
+| (27)–(30) | Ten-state joint grid/ARX predictor and shared two-input control vector | `src/d5freq/optimization/joint_prediction.py`: `JointARXPredictionModel`, `assemble_joint_arx_prediction` | `test_joint_predictor.py`, `test_hungarian_evaluation_only.py` | Verified Phase 3 |
 | (31)–(37) | Grid measurement, exact discrete prediction, load-disturbance Kalman update | `src/d5freq/estimation/grid_kalman_filter.py`: `GridKalmanFilter` | `test_grid_kf.py`, `test_grid_kf_validation.py` | Verified Phase 2 |
+| (38)–(39) | Pairwise one-step prediction difference and cumulative distinguishability information | `src/d5freq/evaluation/diagnostic_metrics.py`: public diagnostic helpers; `src/d5freq/identification/offline_pipeline.py`: common-validation-set artifact computation | `test_distinguishability.py`, `test_offline_mode_discovery_pipeline.py` | Verified Phase 3 |
 | (62)–(64) | Shared SG/IBR command bounds and command-rate constraints | `src/d5freq/optimization/linear_mpc.py`: `LinearMPC.solve`, `MPCBounds` | `test_mpc_constraints.py`, `test_fixed_model_mpc.py` | Verified Phase 2 bootstrap |
 | (70) | OOD/solver/slack/timeout fallback disjunction | `src/d5freq/controllers/base.py`: `FallbackTrigger`, `fallback_required` | `test_fallback.py` | Verified Phase 2 |
 | (71) | Rate-limited IBR withdrawal toward zero | `src/d5freq/controllers/base.py`: `withdraw_toward_zero` | `test_fallback.py`, `test_lqi_fallback.py` | Verified Phase 2 |
 | (72)–(75) | Reduced four-state LQI, disturbance-equilibrium translation, saturation and SG rate limiting | `src/d5freq/controllers/lqi_fallback.py`: `reduced_discrete_grid_matrices`, `design_lqi_gain`, `LQIFallbackController` | `test_lqi_fallback.py`, `test_fallback.py` | Verified Phase 2 |
+| (76) | Per-episode regression matrix and target construction | `src/d5freq/identification/arx.py`: `build_arx_regression`; `src/d5freq/identification/mode_discovery.py`: `fit_local_episode_models` | `test_arx_recovery.py`, `test_global_arx_refit.py`, `test_offline_mode_discovery_pipeline.py` | Verified Phase 3 |
+| (77)–(78) | Local ridge estimate and residual-variance denominator | `src/d5freq/identification/arx.py`: `fit_arx_ridge`, `fit_arx_ridge_from_regression`, `ARXFitResult` | `test_arx_recovery.py`, `test_offline_mode_discovery_pipeline.py` | Verified Phase 3 |
+| (79) | Eight-dimensional local feature and training-only standardization | `src/d5freq/identification/mode_discovery.py`: `build_raw_feature`, `FeatureStandardizer`, `fit_local_episode_models`, `assign_episodes_with_frozen_discovery` | `test_feature_standardization.py`, `test_offline_mode_discovery_pipeline.py` | Verified Phase 3 |
+| (80)–(82) | GMM density fitting, likelihood/BIC evaluation, and label-free component-count selection | `src/d5freq/identification/mode_discovery.py`: `select_gmm_by_bic`, `GMMCandidateScore`, `GMMSelectionResult`; persistence in `DiscoveryMetadata` | `test_gmm_bic.py`, `test_gmm_sensitivity_audit.py`, `test_offline_mode_discovery_pipeline.py` | Verified Phase 3 |
+| (83) | Cluster-wise pooled global ridge refit | `src/d5freq/identification/mode_discovery.py`: `refit_global_cluster_models`; `src/d5freq/identification/arx.py`: `fit_arx_ridge_from_regression` | `test_global_arx_refit.py`, `test_offline_mode_discovery_pipeline.py` | Verified Phase 3 |
+| (84) | Robust externally observed power and directional rate capability bounds | `src/d5freq/identification/mode_discovery.py`: `estimate_mode_capability_bounds`, `ModeCapabilityBounds` | `test_mode_capability_bounds.py`, `test_offline_mode_discovery_pipeline.py` | Verified Phase 3 |
 
 ## Coupled numerical realization
 
@@ -56,5 +66,55 @@ the optimizer, constraints, estimator coupling, and Oracle isolation before a
 data-derived library exists. It deliberately omits delay, deadband, saturation,
 and ramp nonlinearities, while enforcing declared external IBR power and
 power-rate limits in the QP. It is not the final Fixed-ARX scientific baseline.
-Phase 3 must replace this physical-parameter bootstrap with the discovered
-nominal ARX/model-library representation before Phase 6 comparisons.
+Phase 3 now supplies the data-derived ARX model library. Phase 5 must wire that
+library into the robust controller, and Phase 6 comparisons must not revert to
+the physical-parameter bootstrap predictor.
+
+## Phase 3 identification boundaries and qualifications
+
+The identification API is deliberately truth-free. `UnlabeledTrajectory`
+exposes only an opaque trajectory identifier and the observable
+`p_ibr_pu`, `u_ibr_pu`, and `omega_pu` arrays. The training entry point
+`discover_unlabeled_modes` has no truth-label argument, and the strict
+`ModeLibrary` schema persists native GMM component identifiers without a
+component-to-truth mapping. The same frozen training scaler and GMM are reused
+by `assign_episodes_with_frozen_discovery` for held-out episodes.
+
+The main equation-(79)--(82) chain always operates on all eight standardized
+features: seven local ARX parameters plus log residual variance. PCA is not an
+identification or model-selection transform; it is permitted only for a
+two-dimensional diagnostic plot such as `parameter_embedding.png`.
+
+Hungarian alignment and private-label ARI/NMI/macro-F1 reporting live only in
+`src/d5freq/evaluation/diagnostic_metrics.py`. They are intentionally absent
+from, and not re-exported by, `d5freq.identification`. Discovered component IDs
+therefore remain unchanged during global refitting and model-library
+persistence. `test_hungarian_evaluation_only.py` pins both the package boundary
+and strict-schema rejection of truth-name mappings.
+
+Equation (78) is interpreted literally for a raw trajectory: with seven ARX
+parameters, `fit_arx_ridge` divides the residual sum of squares by
+`N_e - 7`, where `N_e` is the raw aligned trajectory sample count. It does not
+silently substitute `(N_e - 2) - 7`, even though the regression matrix has
+`N_e - 2` rows. The lower-level arbitrary-matrix fitter defaults to its
+conventional row-count denominator and accepts an explicit denominator so the
+trajectory wrapper can preserve the stated equation.
+
+Equation (84) is realized with separate directional magnitudes. Upward
+capability is the configured quantile of positive `Delta p_b / T_s`; downward
+capability is the same quantile of the magnitude of negative rates. A missing
+direction has zero observed capability, and differences are never formed
+across trajectory boundaries. This retains asymmetric physical capability
+instead of collapsing both directions into one absolute-rate limit.
+
+The complete data-generation-to-artifact discovery pipeline is verified by
+`test_offline_mode_discovery_pipeline.py` and the strict Phase 3 regression
+run. The canonical BIC result is deliberately retained as six components even
+though evaluation-only metadata contains four reference modes: the selected
+model reached the configured `K_max=6`, and no private label was used to force
+or rename it. The `d5freq.mode_library.v2` schema records separate validation
+q95 sequences for IBR power error in pu, propagated frequency error in Hz, and
+propagated RoCoF error in Hz/s. Its sticky transition matrix uses the specified
+off-diagonal switch probability, so for six components and
+`epsilon_sw=0.002` the diagonal is `0.99` and every off-diagonal entry is
+`0.002`.
