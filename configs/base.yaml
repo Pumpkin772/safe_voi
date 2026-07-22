@@ -105,6 +105,12 @@ identification:
 
 belief:
   switch_epsilon: 0.002
+  switch_epsilon_sensitivity:
+    - 0.0005
+    - 0.001
+    - 0.002
+    - 0.005
+    - 0.01
   probability_floor: 1.0e-12
   residual_variance_floor: 1.0e-8
   detection_probability: 0.80
@@ -117,6 +123,33 @@ ood:
   hold_on_steps: 3
   hold_off_steps: 5
   calibration_known_modes_only: true
+  calibration_search:
+    alpha_on:
+      - 0.005
+      - 0.01
+      - 0.02
+      - 0.05
+    alpha_off:
+      - 0.05
+      - 0.10
+      - 0.20
+    hold_on_steps:
+      - 2
+      - 3
+      - 4
+    hold_off_steps:
+      - 3
+      - 5
+      - 7
+
+phase4_evaluation:
+  unique_test_excitations: 4
+  switch_time_s: 90.0
+  additional_noise_std_pu: 0.001
+  load_step_frequency_proxy_pu: -0.0012
+  load_step_start_s: 60.0
+  load_step_end_s: 90.0
+  reliability_bins: 10
 
 logging:
   level: INFO

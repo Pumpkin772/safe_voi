@@ -20,6 +20,11 @@ named test passes in the current repository. Later phases extend this table.
 | (27)–(30) | Ten-state joint grid/ARX predictor and shared two-input control vector | `src/d5freq/optimization/joint_prediction.py`: `JointARXPredictionModel`, `assemble_joint_arx_prediction` | `test_joint_predictor.py`, `test_hungarian_evaluation_only.py` | Verified Phase 3 |
 | (31)–(37) | Grid measurement, exact discrete prediction, load-disturbance Kalman update | `src/d5freq/estimation/grid_kalman_filter.py`: `GridKalmanFilter` | `test_grid_kf.py`, `test_grid_kf_validation.py` | Verified Phase 2 |
 | (38)–(39) | Pairwise one-step prediction difference and cumulative distinguishability information | `src/d5freq/evaluation/diagnostic_metrics.py`: public diagnostic helpers; `src/d5freq/identification/offline_pipeline.py`: common-validation-set artifact computation | `test_distinguishability.py`, `test_offline_mode_discovery_pipeline.py` | Verified Phase 3 |
+| (40)–(41) | Sticky Markov transition and predicted native-component belief | `src/d5freq/estimation/mode_belief_filter.py`: `build_sticky_transition_matrix`, `predict_mode_belief`, `ModeBeliefFilter.predict` | `test_mode_belief_filter.py` | Verified Phase 4 |
+| (42)–(45) | Per-component ARX innovation, Gaussian likelihood, and log-sum-exp Bayes posterior | `src/d5freq/estimation/mode_belief_filter.py`: `build_online_arx_regressor`, `update_mode_belief`, `ModeBeliefFilter.step`; history orchestration in `online_diagnostic.py` | `test_mode_belief_filter.py`, `test_online_diagnostic.py` | Verified Phase 4 |
+| (46)–(47) | Raw and normalized mode-belief entropy | `src/d5freq/estimation/mode_belief_filter.py`: `ModeBeliefUpdate`; `src/d5freq/estimation/online_diagnostic.py`: `DiagnosticOutput` | `test_mode_belief_filter.py`, `test_online_diagnostic.py` | Verified Phase 4 |
+| (48)–(50) | Minimum standardized residual and finite-sample split-conformal OOD p-value | `src/d5freq/estimation/ood_detector.py`: `minimum_standardized_residual_score`, `calibration_scores_from_residuals`, `split_conformal_pvalue` | `test_ood_detector.py`, `test_phase4_pipeline.py` | Verified Phase 4 |
+| (51) | Strict-threshold, four-state OOD confirmation and recovery hysteresis | `src/d5freq/estimation/ood_detector.py`: `OODHysteresisStateMachine`, `ConformalOODDetector` | `test_ood_detector.py`, `test_online_diagnostic.py` | Verified Phase 4 |
 | (62)–(64) | Shared SG/IBR command bounds and command-rate constraints | `src/d5freq/optimization/linear_mpc.py`: `LinearMPC.solve`, `MPCBounds` | `test_mpc_constraints.py`, `test_fixed_model_mpc.py` | Verified Phase 2 bootstrap |
 | (70) | OOD/solver/slack/timeout fallback disjunction | `src/d5freq/controllers/base.py`: `FallbackTrigger`, `fallback_required` | `test_fallback.py` | Verified Phase 2 |
 | (71) | Rate-limited IBR withdrawal toward zero | `src/d5freq/controllers/base.py`: `withdraw_toward_zero` | `test_fallback.py`, `test_lqi_fallback.py` | Verified Phase 2 |
@@ -118,3 +123,22 @@ propagated RoCoF error in Hz/s. Its sticky transition matrix uses the specified
 off-diagonal switch probability, so for six components and
 `epsilon_sw=0.002` the diagonal is `0.99` and every off-diagonal entry is
 `0.002`.
+
+## Phase 4 online-diagnosis boundaries
+
+`OnlineModeDiagnostic` owns exactly two prior controller-visible measurements
+and uses the command reported as already applied at the current sample as
+`u[k-1]`.  Its first two records are explicitly marked as ARX warm-up; neither
+the Bayes filter nor the conformal state machine consumes fabricated residuals
+during those records.  Runtime logs retain native six-component probabilities,
+residuals, NIS, the log normalization constant, entropy, conformal score and
+four-state OOD status.  They contain no simulator metadata.
+
+The OOD reference distribution is built only from complete trajectories in the
+authenticated public `ood_calibration` split.  Its strict artifact binds the
+scores to the public dataset, split manifest, frozen model library and each
+source trajectory hash.  Test and generated OOD trajectory hashes are checked
+for disjointness before evaluation.  Any aggregation from six discovered
+components to the four simulator reference classes is a many-to-one,
+evaluation-only operation performed after the runtime log has been saved and
+hashed; it never changes the native component posterior or OOD score.
