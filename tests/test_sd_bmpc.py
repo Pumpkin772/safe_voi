@@ -4,6 +4,7 @@ from dataclasses import FrozenInstanceError, dataclass
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
+import time
 from typing import Any
 
 import cvxpy as cp
@@ -24,7 +25,11 @@ from d5freq.optimization.mpc_problem import (
     SDBMPCConfig,
     SDBMPCMode,
 )
-from d5freq.optimization.solver_utils import SolverOutcome, SolverResult
+from d5freq.optimization.solver_utils import (
+    SolverOutcome,
+    SolverResult,
+    solve_cvxpy_problem,
+)
 from d5freq.utils.config import config_sha256, load_yaml
 from d5freq.utils.hashing import sha256_file, sha256_json
 
@@ -263,6 +268,66 @@ class QueuedSolver:
         return result
 
 
+class DeadlineAdapterSolver:
+    """Drive the real solver adapter with a controlled optimal return delay."""
+
+    def __init__(self, delay_s: float, horizon: int = 3) -> None:
+        self.delay_s = delay_s
+        self.shared_input = cp.Variable((2, horizon), name="deadline_shared_input")
+        self.freq_slack = cp.Variable(horizon, name="deadline_freq_slack")
+        self.rocof_slack = cp.Variable(horizon, name="deadline_rocof_slack")
+        self.power_slack = cp.Variable(horizon, name="deadline_power_slack")
+        self.problem = cp.Problem(
+            cp.Minimize(
+                cp.sum_squares(self.shared_input)
+                + cp.sum_squares(self.freq_slack)
+                + cp.sum_squares(self.rocof_slack)
+                + cp.sum_squares(self.power_slack)
+            )
+        )
+        self.last_result: SolverResult | None = None
+
+        def controlled_optimal(**_kwargs: object) -> float:
+            time.sleep(self.delay_s)
+            self.problem._status = cp.OPTIMAL
+            self.problem._value = 1.0
+            self.problem._solver_stats = type(
+                "Stats",
+                (),
+                {
+                    "solver_name": "CLARABEL",
+                    "solve_time": self.delay_s,
+                    "setup_time": 0.0,
+                    "num_iters": 4,
+                },
+            )()
+            self.shared_input.value = np.tile(
+                np.asarray((0.005, 0.01))[:, None], (1, horizon)
+            )
+            self.freq_slack.value = np.zeros(horizon)
+            self.rocof_slack.value = np.zeros(horizon)
+            self.power_slack.value = np.zeros(horizon)
+            return 1.0
+
+        self.problem.solve = controlled_optimal  # type: ignore[method-assign]
+
+    def __call__(self, _problem: object, **kwargs: object) -> SolverResult:
+        self.last_result = solve_cvxpy_problem(
+            self.problem,
+            solution_variables={
+                "shared_input": self.shared_input,
+                "freq_slack_hz": self.freq_slack,
+                "rocof_slack_hz_per_s": self.rocof_slack,
+                "power_slack_pu": self.power_slack,
+            },
+            solver_priority=("CLARABEL",),
+            installed_solvers=("CLARABEL",),
+            timeout_s=float(kwargs["timeout_s"]),
+            warm_start=False,
+        )
+        return self.last_result
+
+
 def _measurement(
     time_s: float,
     *,
@@ -294,6 +359,7 @@ def _controller(
     hold: int = 1,
     blend: int = 2,
     precompile: bool = False,
+    solve_timeout_s: float = 0.2,
 ) -> tuple[SDBMPCController, FakeCache, FakeEstimator]:
     resolved_cache = FakeCache() if cache is None else cache
     resolved_estimator = FakeEstimator() if estimator is None else estimator
@@ -307,6 +373,7 @@ def _controller(
             return_blend_steps=blend,
             precompile_on_reset=precompile,
             solver_priority=("SCS",),
+            solve_timeout_s=solve_timeout_s,
         ),
         estimator=resolved_estimator,
         problem_cache=resolved_cache,
@@ -415,6 +482,48 @@ def test_every_nonexact_solver_outcome_executes_fresh_lqi_fallback(
     expected = "solver_timeout" if outcome is SolverOutcome.TIMEOUT else f"solver_{outcome.value}"
     assert controller.last_step_record.trigger_reasons == (expected,)
     assert controller.fallback_events[0].fallback_steps == 1
+
+
+@pytest.mark.parametrize(
+    ("delay_s", "timeout_s", "expected_outcome", "expected_state"),
+    [
+        (0.0, 0.1, SolverOutcome.SUCCESS, SDControllerState.NORMAL_BELIEF_MPC),
+        (0.02, 0.005, SolverOutcome.TIMEOUT, SDControllerState.FALLBACK),
+    ],
+)
+def test_solver_deadline_side_controls_mpc_execution_or_fresh_fallback(
+    delay_s: float,
+    timeout_s: float,
+    expected_outcome: SolverOutcome,
+    expected_state: SDControllerState,
+) -> None:
+    adapter = DeadlineAdapterSolver(delay_s)
+    diagnostic = FakeDiagnostic([_diagnostic_output()])
+    controller, _, _ = _controller(
+        diagnostic,
+        adapter,  # type: ignore[arg-type]
+        solve_timeout_s=timeout_s,
+    )
+    initial = _measurement(0.0)
+    controller.reset(initial)
+
+    action = controller.act(initial)
+
+    assert adapter.last_result is not None
+    assert adapter.last_result.outcome is expected_outcome
+    assert action.controller_state == expected_state.value
+    if expected_outcome is SolverOutcome.SUCCESS:
+        assert action.u_sg_pu == pytest.approx(0.005)
+        assert action.u_ibr_pu == pytest.approx(0.01)
+        assert controller.last_step_record.trigger_reasons == ()
+        assert adapter.shared_input.value is not None
+    else:
+        assert adapter.last_result.status == "timeout"
+        assert not adapter.last_result.values
+        assert adapter.shared_input.value is None
+        assert controller.last_step_record.solver_outcome == "timeout"
+        assert controller.last_step_record.trigger_reasons == ("solver_timeout",)
+        assert action.u_ibr_pu == pytest.approx(0.0)
 
 
 @pytest.mark.parametrize(

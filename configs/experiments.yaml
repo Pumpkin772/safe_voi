@@ -1,118 +1,432 @@
-schema_version: 1
+schema_version: d5freq.closed_loop_experiments.v3
 
-# Scenario truth is consumed only by the simulator and evaluation orchestrator.
-# The controller input assembled for each run must exclude this section.
+# This protocol is frozen before any final-test episode is run.  Scenario truth
+# is loaded by the simulator/evaluation process only and is never included in a
+# controller constructor, reset call, measurement, or action call.
+protocol_status:
+  frozen: true
+  frozen_before_final_test: true
+  phase: 6
+  revision: phase6-preregistered-v2
 truth_access: simulator_and_evaluation_only
 
-experiments:
-  smoke_seeds: [0, 1]
-  tuning_seed_start: 100
-  tuning_seed_count: 10
-  final_seed_start: 1000
-  final_seed_count: 30
-  ood_final_seed_count: 50
-  retain_failed_episodes: true
-  save_step_trajectories_as: parquet
+timebase:
+  episode_duration_s: 180.0
+  control_period_s: 0.5
+  integration_step_s: 0.02
 
-  methods:
-    - lqi_only
-    - fixed_nominal_mpc
-    - rls_adaptive_mpc
-    - hard_map_mpc
-    - oracle_mpc
-    - sd_bmpc
-    - sd_bmpc_no_worst_case
-    - sd_bmpc_no_ood_fallback
-    - sd_bmpc_labeled_library
+execution_policy:
+  retain_failed_episodes: true
+  record_run_completed_separately_from_scientific_success: true
+  full_matrix_success_storage: per_episode_metrics_and_compact_audit_only
+  incomplete_failure_trace_storage: bounded_strict_json
+  failure_trace_point_limit: 2001
+  failure_trace_interval_limit: 401
+  selected_trajectory_export_policy: deterministic_post_final_replay
+  selected_trajectory_format: parquet_zstd
+  tuning_and_final_worker_processes: 4
+  solver_threads_per_episode: 1
+  final_test_is_read_only_after_first_run: true
+  controller_receives_truth: false
+
+seed_sets:
+  smoke:
+    start: 0
+    stop_inclusive: 1
+    count: 2
+  tuning:
+    start: 100
+    stop_inclusive: 109
+    count: 10
+  final_known:
+    start: 1000
+    stop_inclusive: 1029
+    count: 30
+  final_ood_extreme:
+    start: 1000
+    stop_inclusive: 1049
+    count: 50
 
 data_splits:
-  - identification_train
-  - identification_validation
-  - ood_calibration
-  - closed_loop_validation
-  - closed_loop_test
-  - ood_test
-split_unit: trajectory
+  split_unit: trajectory
+  identification_train: local_arx_gmm_and_mode_library_fit
+  identification_validation: arx_order_ridge_and_fixed_reference_selection
+  ood_calibration: known_modes_only_threshold_calibration
+  closed_loop_validation: tuning_seed_set_only
+  closed_loop_test: final_known_seed_set_only
+  ood_test: final_ood_extreme_seed_set_only
+
+# One global candidate is selected on closed-loop validation and locked before
+# any final seed is evaluated.  The ordered criteria and final hash tie-breaker
+# make the selection deterministic and prevent scenario-specific cherry-picks.
+tuning_selection:
+  split: closed_loop_validation
+  seed_set: tuning
+  one_global_configuration_for_all_final_scenarios: true
+  final_test_feedback_forbidden: true
+  ordered_objectives:
+    - minimize_catastrophic_failure_rate
+    - minimize_mean_frequency_iae_hz_s
+    - minimize_q95_max_abs_frequency_deviation_hz
+    - minimize_mean_solver_wall_time_s
+  deterministic_tie_breaker: lexicographically_smallest_resolved_config_sha256
+  selection_record_required: true
+  selection_record_must_precede_final_ledger: true
+
+# Method IDs are the stable statistical pairing keys.  B4 is an explicitly
+# isolated evaluation upper bound; no other method may consume simulator truth.
+methods:
+  - method_id: B0
+    output_slug: lqi_only
+    role: baseline
+    truth_access: none
+    definition: LQI-only with IBR command withdrawal
+  - method_id: B1
+    output_slug: fixed_reference_arx_mpc
+    role: baseline
+    truth_access: none
+    definition: fixed discovered ARX component selected on identification validation only
+  - method_id: B2
+    output_slug: single_model_rls_mpc
+    role: baseline
+    truth_access: none
+    definition: one online recursive-least-squares ARX model
+  - method_id: B3
+    output_slug: hard_map_mode_mpc
+    role: baseline
+    truth_access: none
+    definition: hard MAP component from the runtime belief
+  - method_id: B4
+    output_slug: oracle_arx_mpc
+    role: evaluation_upper_bound
+    truth_access: evaluation_oracle_only
+    definition: truth-informed known-mode ARX selection isolated under evaluation
+  - method_id: P
+    output_slug: sd_bmpc
+    role: proposed
+    truth_access: none
+    definition: full self-diagnosing belief-space MPC
+  - method_id: no-worst
+    output_slug: sd_bmpc_no_worst_case
+    role: ablation
+    truth_access: none
+    definition: SD-BMPC with entropy-weighted worst-mode term disabled
+  - method_id: no-OOD
+    output_slug: sd_bmpc_no_ood_fallback
+    role: ablation
+    truth_access: none
+    definition: SD-BMPC with OOD-triggered fallback disabled
+  - method_id: no-tightening
+    output_slug: sd_bmpc_no_uncertainty_tightening
+    role: ablation
+    truth_access: none
+    definition: SD-BMPC with uncertainty tightening disabled
+  - method_id: fixed-K4-unlabeled
+    output_slug: sd_bmpc_fixed_k4_unlabeled_library
+    role: ablation
+    truth_access: none
+    definition: train-only unlabeled mode discovery forced to K=4
+  - method_id: labeled-library
+    output_slug: sd_bmpc_labeled_training_library
+    role: ablation
+    truth_access: training_labels_only
+    definition: train-only true labels used to fit the offline known-mode library
+  - method_id: no-transition-prior
+    output_slug: sd_bmpc_no_transition_prior
+    role: ablation
+    truth_access: none
+    definition: SD-BMPC belief update without the sticky Markov transition prior
 
 noise_profiles:
+  # Standard closed-loop profiles use the same 2e-4 pu power-measurement
+  # standard deviation used by the frozen belief/OOD calibration.  The high
+  # profile is an explicit 5x-std robustness stress and is reported separately.
   low:
     omega_std_pu: 1.0e-5
-    power_std_pu: 5.0e-4
+    power_std_pu: 2.0e-4
   medium:
     omega_std_pu: 3.0e-5
-    power_std_pu: 1.0e-3
+    power_std_pu: 2.0e-4
   high:
     omega_std_pu: 1.0e-4
-    power_std_pu: 3.0e-3
+    power_std_pu: 1.0e-3
 
-scenarios:
-  S0_nominal:
+# Every row below is one concrete pairing key.  A family name alone is never a
+# runnable scenario, so variants cannot be silently pooled or confused.
+scenario_variants:
+  - scenario_id: S0_nominal_stochastic
     family: S0
-    description: small stochastic load without a mode switch
-    load_event: stochastic
-    mode_schedule: nominal
-    noise_level: low
-    required_seeds: 30
-  S1_step:
+    variant: nominal_stochastic
+    description: nominal mode with a small reproducible stochastic load
+    truth_class: known
+    noise_profile: low
+    final_seed_set: final_known
+    load:
+      events: []
+      stochastic:
+        enabled: true
+        sample_period_s: 0.5
+        white_std_pu: 1.0e-3
+        random_walk_step_std_pu: 7.071067811865475e-5
+    mode:
+      initial: nominal
+      switches: []
+
+  - scenario_id: S1_step_pos_002
     family: S1
-    description: load step without a mode switch
-    load_event: step_0.06
-    mode_schedule: nominal
-    noise_level: low
-    required_seeds: 30
-  S2_slow:
+    variant: step_pos_002
+    description: positive 0.02 pu load step at 60 s without a mode switch
+    truth_class: known
+    noise_profile: low
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.02, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode: {initial: nominal, switches: []}
+  - scenario_id: S1_step_neg_002
+    family: S1
+    variant: step_neg_002
+    description: negative 0.02 pu load step at 60 s without a mode switch
+    truth_class: known
+    noise_profile: low
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: -0.02, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode: {initial: nominal, switches: []}
+  - scenario_id: S1_step_pos_004
+    family: S1
+    variant: step_pos_004
+    description: positive 0.04 pu load step at 60 s without a mode switch
+    truth_class: known
+    noise_profile: low
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.04, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode: {initial: nominal, switches: []}
+  - scenario_id: S1_step_neg_004
+    family: S1
+    variant: step_neg_004
+    description: negative 0.04 pu load step at 60 s without a mode switch
+    truth_class: known
+    noise_profile: low
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: -0.04, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode: {initial: nominal, switches: []}
+  - scenario_id: S1_step_pos_006
+    family: S1
+    variant: step_pos_006
+    description: positive 0.06 pu load step at 60 s without a mode switch
+    truth_class: known
+    noise_profile: low
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.06, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode: {initial: nominal, switches: []}
+  - scenario_id: S1_step_neg_006
+    family: S1
+    variant: step_neg_006
+    description: negative 0.06 pu load step at 60 s without a mode switch
+    truth_class: known
+    noise_profile: low
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: -0.06, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode: {initial: nominal, switches: []}
+  - scenario_id: S1_step_pos_008
+    family: S1
+    variant: step_pos_008
+    description: positive 0.08 pu load step at 60 s without a mode switch
+    truth_class: known
+    noise_profile: low
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.08, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode: {initial: nominal, switches: []}
+  - scenario_id: S1_step_neg_008
+    family: S1
+    variant: step_neg_008
+    description: negative 0.08 pu load step at 60 s without a mode switch
+    truth_class: known
+    noise_profile: low
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: -0.08, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode: {initial: nominal, switches: []}
+
+  - scenario_id: S2_sluggish_switch_050
     family: S2
-    description: nominal to sluggish during a disturbance
-    load_event: step_0.06
-    mode_schedule: nominal_to_sluggish
-    noise_level: medium
-    required_seeds: 30
-  S3_derated:
+    variant: switch_before_disturbance
+    description: nominal to sluggish at 50 s, then a positive 0.06 pu load step at 60 s
+    truth_class: known
+    noise_profile: medium
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.06, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode:
+      initial: nominal
+      switches: [{time_s: 50.0, mode: sluggish}]
+  - scenario_id: S2_sluggish_switch_060
+    family: S2
+    variant: switch_coincident_with_disturbance
+    description: nominal to sluggish and a positive 0.06 pu load step together at 60 s
+    truth_class: known
+    noise_profile: medium
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.06, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode:
+      initial: nominal
+      switches: [{time_s: 60.0, mode: sluggish}]
+  - scenario_id: S2_sluggish_switch_090
+    family: S2
+    variant: switch_during_recovery
+    description: positive 0.06 pu load step at 60 s, then nominal to sluggish at 90 s
+    truth_class: known
+    noise_profile: medium
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.06, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode:
+      initial: nominal
+      switches: [{time_s: 90.0, mode: sluggish}]
+
+  - scenario_id: S3_derated_coincident
     family: S3
-    description: nominal to derated during a disturbance
-    load_event: step_0.06
-    mode_schedule: nominal_to_derated
-    noise_level: medium
-    required_seeds: 30
-  S4_exit:
+    variant: switch_coincident_with_disturbance
+    description: nominal to derated and a positive 0.06 pu load step together at 60 s
+    truth_class: known
+    noise_profile: medium
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.06, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode:
+      initial: nominal
+      switches: [{time_s: 60.0, mode: derated}]
+  - scenario_id: S4_unavailable_coincident
     family: S4
-    description: nominal to unavailable during a disturbance
-    load_event: step_0.06
-    mode_schedule: nominal_to_unavailable
-    noise_level: medium
-    required_seeds: 30
-  S5_multi:
+    variant: switch_coincident_with_disturbance
+    description: nominal to unavailable and a positive 0.06 pu load step together at 60 s
+    truth_class: known
+    noise_profile: medium
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.06, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode:
+      initial: nominal
+      switches: [{time_s: 60.0, mode: unavailable}]
+
+  - scenario_id: S5_multi_switch_stochastic
     family: S5
-    description: multiple known-mode switches
-    load_event: stochastic
-    mode_schedule: nominal_sluggish_derated_nominal
-    noise_level: medium
-    required_seeds: 30
-  S6_noise:
+    variant: nominal_sluggish_derated_nominal
+    description: switches at 45, 90, and 135 s under a small stochastic load
+    truth_class: known
+    noise_profile: medium
+    final_seed_set: final_known
+    load:
+      events: []
+      stochastic:
+        enabled: true
+        sample_period_s: 0.5
+        white_std_pu: 1.0e-3
+        random_walk_step_std_pu: 7.071067811865475e-5
+    mode:
+      initial: nominal
+      switches:
+        - {time_s: 45.0, mode: sluggish}
+        - {time_s: 90.0, mode: derated}
+        - {time_s: 135.0, mode: nominal}
+
+  - scenario_id: S6_sluggish_coincident_low_noise
     family: S6
-    description: known-mode switch under high measurement noise
-    load_event: step_0.06
-    mode_schedule: nominal_to_sluggish
-    noise_level: high
-    required_seeds: 30
-  S7_ood_asym:
+    variant: low_noise
+    description: S2 coincident switch/load event under low measurement noise
+    truth_class: known
+    noise_profile: low
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.06, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode:
+      initial: nominal
+      switches: [{time_s: 60.0, mode: sluggish}]
+  - scenario_id: S6_sluggish_coincident_medium_noise
+    family: S6
+    variant: medium_noise
+    description: S2 coincident switch/load event under medium measurement noise
+    truth_class: known
+    noise_profile: medium
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.06, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode:
+      initial: nominal
+      switches: [{time_s: 60.0, mode: sluggish}]
+  - scenario_id: S6_sluggish_coincident_high_noise
+    family: S6
+    variant: high_noise
+    description: S2 coincident switch/load event under high measurement noise
+    truth_class: known
+    noise_profile: high
+    final_seed_set: final_known
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.06, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode:
+      initial: nominal
+      switches: [{time_s: 60.0, mode: sluggish}]
+
+  - scenario_id: S7_ood_asymmetric_limit
     family: S7
-    description: held-out asymmetric-limit behavior
-    load_event: step_0.06
-    mode_schedule: nominal_to_ood_asymmetric
-    noise_level: medium
-    required_seeds: 50
-  S8_ood_delay:
+    variant: asymmetric_limit_at_090
+    description: positive 0.06 pu load step at 60 s and held-out asymmetric limits at 90 s
+    truth_class: ood
+    noise_profile: medium
+    final_seed_set: final_ood_extreme
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.06, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode:
+      initial: nominal
+      switches: [{time_s: 90.0, mode: asymmetric_limit}]
+  - scenario_id: S8_ood_time_varying_delay
     family: S8
-    description: held-out time-varying-delay behavior
-    load_event: step_0.06
-    mode_schedule: nominal_to_ood_varying_delay
-    noise_level: medium
-    required_seeds: 50
-  S9_compound:
+    variant: time_varying_delay_at_090
+    description: positive 0.06 pu load step at 60 s and held-out varying delay at 90 s
+    truth_class: ood
+    noise_profile: medium
+    final_seed_set: final_ood_extreme
+    load:
+      events: [{start_time_s: 60.0, magnitude_pu: 0.06, end_time_s: null}]
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode:
+      initial: nominal
+      switches: [{time_s: 90.0, mode: time_varying_delay}]
+  - scenario_id: S9_compound_unavailable_double_step
     family: S9
-    description: large disturbance coincident with mode unavailability
-    load_event: step_0.08
-    mode_schedule: nominal_to_unavailable_same_time
-    noise_level: medium
-    required_seeds: 50
+    variant: unavailable_plus_double_disturbance
+    description: positive 0.08 pu load and unavailable mode at 60 s, then negative 0.04 pu load at 90 s
+    truth_class: extreme_known
+    noise_profile: medium
+    final_seed_set: final_ood_extreme
+    load:
+      events:
+        - {start_time_s: 60.0, magnitude_pu: 0.08, end_time_s: null}
+        - {start_time_s: 90.0, magnitude_pu: -0.04, end_time_s: null}
+      stochastic: {enabled: false, sample_period_s: 0.5, white_std_pu: 0.0, random_walk_step_std_pu: 0.0}
+    mode:
+      initial: nominal
+      switches: [{time_s: 60.0, mode: unavailable}]

@@ -41,6 +41,62 @@ def _finite_nonnegative(value: float, name: str) -> float:
 
 
 @dataclass(frozen=True, slots=True)
+class EvaluationTruthPoint:
+    """One evaluator-only continuous-simulation truth sample.
+
+    Points are emitted at the beginning of a controller interval and at every
+    RK4/event-segment endpoint.  ``true_mode_eval_only`` is right-continuous at
+    a switch instant.  This type never appears in :class:`Measurement`.
+    """
+
+    time_s: float
+    omega_true_pu: float
+    rocof_true_hz_per_s: float
+    p_mech_true_pu: float
+    p_ibr_true_pu: float
+    load_disturbance_pu: float
+    true_mode_eval_only: str
+
+    def as_mapping(self) -> dict[str, float | str]:
+        """Return a JSON/Parquet-friendly owned mapping."""
+
+        return {
+            "time_s": self.time_s,
+            "omega_true_pu": self.omega_true_pu,
+            "rocof_true_hz_per_s": self.rocof_true_hz_per_s,
+            "p_mech_true_pu": self.p_mech_true_pu,
+            "p_ibr_true_pu": self.p_ibr_true_pu,
+            "load_disturbance_pu": self.load_disturbance_pu,
+            "true_mode_eval_only": self.true_mode_eval_only,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class EvaluationTruthInterval:
+    """Evaluator-only truth-mode annotation for one integration segment.
+
+    The start mode is the mode used to integrate the half-open segment.  The
+    end mode is queried with the simulator's right-continuous convention, so
+    the two names differ exactly when the endpoint is a mode-switch event.
+    """
+
+    start_time_s: float
+    end_time_s: float
+    true_mode_start_eval_only: str
+    true_mode_end_eval_only: str
+
+    def as_mapping(self) -> dict[str, float | str]:
+        """Return a JSON/Parquet-friendly owned mapping."""
+
+        return {
+            "start_time_s": self.start_time_s,
+            "end_time_s": self.end_time_s,
+            "true_mode_start_eval_only": self.true_mode_start_eval_only,
+            "true_mode_end_eval_only": self.true_mode_end_eval_only,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class Scenario:
     """Simulator-private recipe for one closed-loop episode.
 
@@ -210,6 +266,32 @@ class HiddenModeFrequencySimulator:
             u_ibr_prev_pu=self._u_ibr_prev_pu,
         )
 
+    def _evaluation_truth_point(self) -> EvaluationTruthPoint:
+        """Snapshot simulator-private truth without consuming random numbers."""
+
+        scenario, disturbance, grid_state, ibr_state, _, _ = self._require_state()
+        omega_pu = float(grid_state[GridStateIndex.OMEGA_PU])
+        p_mech_pu = float(grid_state[GridStateIndex.P_MECH_PU])
+        p_ibr_pu = ibr_state.p_ibr_pu
+        load_pu = disturbance.value_at(self._time_s)
+        grid = self._grid_model.params
+        # This is the exact right-continuous derivative of physical frequency.
+        # In particular, a load event changes RoCoF immediately even though
+        # omega itself remains continuous, so a numerical gradient would halve
+        # or smear the event-boundary value.
+        rocof_hz_per_s = grid.f0_hz * (
+            -grid.D_pu * omega_pu + p_mech_pu + p_ibr_pu - load_pu
+        ) / grid.M_s
+        return EvaluationTruthPoint(
+            time_s=self._time_s,
+            omega_true_pu=omega_pu,
+            rocof_true_hz_per_s=rocof_hz_per_s,
+            p_mech_true_pu=p_mech_pu,
+            p_ibr_true_pu=p_ibr_pu,
+            load_disturbance_pu=load_pu,
+            true_mode_eval_only=scenario.mode_schedule.mode_at(self._time_s),
+        )
+
     def _advance_segment(
         self,
         *,
@@ -268,6 +350,8 @@ class HiddenModeFrequencySimulator:
             raise RuntimeError("episode is already complete")
 
         history.record(self._time_s, action.u_ibr_pu)
+        truth_points = [self._evaluation_truth_point()]
+        truth_intervals: list[EvaluationTruthInterval] = []
         target_time = min(
             self._time_s + self._grid_model.params.control_period_s,
             scenario.duration_s,
@@ -275,6 +359,7 @@ class HiddenModeFrequencySimulator:
         integration_step = self._grid_model.params.integration_step_s
 
         while self._time_s < target_time:
+            segment_start_time_s = self._time_s
             nominal_end = min(self._time_s + integration_step, target_time)
             mode_name = scenario.mode_schedule.mode_at(self._time_s)
             params = self._mode_params[mode_name]
@@ -306,6 +391,17 @@ class HiddenModeFrequencySimulator:
             self._grid_state[GridStateIndex.LOAD_DISTURBANCE_PU] = (
                 disturbance.value_at(self._time_s)
             )
+            truth_intervals.append(
+                EvaluationTruthInterval(
+                    start_time_s=segment_start_time_s,
+                    end_time_s=self._time_s,
+                    true_mode_start_eval_only=mode_name,
+                    true_mode_end_eval_only=scenario.mode_schedule.mode_at(
+                        self._time_s
+                    ),
+                )
+            )
+            truth_points.append(self._evaluation_truth_point())
 
         self._u_sg_prev_pu = action.u_sg_pu
         self._u_ibr_prev_pu = action.u_ibr_pu
@@ -319,6 +415,17 @@ class HiddenModeFrequencySimulator:
             "omega_true_pu": float(self._grid_state[GridStateIndex.OMEGA_PU]),
             "p_mech_true_pu": float(self._grid_state[GridStateIndex.P_MECH_PU]),
             "p_ibr_true_pu": self._ibr_state.p_ibr_pu,
+            # These records are evaluator-only.  The first point is the
+            # control interval's initial state; subsequent points are every
+            # <= integration_step_s RK4/event-segment endpoint.  Keeping the
+            # step boundary in adjacent records lets downstream code verify
+            # exact continuity before de-duplicating it.
+            "true_trace_points_eval_only": tuple(
+                point.as_mapping() for point in truth_points
+            ),
+            "true_trace_intervals_eval_only": tuple(
+                interval.as_mapping() for interval in truth_intervals
+            ),
             "done": math.isclose(
                 self._time_s, scenario.duration_s, rel_tol=0.0, abs_tol=1.0e-12
             ),
@@ -326,4 +433,9 @@ class HiddenModeFrequencySimulator:
         return measurement, evaluation
 
 
-__all__ = ["HiddenModeFrequencySimulator", "Scenario"]
+__all__ = [
+    "EvaluationTruthInterval",
+    "EvaluationTruthPoint",
+    "HiddenModeFrequencySimulator",
+    "Scenario",
+]

@@ -9,6 +9,19 @@ from d5freq.controllers.base import (
     withdraw_toward_zero,
 )
 from d5freq.controllers.fixed_model_mpc import FixedNominalMPCController
+from d5freq.controllers.final_arx_mpc import (
+    FinalARXMPCController,
+    FixedReferenceSelectionArtifact,
+    MutableSingletonProblemCache,
+    ParameterizedSingletonProblem,
+    ReferenceCandidateScore,
+    build_fixed_reference_arx_controller,
+)
+from d5freq.controllers.hard_map_mpc import (
+    DiagnosticProjectionRecord,
+    DiagnosticRuntimeProjection,
+    HardMAPMPCController,
+)
 from d5freq.controllers.lqi_fallback import (
     DEFAULT_LQI_Q_WEIGHTS,
     LQIFallbackConfig,
@@ -27,16 +40,25 @@ from d5freq.controllers.sd_bmpc import (
     SDBMPCStepRecord,
     SDControllerState,
 )
+from d5freq.controllers.rls_adaptive_mpc import (
+    RLSAdaptiveMPCController,
+    RLSConfig,
+    RLSUpdateRecord,
+)
 
 __all__ = [
     "DEFAULT_LQI_Q_WEIGHTS",
     "FallbackTrigger",
     "FallbackEvent",
+    "FinalARXMPCController",
     "FixedNominalMPCController",
+    "FixedReferenceSelectionArtifact",
     "GridStateEstimator",
     "LQIFallbackConfig",
     "LQIFallbackController",
+    "MutableSingletonProblemCache",
     "OnlineDiagnosticRuntime",
+    "ParameterizedSingletonProblem",
     "PrecompileRecord",
     "ProblemCacheRuntime",
     "SDBMPCController",
@@ -44,6 +66,14 @@ __all__ = [
     "SDBMPCProvenance",
     "SDBMPCStepRecord",
     "SDControllerState",
+    "DiagnosticProjectionRecord",
+    "DiagnosticRuntimeProjection",
+    "HardMAPMPCController",
+    "RLSAdaptiveMPCController",
+    "RLSConfig",
+    "RLSUpdateRecord",
+    "ReferenceCandidateScore",
+    "build_fixed_reference_arx_controller",
     "clip_with_rate_limit",
     "design_lqi_gain",
     "fallback_required",
