@@ -1,0 +1,31 @@
+schema_version: d5freq.phase_b1.sg_levels.v1
+protocol_status: preregistered
+frozen_before_final: true
+source: research/phase_b1_bottleneck_audit/01_PHASE_B1_PROJECT_PLAN.md
+
+# These values are scientific factors, not tuning parameters.  In particular,
+# Level C is retained even if the frequency constraints become infeasible.
+levels:
+  A:
+    command_min_pu: -0.12
+    command_max_pu: 0.12
+    ramp_pu_per_s: 0.020
+    interpretation: current_baseline_ample_sg
+  B:
+    command_min_pu: -0.08
+    command_max_pu: 0.08
+    ramp_pu_per_s: 0.012
+    interpretation: moderate_sg_flexibility
+  C:
+    command_min_pu: -0.055
+    command_max_pu: 0.055
+    ramp_pu_per_s: 0.006
+    interpretation: low_sg_flexibility_fixed_even_if_infeasible
+
+shared_constraints:
+  control_period_s: 0.5
+  frequency_limit_hz: 0.5
+  rocof_limit_hz_per_s: 0.5
+  ibr_command_min_pu: -0.08
+  ibr_command_max_pu: 0.08
+  ibr_command_ramp_pu_per_s: 0.04

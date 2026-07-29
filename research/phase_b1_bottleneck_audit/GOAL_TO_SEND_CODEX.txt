@@ -1,0 +1,16 @@
+请先完整阅读当前仓库 `research/phase_b1_bottleneck_audit/` 下的全部文件，然后严格执行 `CODEX_GOAL.md`。
+
+这次不要继续调旧 SD-BMPC，也不要直接实现新的 CORA-MPC。第一步先核验第二版审查包基线（review ZIP SHA256 为 `2e1c3bfc380c57172a5d96663a6ab90cf95b79511f60cefce73ce4c38e2f04a9`，frozen Phase-6 commit 为 `20f652f5f8b180a2518798d0ed85aa3f48212908`），把审查包中尚未提交的 Phase-7 修改整理成明确 baseline commit，创建 tag `phase-a-final-reviewed-v2` 和分支 `phase-b1-bottleneck-audit`。
+
+本轮唯一目标是完成科学瓶颈审计：新增 evaluation-only 的 B5 simulator-exact nonlinear Oracle；在预注册 SG capability A/B/C 下判断黑箱 IBR 是否真的有控制价值；分解 exact-vs-ARX 模型失配、被动闭环可辨识性、负荷变化与模式变化混淆，以及 sticky prior、worst-mode cost、constraint tightening、binary fallback 的控制保守性。
+
+最终必须给出以下之一：
+`PROBLEM_NOT_MATERIAL`、`MODEL_MISMATCH_DOMINANT`、`IDENTIFIABILITY_DOMINANT`、`CONTROL_DESIGN_DOMINANT`，或带主次顺序的 COMBINED 结论。
+
+运行时普通控制器严禁读取 true mode 或真实内部参数；B4/B5只能用于 evaluation-only；不得用 final seeds 调参，不得削弱 B0/B2 制造优势，不得删除失败 episode。
+
+完成后生成一个小于512MB的：
+
+`D5_PHASE_B1_BOTTLENECK_AUDIT_REVIEW_PACKAGE.zip`
+
+内容严格符合 `research/phase_b1_bottleneck_audit/05_REVIEW_PACKAGE_SPEC.md`。本轮完成审计后停止，不要未经评审继续实现下一种 proposed method。

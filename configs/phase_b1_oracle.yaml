@@ -1,0 +1,70 @@
+schema_version: d5freq.phase_b1.exact_oracle.v1
+protocol_status: validation_candidates_preregistered
+evaluation_only: true
+ordinary_controller_factory_exposure: forbidden
+failure_policy: retain_episode_and_report_without_fallback_substitution
+
+information_boundary:
+  true_mode_and_ibr_parameters: evaluation_only
+  future_mode_schedule: forbidden_to_planner
+  future_load_disturbance: forbidden_to_planner
+  disturbance_information: controller_visible_grid_kf_current_estimate_zoh
+  measurement_interface: same_as_runtime_controllers
+
+planner:
+  family: exact_nonlinear_simulator_in_the_loop_one_move_shooting
+  integration_method: vectorized_classical_rk4
+  integration_step_s: 0.02
+  control_period_s: 0.5
+  candidate_first_action_grid:
+    sg_normalized_ramp_offsets: [-1.0, 0.0, 1.0]
+    ibr_normalized_ramp_offsets: [-1.0, -0.5, 0.0, 0.5, 1.0]
+  future_control_hold: first_action_zero_order_hold
+  safety_violation_penalty: 1.0e8
+  idle_equilibrium_gate:
+    frequency_abs_max_hz: 0.01
+    estimated_power_imbalance_abs_max_pu: 0.002
+    action: hold_previous_feasible_command
+
+# Only this finite list may be compared on seeds 400--409.  Exactly one is
+# selected globally and written to the protocol lock before seed 3000 is run.
+validation_candidates:
+  - candidate_id: H2
+    horizon_s: 2.0
+    terminal_cost_multiplier: 1.0
+  - candidate_id: H4
+    horizon_s: 4.0
+    terminal_cost_multiplier: 1.0
+  - candidate_id: H6
+    horizon_s: 6.0
+    terminal_cost_multiplier: 1.0
+
+# These are the frozen Phase-A MPC weights.  The B5 study varies the model, not
+# the control objective.
+cost:
+  q_freq: 3000.0
+  q_integral: 50.0
+  q_rocof: 50.0
+  r_sg: 1.0
+  r_ibr: 0.5
+  s_delta_sg: 20.0
+  s_delta_ibr: 10.0
+  q_terminal_freq: 6000.0
+  q_terminal_integral: 100.0
+
+validation_selection:
+  split: phase_b1_validation
+  seeds: {start: 400, stop_inclusive: 409, count: 10}
+  scenario_ids:
+    - S0_nominal_stochastic
+    - S1_step_pos_006
+    - S2_sluggish_switch_060
+    - S4_unavailable_coincident
+    - S7_ood_asymmetric_limit
+  sg_levels: [A, B, C]
+  ordered_objectives:
+    - minimize_catastrophic_or_solver_failure_rate
+    - minimize_mean_frequency_iae_hz_s
+    - minimize_q95_max_abs_frequency_deviation_hz
+    - minimize_mean_wall_time_s
+  tie_breaker: lexicographically_smallest_candidate_id

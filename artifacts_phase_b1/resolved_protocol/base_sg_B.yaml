@@ -1,0 +1,148 @@
+schema_version: 1
+project:
+  name: d5_hidden_mode_frequency_from_scratch
+  seed: 20260722
+  output_root: results_phase_b1
+  artifact_root: artifacts_phase_b1
+  progress_root: progress_phase_b1
+environment:
+  python: '3.11'
+  conda_environment: topo_sfr
+  solver_primary: MOSEK
+  solver_fallback: GUROBI
+  solver_debug: CLARABEL
+determinism:
+  numpy_bit_generator: PCG64
+  require_explicit_generator: true
+  hash_algorithm: sha256
+grid:
+  f0_hz: 50.0
+  M_s: 8.0
+  D_pu: 1.0
+  T_t_s: 0.5
+  T_g_s: 0.2
+  R_pu: 0.08
+  control_period_s: 0.5
+  integration_step_s: 0.02
+  freq_limit_hz: 0.5
+  rocof_limit_hz_per_s: 0.5
+  u_sg_min_pu: -0.08
+  u_sg_max_pu: 0.08
+  u_sg_ramp_pu_per_s: 0.012
+ibr_command:
+  u_min_pu: -0.08
+  u_max_pu: 0.08
+  ramp_pu_per_s: 0.04
+simulation:
+  episode_duration_s: 180.0
+  strict_control_period_zoh: true
+  retain_failed_episodes: true
+estimation:
+  grid_kalman:
+    process_noise_diagonal:
+    - 1.0e-12
+    - 1.0e-10
+    - 1.0e-09
+    - 1.0e-12
+    - 0.0
+    measurement_noise_diagonal:
+    - 1.0e-08
+    - 4.0e-08
+    initial_covariance_diagonal:
+    - 1.0e-06
+    - 1.0e-05
+    - 0.0001
+    - 0.001
+    - 0.001
+    load_random_walk_std_pu_per_s: 0.0001
+identification:
+  trajectories_per_mode: 40
+  trajectory_duration_s: 180.0
+  generation:
+    command_abs_limit_pu: 0.06
+    command_rate_limit_pu_per_s: 0.03
+    frequency_abs_limit_hz: 0.1
+    power_measurement_noise_std_pu: 0.0002
+    minimum_command_std_pu: 0.005
+    minimum_frequency_std_hz: 0.01
+    maximum_regression_condition_number: 1.0e10
+    excitation_families:
+    - prbs
+    - band_limited
+    - multisine
+    - steps
+    split_counts_per_mode:
+      train: 24
+      validation: 8
+      ood_calibration: 4
+      test: 4
+  arx_order_y: 2
+  arx_order_u: 2
+  arx_order_f: 2
+  ridge_lambda: 1.0e-05
+  feature_variance_epsilon: 1.0e-12
+  residual_variance_floor: 1.0e-10
+  gmm_k_min: 1
+  gmm_k_max: 6
+  gmm_restarts: 20
+  gmm_covariance_type: full
+  gmm_max_iter: 500
+  gmm_reg_covar: 1.0e-05
+  lower_power_quantile: 0.01
+  upper_power_quantile: 0.99
+  directional_rate_quantile: 0.99
+  multi_step_horizon: 20
+belief:
+  switch_epsilon: 0.002
+  switch_epsilon_sensitivity:
+  - 0.0005
+  - 0.001
+  - 0.002
+  - 0.005
+  - 0.01
+  probability_floor: 1.0e-12
+  residual_variance_floor: 1.0e-08
+  detection_probability: 0.8
+  detection_hold_steps: 3
+  false_alarm_hold_steps: 3
+ood:
+  alpha_on: 0.01
+  alpha_off: 0.1
+  hold_on_steps: 3
+  hold_off_steps: 5
+  calibration_known_modes_only: true
+  calibration_search:
+    alpha_on:
+    - 0.005
+    - 0.01
+    - 0.02
+    - 0.05
+    alpha_off:
+    - 0.05
+    - 0.1
+    - 0.2
+    hold_on_steps:
+    - 2
+    - 3
+    - 4
+    hold_off_steps:
+    - 3
+    - 5
+    - 7
+phase4_evaluation:
+  unique_test_excitations: 4
+  switch_time_s: 90.0
+  additional_noise_std_pu: 0.001
+  load_step_frequency_proxy_pu: -0.0012
+  load_step_start_s: 60.0
+  load_step_end_s: 90.0
+  reliability_bins: 10
+logging:
+  level: INFO
+  format: jsonl
+  save_resolved_config: true
+  save_environment_info: true
+  save_config_sha256: true
+  save_model_library_sha256: true
+phase_b1_sg_level: B
+phase_b1_source_base_sha256: c3bd53e21aaf5c79e1aabf9cfbab071ee9ff2efd75fb510d3e5bdd6bc0e8d7b6
