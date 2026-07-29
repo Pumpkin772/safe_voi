@@ -1,0 +1,40 @@
+{
+  "bayes_delayed_or_censored_switch_fraction": 0.36551724137931035,
+  "best_isolated_control_gain_fraction": 0.08630798629607664,
+  "decision": "COMBINED:CONTROL_DESIGN_DOMINANT+MODEL_MISMATCH_DOMINANT",
+  "model_gap_b4_vs_b5_fraction": 0.08129160662074356,
+  "normalized_evidence_scores": {
+    "CONTROL_DESIGN_DOMINANT": 0.8630798629607663,
+    "IDENTIFIABILITY_DOMINANT": 0.7310344827586207,
+    "MODEL_MISMATCH_DOMINANT": 0.8129160662074355
+  },
+  "problem_material": true,
+  "thresholds": {
+    "combined": {
+      "primary_order_tie_break": [
+        "MODEL_MISMATCH",
+        "IDENTIFIABILITY",
+        "CONTROL_DESIGN"
+      ],
+      "report_all_triggered_bottlenecks": true,
+      "secondary_evidence_min_normalized_score": 0.75
+    },
+    "control_design": {
+      "bayes_delayed_or_censored_switch_fraction_max": 0.5,
+      "isolated_counterfactual_frequency_iae_gain_min_fraction": 0.1
+    },
+    "identifiability": {
+      "b4_vs_b5_close_gap_max_fraction": 0.1,
+      "critical_window_s": 5.0,
+      "delayed_or_censored_switch_fraction_min": 0.5
+    },
+    "model_mismatch": {
+      "b4_vs_b5_frequency_iae_gap_min_fraction": 0.1
+    }
+  },
+  "triggered_bottlenecks": {
+    "CONTROL_DESIGN_DOMINANT": false,
+    "IDENTIFIABILITY_DOMINANT": false,
+    "MODEL_MISMATCH_DOMINANT": false
+  }
+}

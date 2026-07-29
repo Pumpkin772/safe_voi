@@ -1,0 +1,34 @@
+{
+  "schema_version": "d5freq.phase_b1.operational_incident.v1",
+  "recorded_at_utc": "2026-07-29T20:10:30.0648895Z",
+  "stage": "final_decision_reporting",
+  "protocol_lock_sha256": "7b8bc235c84e36a75bf9c20cc79af2e29a894a7069e852ed49e8c3c37fdf176f",
+  "scientific_inputs_changed": false,
+  "locked_source_changed": false,
+  "decision_thresholds_changed": false,
+  "events": [
+    {
+      "type": "infrastructure_timeout",
+      "description": "The first host command was terminated by a 60-second orchestration timeout before stdout, stderr, or decision artifacts were produced."
+    },
+    {
+      "type": "empty_zero_row_csv_normalization",
+      "description": "The successful evidence aggregation produced zero compact audit-computation failures, and pandas serialized zero-column, zero-row frames as a single newline. Reporting then raised EmptyDataError while counting the combined file. Both zero-row result artifacts were normalized to the registered failure schema by adding only the CSV header; no data row was added, removed, or changed."
+    }
+  ],
+  "normalized_artifacts": [
+    "results_phase_b1/tables/compact_audit_failures.csv",
+    "results_phase_b1/tables/identifiability_audit_failures.csv"
+  ],
+  "normalized_columns": [
+    "run_id",
+    "scenario_id",
+    "method",
+    "seed",
+    "sg_level",
+    "audit",
+    "failure_type",
+    "failure_message"
+  ],
+  "normalized_row_count": 0
+}
