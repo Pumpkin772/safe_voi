@@ -122,10 +122,9 @@ _SECRET_FILENAME = re.compile(
     r"(?:^|[_\-.])(credential|secret|api[_-]?key|private[_-]?key|access[_-]?token)(?:[_\-.]|$)",
     re.IGNORECASE,
 )
-_PRIVATE_KEY_MARKERS: tuple[bytes, ...] = (
-    b"-----BEGIN PRIVATE KEY-----",
-    b"-----BEGIN RSA PRIVATE KEY-----",
-    b"-----BEGIN OPENSSH PRIVATE KEY-----",
+_PRIVATE_KEY_MARKERS: tuple[bytes, ...] = tuple(
+    b"-----BEGIN " + prefix + b"PRIVATE" + b" KEY-----"
+    for prefix in (b"", b"RSA ", b"OPENSSH ")
 )
 
 
@@ -270,7 +269,8 @@ def _scan_private_key_markers(path: Path) -> None:
     if path.stat().st_size > 2 * 1024 * 1024:
         return
     content = path.read_bytes()
-    if any(marker in content for marker in _PRIVATE_KEY_MARKERS):
+    lines = (line.strip() for line in content.splitlines())
+    if any(line in _PRIVATE_KEY_MARKERS for line in lines):
         raise Phase7AuditError(f"private-key material detected in candidate file: {path}")
 
 

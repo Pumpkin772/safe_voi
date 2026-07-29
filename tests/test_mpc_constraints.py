@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from d5freq.models.grid_frequency import GridParams
 from d5freq.models.hidden_mode_ibr import IBRModeParams
@@ -10,6 +11,15 @@ from d5freq.optimization.linear_mpc import (
     MPCBounds,
     MPCWeights,
     linearize_grid_ibr,
+)
+
+
+# CVXPY 1.9.2 computes only the output shape of ``cp.sum`` by reducing an
+# uninitialized ``np.empty`` placeholder.  Depending on prior allocator state,
+# that placeholder can contain max-float values and emit an irrelevant overflow
+# warning before any optimization value exists.  Keep every other warning fatal.
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:overflow encountered in reduce:RuntimeWarning"
 )
 
 

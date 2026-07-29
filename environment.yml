@@ -5,6 +5,11 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11
+  # Keep NumPy/SciPy on one BLAS/OpenMP runtime on Windows.  The unconstrained
+  # solver can otherwise combine MKL's libiomp with scikit-learn's libomp.
+  - "libblas=*=*openblas"
+  - "libcblas=*=*openblas"
+  - "liblapack=*=*openblas"
   - numpy
   - scipy
   - pandas

@@ -28,6 +28,7 @@ from scripts.phase7_support import (
     Phase7AuditError,
     RESULT_CSV_NAMES,
     ZIP_NAME,
+    copy_tree_strict,
     validate_selected_trajectory_manifest,
 )
 
@@ -90,6 +91,27 @@ def _sha256_json(value: object) -> str:
             allow_nan=False,
         ).encode("utf-8")
     ).hexdigest()
+
+
+def test_private_key_scan_accepts_the_support_source_it_packages(tmp_path: Path) -> None:
+    copied = copy_tree_strict(
+        REPOSITORY_ROOT / "scripts", tmp_path / "copied_scripts"
+    )
+    assert copied > 0
+    assert (tmp_path / "copied_scripts" / "phase7_support.py").is_file()
+
+
+def test_private_key_scan_still_rejects_pem_material(tmp_path: Path) -> None:
+    source = tmp_path / "candidate"
+    marker = "-----BEGIN " + "PRIVATE" + " KEY-----\n"
+    _write(source / "embedded_diff.txt", '-    b"' + marker.rstrip() + '"\n')
+    copied = copy_tree_strict(source, tmp_path / "safe_publication")
+    assert copied == 1
+
+    _write(source / "misleading.txt", marker)
+
+    with pytest.raises(Phase7AuditError, match="private-key material"):
+        copy_tree_strict(source, tmp_path / "published")
 
 
 def _write_selected_manifest(

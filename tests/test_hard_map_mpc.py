@@ -99,6 +99,14 @@ def test_hard_map_projects_once_and_shares_single_estimator_update() -> None:
         mpc_config=SDBMPCConfig(horizon_steps=2),
         controller_config=SDBMPCControllerConfig(
             solver_priority=("CLARABEL",),
+            solver_options={
+                "CLARABEL": {
+                    "tol_gap_abs": 1.0e-5,
+                    "tol_gap_rel": 1.0e-5,
+                    "tol_feas": 1.0e-5,
+                    "max_iter": 1_000,
+                }
+            },
             solve_timeout_s=2.0,
             precompile_on_reset=False,
         ),
@@ -135,4 +143,3 @@ def test_no_ood_projection_bypasses_state_without_recalling_source() -> None:
     assert output.ood_pvalue == 1.0
     np.testing.assert_allclose(output.mode_belief, [0.2, 0.8])
     assert projection.records[-1].raw_diagnostic_state == "OOD_ACTIVE"
-
