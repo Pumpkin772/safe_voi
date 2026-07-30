@@ -50,11 +50,23 @@ class FiniteHorizonMPC:
         horizon: int = 6,
         nominal_delay_s: float = 0.2,
         solver_tolerance: float = 1e-6,
+        reference_weight: float = 0.0,
+        resource_constraint_start_stage: int = 0,
+        frequency_limit_hz: float = 0.80,
+        ace_limit_pu: float = 0.30,
+        tie_limit_pu: float = 0.15,
+        secondary_solver: str | None = None,
     ) -> None:
         self.period_s = float(period_s)
         self.horizon = int(horizon)
         self.nominal_delay_s = float(nominal_delay_s)
         self.solver_tolerance = float(solver_tolerance)
+        self.reference_weight = float(reference_weight)
+        self.resource_constraint_start_stage = int(resource_constraint_start_stage)
+        self.frequency_limit_hz = float(frequency_limit_hz)
+        self.ace_limit_pu = float(ace_limit_pu)
+        self.tie_limit_pu = float(tie_limit_pu)
+        self.secondary_solver = secondary_solver
         self.plant = TwoAreaPlantAV2()
         a, b, self.c_ace, e = self.plant.linear_continuous_model_separate()
         self.ad, self.bd, self.ed = _zoh(a, b, e, self.period_s)
@@ -86,6 +98,7 @@ class FiniteHorizonMPC:
         self.bess_lower = cp.Parameter(2, name="bess_total_lower")
         self.bess_upper = cp.Parameter(2, name="bess_total_upper")
         self.command_slew = cp.Parameter(m, nonneg=True, name="command_slew")
+        self.action_reference = cp.Parameter(m, name="safe_action_reference")
         # Delay is fixed when an optimizer instance is constructed.  Keeping
         # these matrices constant makes the online QP DPP-compliant; Oracle
         # caches one optimizer per observed current delay.
@@ -116,19 +129,25 @@ class FiniteHorizonMPC:
             ])
             constraints.extend([total_bess >= self.bess_lower, total_bess <= self.bess_upper])
             objective += self._stage_cost(self.x[:, stage], self.u[:, stage], previous)
+            objective += self.reference_weight * cp.sum_squares(
+                self.u[:, stage] - self.action_reference
+            )
         objective += 8.0 * self._state_cost(self.x[:, horizon])
         for stage in range(horizon + 1):
             frequency_hz = frequency_gain * self.x[:2, stage]
             ace = self.c_ace @ self.x[:, stage]
             constraints.extend([
-                cp.abs(frequency_hz) <= 0.80 + self.slack_f[:, stage],
-                cp.abs(ace) <= 0.30 + self.slack_ace[:, stage],
-                cp.abs(self.x[2, stage]) <= 0.15 + self.slack_tie[stage],
+                cp.abs(frequency_hz) <= self.frequency_limit_hz + self.slack_f[:, stage],
+                cp.abs(ace) <= self.ace_limit_pu + self.slack_ace[:, stage],
+                cp.abs(self.x[2, stage]) <= self.tie_limit_pu + self.slack_tie[stage],
                 self.x[5:7, stage] >= np.asarray(self.plant.parameters.sg_power_lower_pu),
                 self.x[5:7, stage] <= np.asarray(self.plant.parameters.sg_power_upper_pu),
-                self.x[7:9, stage] >= self.bess_lower,
-                self.x[7:9, stage] <= self.bess_upper,
             ])
+            if stage >= self.resource_constraint_start_stage:
+                constraints.extend([
+                    self.x[7:9, stage] >= self.bess_lower,
+                    self.x[7:9, stage] <= self.bess_upper,
+                ])
         objective += 1e5 * (
             cp.sum_squares(self.slack_f) + cp.sum_squares(self.slack_ace) + cp.sum_squares(self.slack_tie)
         )
@@ -168,6 +187,7 @@ class FiniteHorizonMPC:
         bess_upper: np.ndarray,
         command_slew: np.ndarray,
         delay_s: float | None = None,
+        action_reference: np.ndarray | None = None,
     ) -> tuple[np.ndarray, MPCDiagnostics]:
         self.x0.value = np.asarray(estimated_state, dtype=float)
         self.previous.value = self.previous_action
@@ -177,6 +197,10 @@ class FiniteHorizonMPC:
         self.bess_lower.value = np.asarray(bess_lower, dtype=float)
         self.bess_upper.value = np.asarray(bess_upper, dtype=float)
         self.command_slew.value = np.asarray(command_slew, dtype=float)
+        self.action_reference.value = (
+            np.zeros(4) if action_reference is None
+            else np.asarray(action_reference, dtype=float)
+        )
         if delay_s is not None and abs(float(delay_s) - self.nominal_delay_s) > 1e-9:
             raise ValueError("construct a delay-specific optimizer instead of changing delay online")
         started = perf_counter()
@@ -187,12 +211,28 @@ class FiniteHorizonMPC:
                 eps_rel=self.solver_tolerance, max_iter=20_000, polish=True, verbose=False,
             )
             status = str(self.problem.status)
+            if (
+                status not in {cp.OPTIMAL, cp.OPTIMAL_INACCURATE}
+                and self.secondary_solver == "CLARABEL"
+            ):
+                objective = self.problem.solve(
+                    solver=cp.CLARABEL, warm_start=True,
+                    tol_gap_abs=self.solver_tolerance,
+                    tol_gap_rel=self.solver_tolerance,
+                    tol_feas=self.solver_tolerance,
+                    max_iter=1000, verbose=False,
+                )
+                status = f"secondary_clarabel:{self.problem.status}"
         except Exception as error:  # solver errors are evidence, never hidden
             objective = float("nan")
             status = f"exception:{type(error).__name__}"
             fallback = str(error)
         elapsed = perf_counter() - started
-        solved = status in {cp.OPTIMAL, cp.OPTIMAL_INACCURATE} and self.u.value is not None
+        solved = status in {
+            cp.OPTIMAL, cp.OPTIMAL_INACCURATE,
+            f"secondary_clarabel:{cp.OPTIMAL}",
+            f"secondary_clarabel:{cp.OPTIMAL_INACCURATE}",
+        } and self.u.value is not None
         action = np.asarray(self.u.value[:, 0]).ravel() if solved else np.zeros(4)
         predicted_states = np.asarray(self.x.value) if solved else np.full((9, self.horizon + 1), np.nan)
         predicted_actions = np.asarray(self.u.value) if solved else np.full((4, self.horizon), np.nan)

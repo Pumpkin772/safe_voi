@@ -10,10 +10,12 @@ from .lqi_baseline import DiscreteLQIBaseline, LQIDesign, design_discrete_lqi
 from .nominal_mpc import FiniteHorizonMPC, MPCDiagnostics, NominalModelMPC
 from .rls_adaptive_mpc import RLSAdaptiveMPC
 from .robust_capability_mpc import RobustCapabilityMPC
+from .proposed_robust_tube_mpc import CapabilitySetRobustTubeMPC, RobustTubeMPCDiagnostics
 
 __all__ = [
     "ACEPIAntiWindup", "PIControllerDiagnostics", "delayed_sampled_closed_loop_matrix",
     "design_stable_pi", "DiscreteLQIBaseline", "LQIDesign", "design_discrete_lqi",
     "FiniteHorizonMPC", "MPCDiagnostics", "NominalModelMPC",
     "RLSAdaptiveMPC", "RobustCapabilityMPC",
+    "CapabilitySetRobustTubeMPC", "RobustTubeMPCDiagnostics",
 ]

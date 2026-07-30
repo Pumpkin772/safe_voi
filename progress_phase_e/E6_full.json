@@ -1,0 +1,66 @@
+{
+  "commands": [
+    "python -m scripts.phase_e.run_e6_selected_method --pilot --workers 4",
+    "python -m scripts.phase_e.run_e6_selected_method --workers 4",
+    "python -m pytest tests/phase_e/test_e6_method.py -q"
+  ],
+  "decision": "METHOD_NOT_SUPPORTED_BY_EVIDENCE",
+  "failures": [
+    "solver_infeasibility_at_most_1pct"
+  ],
+  "gate": "G6_METHOD",
+  "gate_components": {
+    "forced_failure_reaches_sg_backup": true,
+    "p99_solve_time_under_half_period": true,
+    "plant_a_b_direction_consistent": true,
+    "solver_infeasibility_at_most_1pct": false,
+    "tube_numerical_containment": true,
+    "two_core_metrics_improve_8pct_with_ci": true,
+    "validation_success_not_more_than_2pp_lower": true
+  },
+  "gate_passed": false,
+  "goal": "Implement and validate the uniquely selected branch-R controller",
+  "next_stage": "E9",
+  "outputs_sha256": {
+    "figures_phase_e/E6/e6_method_full.png": "98c0a3085865a48f45c8968c38193b5d99e5a74a0f709c09077609993776cf33",
+    "research_outputs_phase_e/06_METHOD/FORMULATION.md": "388fa369f65188c97ddbeade31dde0ccfdd4938f00bb38b8f6a894ba6ce11fa6",
+    "research_outputs_phase_e/06_METHOD/IMPLEMENTATION_MAP.csv": "f7cfcb0ef061e3f2155ce143c3c16abac3585bd12ae816105ce1bc32f06ca184",
+    "research_outputs_phase_e/06_METHOD/SELECTED_BRANCH.json": "75265e9e1dafaeec0afddabc563c04f3c97a435eb06dbb632c0fbde98622e533",
+    "research_outputs_phase_e/09_SUMMARY/E6_METHOD_REPORT.md": "58b773c9b6c4b614e853314901a7e12ed055d707acf1591dd6931a83d03f72ce",
+    "results_phase_e/E6/full/E6_MANIFEST.csv": "a7cd77c473d8ef52a43d0e3e7bdb09feba864ce2726ca55c638d2eb73e91308c",
+    "results_phase_e/E6/full/E6_PAIRED_COMPARISON.csv": "d2f7ae2df7750c3727a480ea5a9c7fb2fa4819ebab60718238ea3b62d5bb551a",
+    "results_phase_e/E6/full/E6_PLANT_B_COMPARISON.parquet": "72687943ae3b6002a82e2daca53a551b2ffe5db9d102ff0efaefc78c010c4532",
+    "results_phase_e/E6/full/E6_PROPOSED_CONTROL_TRACES.parquet": "22ee13763e3a7fcad8dddacccb016cadf34eb2db690c3602ea7be7ea216145b8",
+    "results_phase_e/E6/full/E6_PROPOSED_EPISODES.parquet": "118705518d999bf2d190305b21ad359e7c63a0494edbc5b45197f279280c9bf8"
+  },
+  "repairs": [],
+  "run_type": "full",
+  "selected_branch": "R",
+  "selected_method": "Capability-Set Robust Tube MPC",
+  "stage": "E6",
+  "status": "FAILED",
+  "tests": {
+    "episodes": 400,
+    "plant_b_rows": 30,
+    "solver_infeasibility": 0.01846122448979592,
+    "solver_time_p99_s": 0.6375067173993855,
+    "tube_worst_violation": 0.0,
+    "validation_comparison": {
+      "ace_iae_pu_s_ci_high": 0.25784709640387987,
+      "ace_iae_pu_s_ci_low": 0.1709112504284705,
+      "ace_iae_pu_s_improvement": 0.21587515751070874,
+      "baseline_success_rate": 0.89,
+      "both_success_episodes": 174,
+      "core_metrics_passing": 3,
+      "episodes": 200,
+      "frequency_iae_hz_s_ci_high": 0.3445458538561217,
+      "frequency_iae_hz_s_ci_low": 0.28218921468816655,
+      "frequency_iae_hz_s_improvement": 0.31479096713488364,
+      "proposed_success_rate": 0.88,
+      "split": "validation",
+      "tie_iae_pu_s_ci_high": 0.3104290570178979,
+      "tie_iae_pu_s_ci_low": 0.19025859022427075,
+      "tie_iae_pu_s_improvement": 0.2513404681858332
+    }
+  }
+}
