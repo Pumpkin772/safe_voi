@@ -111,3 +111,19 @@
 - Repair: use a semi-implicit rotor-angle update; expose measured aggregate mechanical/BESS power in Plant B's leakage-safe observation; expand both fair MPCs to seven multiple-shooting states with smooth mechanical GRC and BESS actuator dynamics. No hidden state is added to the deployable baseline.
 - Scientific standards changed: no; this is validation repair round 1 of the allowed two, with seeds/scenarios/thresholds unchanged.
 - Rerun result: bounded Plant B trajectories and qualified solvers; subsequent same-round estimator repair was required before performance interpretation.
+
+## C5-R1 — Ramp/delay source feature ordering
+
+- Failure class: identification code.
+- Evidence: the first unit trace detected the ramp change at the correct time but classified it as delay because both slow ramp and delay maximize correlation at positive lag.
+- Repair: classify explicit headroom clipping first, then the measured maximum output-rate signature, then residual time lag.
+- Scientific standards changed: no; no C5 experiment had run and the same locked F1 threshold remains.
+- Rerun result: noiseless unit traces passed; the first noisy validation matrix then exposed a maximum-rate robustness defect.
+
+## C5-R2 — Noise-sensitive maximum-rate feature
+
+- Failure class: identification statistic.
+- Evidence: the first C5 validation run had perfect timing and zero false alarms but macro-F1 0.556 because every noisy ramp trace was labelled delay. A maximum derivative is dominated by isolated measurement noise.
+- Repair: use the post-transition 90th-percentile absolute output rate and a 0.009 pu/s threshold, above the development noise derivative scale and below nominal delay-response rates.
+- Scientific standards changed: no; timing, false-alarm and macro-F1 criteria are unchanged, and final seeds remain unused.
+- Rerun result: validation `P(Tdet<Tcrit)=1.0`, false alarm 0, macro-F1 1.0, with all three mechanisms passing.

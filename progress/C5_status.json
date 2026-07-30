@@ -1,0 +1,11 @@
+{
+  "stage": "C5",
+  "status": "PASSED",
+  "inputs_sha256": {"validation_config": "fbbbf9ee49d112b978909035f90c803cbe6df30f3db0f81b4dbacaf49140294f"},
+  "outputs": ["results_phase_c/C5/development_detection.parquet", "results_phase_c/C5/validation_detection.parquet", "results_phase_c/C5/identifiability_summary.json", "results_phase_c/C5/control_relevant_distances.csv", "research_outputs/identifiability/IDENTIFIABILITY_REPORT.md", "research_outputs/identifiability/CONTROL_CRITICAL_WINDOWS.md", "research_outputs/identifiability/CONTROL_RELEVANT_REGIMES.md"],
+  "tests": {"passed": 2, "P_Tdet_before_Tcrit": 1.0, "false_alarm_rate": 0.0, "source_macro_f1": 1.0},
+  "success_criteria": {"probability_at_least_0p8": true, "false_alarm_at_most_0p05": true, "macro_f1_at_least_0p8": true, "at_least_two_mechanisms": true, "no_final_seeds": true},
+  "failure_diagnosis": ["one source-feature robustness repair"],
+  "repairs": ["C5-R1", "C5-R2"],
+  "next_stage": "C6-A"
+}

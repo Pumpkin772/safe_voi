@@ -55,3 +55,10 @@ Further Gate decisions are appended only from preregistered validation/final evi
 - Plant B improvements are 76.12% and 60.13%, likewise with positive lower bounds.
 - The Oracle is a current-capability, rolling, multi-action nonlinear multiple-shooting local NMPC and is not described as globally/exactly optimal.
 - The scientific problem is material on both validated model classes. C5 identifiability timing is authorized.
+
+## C5 Gate — PASSIVE IDENTIFIABLE; C6-A SELECTED
+
+- Validation `P(Tdet<Tcrit)=1.0`, false-alarm rate 0, and source macro-F1 1.0.
+- Headroom, ramp and delay each pass the timing condition; offline labels are used only for scoring.
+- The unique authorized method branch is `C6-A_SET_ADAPTIVE_MPC`. Safe-dual and structural robust branches are rejected for this run and will not be stacked.
+- Final configuration is locked before final seeds at SHA256 `ce54ab4b520e9e7415979403f0a3d0d4b1274969bddf6342b3957c1dea816838`.
