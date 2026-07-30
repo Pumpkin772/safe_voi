@@ -76,3 +76,11 @@ Further Gate decisions are appended only from preregistered validation/final evi
 - Eight required/optional method statuses, failure classes, metrics, ablations, statistics and compute budget are frozen.
 - A development-seed dry run and final-seed firewall tests passed. Final results had not been observed at lock time.
 - C8 is authorized; from its first final result onward, controller/configuration/threshold edits are prohibited.
+
+## C8 Gate — METHOD NOT SUPPORTED BY EVIDENCE
+
+- All 1280 registered method statuses are retained: 984 success, 136 frequency/ACE failures and 160 optional O3 `not_evaluated`. There are no code failures.
+- Proposed and the best deployable baseline both achieve 100% scientific success on known and OOD cases, satisfying the safety-success comparison.
+- Continuous performance fails decisively. Relative to robust capability-set MPC, proposed known frequency/ACE IAE changes are −2.95%/−32.94%; OOD changes are −37.32%/−121.31% (negative means worse).
+- Solver infeasibility is 0 and online time passes; therefore the failure is method performance, not code or compute.
+- No post-final tuning, scenario change or controller substitution is permitted. C9 must package the complete negative method result with final status `METHOD_NOT_SUPPORTED_BY_EVIDENCE`.
