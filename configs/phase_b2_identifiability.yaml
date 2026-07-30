@@ -1,0 +1,43 @@
+schema_version: d5freq.phase_b2.identifiability.v1
+protocol_status: validation_locked_before_final_seeds
+evaluation_only: true
+
+control_relevant_distance:
+  alpha_prediction: 0.50
+  beta_action: 0.30
+  gamma_capability: 0.20
+  merge_threshold: 0.05
+  candidate_set_minimizer_label: finite_registered_action_proxy_not_global_optimum
+
+critical_window:
+  episode_s: 30.0
+  block_s: 2.0
+  integration_step_s: 0.10
+  frequency_iae_difference_threshold_hz_s: 0.020
+  control_cost_difference_threshold: 0.050
+  safety_frequency_threshold_hz: 0.20
+
+passive_detection:
+  observation_window_s: 2.0
+  chi_square_quantile: 0.99
+  validation_seeds: [800, 801, 802, 803, 804]
+  noise_multipliers: [0.5, 1.0, 2.0]
+  base_noise_standard_deviation:
+    frequency_hz: 0.001
+    tie_line_pu: 0.001
+    bess_power_pu: 0.001
+    sg_power_pu: 0.001
+  detector_interpretation: best_case_same_load_counterfactual
+
+information_boundary:
+  passive_policy_has_active_probe: false
+  detector_uses_true_regime: false
+  evaluation_counterfactual_uses_true_state: true
+  ordinary_controller_true_regime_access: false
+
+validation_lock:
+  control_equivalent_pair_count: 5
+  detection_before_Tcritical_fraction: 0.1111111111111111
+  delayed_or_censored_fraction: 0.8888888888888888
+  coincident_source_classification_accuracy: 0.0
+  overall_source_classification_accuracy: 0.6666666666666666

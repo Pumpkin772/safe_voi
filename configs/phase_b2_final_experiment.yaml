@@ -1,0 +1,82 @@
+schema_version: d5freq.phase_b2.final_experiment.v1
+protocol_status: locked_before_final_seed_run
+final_results_feedback_forbidden: true
+
+timebase:
+  episode_duration_s: 12.0
+  initial_fixed_local_response_s: 2.0
+  integration_step_s: 0.05
+  upper_control_period_s: 2.0
+
+seed_sets:
+  validation_smoke: [800, 801]
+  final_known: {start: 5000, count: 30}
+  final_ood_extreme: {start: 6000, count: 50}
+
+known_scenarios:
+  - load_only_step
+  - mode_only_headroom
+  - regime_before_load_energy
+  - coincident_communication_load
+  - regime_after_load_disable
+  - recovery_repeated
+
+ood_extreme_scenarios:
+  - structural_ood_coincident
+  - asymmetric_mixed_regime
+  - extreme_load_critical
+  - untrained_combination
+  - rapid_repeated_switches
+
+balance:
+  sg_levels: [adequate, scarce, critical]
+  noise_multipliers: [0.5, 1.0, 2.0]
+  every_seed_runs_every_scenario_in_its_partition: true
+
+methods:
+  - O0_conventional_ACE_PI
+  - O1_truth_regime_identified_MPC
+  - O2_exact_current_regime_NMPC
+  - current_RLS_MPC_unported
+  - old_SD_BMPC_historical
+  ordinary_methods_true_regime_access: false
+  oracle_methods_evaluation_only: true
+  current_RLS_MPC_plant_b_status: scientific_failure_not_ported_no_retuning
+  old_SD_BMPC_plant_b_status: historical_plant_a_only_no_retuning
+
+O2_execution:
+  selected_horizon_s: 10.0
+  multi_action_plan_blocks: 5
+  replan_policy: one_plan_at_2s_for_registered_10s_event_window
+  eligible_scenarios: [load_only_step, coincident_communication_load]
+  ineligible_rows_retained_as_scientific_failures: true
+  solver_constraint_tolerance: 1.0e-4
+  solver_kkt_tolerance: 1.0e-1
+
+scientific_success:
+  max_abs_frequency_hz: 0.20
+  catastrophic_frequency_hz: 0.50
+  nonfinite_is_failure: true
+  solver_failure_is_scientific_failure: true
+
+resource_cost:
+  sg_energy_weight: 1.0
+  sg_mileage_weight: 0.1
+  ibr_energy_to_sg_ratios: [0.25, 0.5, 1.0, 2.0]
+  ibr_mileage_uses_same_ratio: true
+
+materiality_gate:
+  primary_comparison: O2_exact_current_regime_NMPC_vs_O0_conventional_ACE_PI
+  scope: preregistered_O2_eligible_and_solver_qualified_rows
+  frequency_improvement_min_fraction: 0.10
+  total_cost_noninferiority_tolerance_fraction: 0.02
+  minimum_supporting_cost_ratios: 2
+  require_scarce_scenario: true
+  require_at_least_two_load_magnitudes_or_event_instances: true
+  bootstrap_resamples: 10000
+  bootstrap_seed: 20260730
+
+trigger_thresholds:
+  model_mismatch_O2_over_O1_min_fraction: 0.10
+  passive_delayed_or_censored_min_fraction: 0.50
+  control_design_isolated_gain_min_fraction: 0.10
