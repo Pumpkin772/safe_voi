@@ -39,6 +39,11 @@ service_scope:
   name: two_area_supplementary_frequency_regulation
   upper_control_period_s: 2.0
   local_primary_control_fixed: true
+  conventional_o0_pi:
+    proportional_gain: 0.60
+    integral_gain_per_s: 0.040
+    anti_windup_gain_per_s: 0.10
+    selection_basis: development_step_cases_only
 
 timebase:
   integration_step_s: 0.05

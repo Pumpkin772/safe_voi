@@ -29,6 +29,10 @@ from d5freq.controllers.lqi_fallback import (
     design_lqi_gain,
     reduced_discrete_grid_matrices,
 )
+from d5freq.controllers.phase_b2_conventional import (
+    ConventionalACEPIController,
+    ConventionalPIConfig,
+)
 from d5freq.controllers.sd_bmpc import (
     FallbackEvent,
     OnlineDiagnosticRuntime,
@@ -48,6 +52,8 @@ from d5freq.controllers.rls_adaptive_mpc import (
 
 __all__ = [
     "DEFAULT_LQI_Q_WEIGHTS",
+    "ConventionalACEPIController",
+    "ConventionalPIConfig",
     "FallbackTrigger",
     "FallbackEvent",
     "FinalARXMPCController",

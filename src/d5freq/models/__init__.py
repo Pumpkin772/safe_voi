@@ -21,6 +21,21 @@ from d5freq.models.hidden_mode_ibr import (
     resolve_delay_s,
     step_ibr_rk4,
 )
+from d5freq.models.two_area_plant_b import (
+    STATE_NAMES as PLANT_B_STATE_NAMES,
+    STATE_SIZE as PLANT_B_STATE_SIZE,
+    AreaFrequencyParams,
+    BESSPhysicalParams,
+    IBRRegimeParams,
+    PlantBObservation,
+    PlantBParameters,
+    PlantBStateIndex,
+    SGCapability,
+    TwoAreaPlantB,
+    TwoAreaPlantBSimulator,
+    UpperCommand,
+    plant_b_parameters_from_config,
+)
 
 __all__ = [
     "GRID_STATE_NAMES",
@@ -31,7 +46,19 @@ __all__ = [
     "GridStateIndex",
     "IBRModeParams",
     "IBRState",
+    "IBRRegimeParams",
+    "PLANT_B_STATE_NAMES",
+    "PLANT_B_STATE_SIZE",
+    "PlantBObservation",
+    "PlantBParameters",
+    "PlantBStateIndex",
+    "SGCapability",
     "SinusoidalDelayProfile",
+    "TwoAreaPlantB",
+    "TwoAreaPlantBSimulator",
+    "UpperCommand",
+    "AreaFrequencyParams",
+    "BESSPhysicalParams",
     "asymmetric_saturation",
     "continuous_grid_matrices",
     "deadband",
@@ -40,4 +67,5 @@ __all__ = [
     "initial_grid_state",
     "resolve_delay_s",
     "step_ibr_rk4",
+    "plant_b_parameters_from_config",
 ]
