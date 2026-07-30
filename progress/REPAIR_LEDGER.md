@@ -47,3 +47,11 @@
 - Repair: do not weaken validation or fabricate the missing upstream suite. Run the bundled unmodified Kundur case through native ANDES power flow and TDS, and validate the project adapter with project-owned unit tests.
 - Scientific standards changed: no; the missing upstream tests remain disclosed.
 - Rerun result: Kundur PFlow and 2 s TDS both succeeded; all five C2 project tests passed.
+
+## C3-R1 — Plant B slack-bus imbalance sign
+
+- Failure class: physical model/sign.
+- Evidence: the first C3 cross-model run produced negative Plant A but positive Plant B COI response to a positive area-1 load step. The network solve removed the injection mean and the rotor equation then interpreted reference-bus balance as free generation.
+- Repair: retain the six-bus algebraic solve for inter-area exchange, explicitly allocate regional load plus signed tie-line exchange across the two machines in each area, and retain intra-area synchronizing torque.
+- Scientific standards changed: no; the required sign/trend comparison caught the error before materiality experiments.
+- Rerun result: both Plant A and Plant B COI frequency moved negative after a positive load step; eight combined C2/C3 tests passed.

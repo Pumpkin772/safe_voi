@@ -39,3 +39,11 @@ Further Gate decisions are appended only from preregistered validation/final evi
 - Transparent two-area Plant A and a four-machine/six-bus RMS-network DAE Plant B run successfully.
 - ANDES 2.0.0's unmodified Kundur case passed native power flow and time-domain simulation (10 buses, 15 lines, four synchronous machines).
 - The controllable Plant B and ANDES reference are explicitly a cross-qualification, not trajectory-identical or EMT/OEM fidelity. C3 validation is authorized.
+
+## C3 Gate — PASSED
+
+- Analytic and central-difference swing/tie Jacobians agree to machine precision.
+- All required 0.005/0.01/0.02/0.05 s runs are retained. The selected 0.005 s step differs by at most 0.699% from 0.01 s on the audited metrics.
+- An initially incorrect Plant B slack-bus balance sign was detected, recorded, repaired and rerun; Plant A/B now have consistent physical response direction.
+- Constraint-boundary and observation-API audits passed. Validation configuration is locked at SHA256 `fbbbf9ee49d112b978909035f90c803cbe6df30f3db0f81b4dbacaf49140294f`.
+- C4 current-capability Oracle materiality testing is authorized.

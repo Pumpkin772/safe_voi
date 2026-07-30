@@ -1,0 +1,11 @@
+{
+  "stage": "C3",
+  "status": "PASSED",
+  "inputs_sha256": {"validation_config": "fbbbf9ee49d112b978909035f90c803cbe6df30f3db0f81b4dbacaf49140294f"},
+  "outputs": ["results_phase_c/C3/validation_summary.json", "results_phase_c/C3/step_convergence.csv", "research_outputs/validation/MODEL_VALIDATION_REPORT.md", "research_outputs/validation/CONSTRAINT_VALIDATION.md", "research_outputs/validation/CROSS_MODEL_COMPARISON.md", "research_outputs/validation/DATA_LEAKAGE_AUDIT.md"],
+  "tests": {"passed": 8, "failed": 0, "jacobian_max_abs_error": 0.0, "selected_dt_s": 0.005, "selected_vs_0p01_max_metric_relative_error": 0.0069865716567841536},
+  "success_criteria": {"jacobian": true, "required_step_sweep": true, "selected_step_below_one_percent": true, "constraint_boundaries": true, "plant_a_b_trend": true, "no_controller_leakage": true},
+  "failure_diagnosis": ["initial Plant B slack-bus imbalance sign"],
+  "repairs": ["C3-R1"],
+  "next_stage": "C4"
+}

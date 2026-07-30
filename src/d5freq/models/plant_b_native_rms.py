@@ -121,7 +121,17 @@ class NativeRMSPlantB:
         for a,bus in enumerate(self.params.bess_bus):
             injections[bus] += bess_results[a].state.power_pu - load_pu[a]
         theta = self._network_angles(injections)
-        electrical = np.array([8.0*(state.rotor_angle_rad[g]-theta[self.params.generator_bus[g]]) for g in range(4)])
+        # The algebraic network supplies inter-area exchange.  The reference
+        # bus must not create free balancing power: distribute each area's
+        # net demand across its machines and add an intra-area synchronizing
+        # torque around the area rotor-angle mean.
+        tie_12 = 3.0 * (theta[2] - theta[3])
+        area_mean_delta = (float(np.mean(state.rotor_angle_rad[:2])), float(np.mean(state.rotor_angle_rad[2:])))
+        electrical = np.empty(4)
+        for g in range(4):
+            a = self.params.area[g]
+            signed_tie = tie_12 if a == 0 else -tie_12
+            electrical[g] = 0.5 * (load_pu[a] + signed_tie) + 4.0 * (state.rotor_angle_rad[g] - area_mean_delta[a])
         omega_dot = np.array([
             (sg_next[g].mechanical_pu - electrical[g] - self.params.damping[g]*state.omega[g])/(2*self.params.inertia_s[g])
             for g in range(4)
