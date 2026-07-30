@@ -1,0 +1,31 @@
+{
+  "stage": "C2",
+  "status": "PASSED",
+  "inputs_sha256": {"goal": "6909f035b3082ffd533b1c22c2e7b806d8dd4a33ca624b953f27322397054b56"},
+  "outputs": [
+    "src/d5freq/models/plant_a_two_area.py",
+    "src/d5freq/models/plant_b_native_rms.py",
+    "src/d5freq/models/bess_capability.py",
+    "src/d5freq/models/sg_governor_turbine.py",
+    "src/d5freq/models/measurement_model.py",
+    "src/d5freq/estimation/load_estimator.py",
+    "research_outputs/model/FULL_MATHEMATICAL_MODEL.md",
+    "research_outputs/model/FORMULA_CODE_MAP.csv",
+    "research_outputs/model/PARAMETER_SOURCES.csv",
+    "research_outputs/model/ASSUMPTIONS_AND_LIMITATIONS.md",
+    "results_phase_c/C2/model_validation.json"
+  ],
+  "tests": {"passed": 5, "failed": 0, "rocof_relative_error": 1.8503717077085943e-16, "max_energy_residual_mwh": 1.7742155401095916e-15},
+  "success_criteria": {
+    "frequency_unit_corrected": true,
+    "mechanical_grc": true,
+    "energy_conservation": true,
+    "shared_pfr_sfr_capability": true,
+    "plant_a_runnable": true,
+    "plant_b_multi_machine_network_dae_runnable": true,
+    "andes_native_kundur_pflow_tds": true
+  },
+  "failure_diagnosis": ["ANDES wheel omits upstream tests directory"],
+  "repairs": ["C2-R1"],
+  "next_stage": "C3"
+}

@@ -1,0 +1,19 @@
+project: direction5_phase_c
+stage_order: [C0, C1, C2, C3, C4, C5, C6, C7, C8, C9]
+frequency:
+  nominal_hz: 50.0
+  internal_state: omega_pu_frequency
+system_base_mw: 1000.0
+integration_step_s: 0.01
+upper_control_period_s: 2.0
+oracle_horizon_s: 8.0
+seeds:
+  development: [0, 19]
+  validation: [100, 119]
+  final_known: [1000, 1029]
+  final_ood: [2000, 2049]
+data_leakage_policy: measured_signals_only
+native_reference:
+  tool: ANDES
+  version: 2.0.0
+  case: kundur/kundur_full.xlsx

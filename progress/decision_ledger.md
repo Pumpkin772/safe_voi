@@ -31,3 +31,11 @@ Further Gate decisions are appended only from preregistered validation/final evi
 - Novelty is restricted to the intersection of capability-set change, `Tdet<Tcrit`, unknown-load separation, ACE/tie-line responsibility and Gate-selected safe control; individual black-box, DeePC, adaptive MPC and dual-control components are not claimed novel.
 - H1–H5 and all falsification thresholds are locked before model validation and final seeds.
 - C2 physical/model rebuild is authorized.
+
+## C2 Gate — PASSED WITH DECLARED FIDELITY BOUNDARY
+
+- Frequency is internally per-unit and reported in hertz; the initial RoCoF relative error is `1.85e-16`.
+- Mechanical GRC, reserve anti-windup, and jointly constrained BESS PFR+SFR are explicit. The maximum 1000-step energy residual is `1.78e-15 MWh`; no SoC projection is used.
+- Transparent two-area Plant A and a four-machine/six-bus RMS-network DAE Plant B run successfully.
+- ANDES 2.0.0's unmodified Kundur case passed native power flow and time-domain simulation (10 buses, 15 lines, four synchronous machines).
+- The controllable Plant B and ANDES reference are explicitly a cross-qualification, not trajectory-identical or EMT/OEM fidelity. C3 validation is authorized.

@@ -1,0 +1,3 @@
+# Full corrected mathematical model
+
+Internal frequency is `omega=(f-f0)/f0`; reported deviation is `Delta f=f0 omega`. Plant A implements `2H domega/dt=pm+pb-pL-D omega-s p12`, `dp12/dt=2 pi f0 T12(omega1-omega2)`, fixed local droop, and 2/4 s held upper commands. GRC acts on mechanical-power derivative. Total BESS PFR+SFR is constrained jointly by rating, current/apparent power, ramp, availability, sustainable headroom, and one-step energy feasibility. Energy is updated in MWh with `dt/3600`; SoC is never repaired by projection. Plant B is a four-machine, six-bus RMS/network DAE with algebraic bus angles at every step, independently cross-qualified against the unmodified ANDES 2.0.0 Kundur native PFlow/TDS case. It is not an EMT or OEM-grade model.

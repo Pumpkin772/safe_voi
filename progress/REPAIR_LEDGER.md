@@ -39,3 +39,11 @@
 - Repair: use the maintained `certifi` CA bundle when present, retaining full certificate verification; do not use an unverified SSL context.
 - Scientific standards changed: no.
 - Rerun result: all 50 records passed; 45 exact-DOI records and five official/preprint URLs were verified, with zero fabricated records.
+
+## C2-R1 — ANDES packaged self-test entry
+
+- Failure class: external-tool packaging.
+- Evidence: `python -m andes selftest -q` attempted discovery in `site-packages/tests`, which the 2.0.0 wheel does not contain, and raised `ImportError`.
+- Repair: do not weaken validation or fabricate the missing upstream suite. Run the bundled unmodified Kundur case through native ANDES power flow and TDS, and validate the project adapter with project-owned unit tests.
+- Scientific standards changed: no; the missing upstream tests remain disclosed.
+- Rerun result: Kundur PFlow and 2 s TDS both succeeded; all five C2 project tests passed.
