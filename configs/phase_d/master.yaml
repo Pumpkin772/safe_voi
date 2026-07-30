@@ -1,0 +1,52 @@
+project:
+  name: direction1_crcs_tube_mpc
+  nominal_frequency_hz: 50.0
+  system_base_mva: 1000.0
+  historical_namespace: d5freq
+  active_namespace: direction1freq
+
+simulation:
+  dt_s: 0.01
+  control_period_s: [2.0, 4.0]
+  contingency_duration_s: [300.0, 600.0]
+  normal_duration_s: 3600.0
+
+plant_a:
+  inertia_s: [5.0, 4.5]
+  damping_pu_per_pu_frequency: [1.0, 1.0]
+  droop: [0.05, 0.05]
+  tie_coefficient_pu_per_rad: 0.07
+  governor_time_constant_s: [0.2, 0.25]
+  turbine_time_constant_s: [0.5, 0.6]
+  grc_up_pu_per_s: [0.012, 0.012]
+  grc_down_pu_per_s: [0.015, 0.015]
+
+plant_b:
+  engine: ANDES
+  version: 2.0.0
+  case: kundur/kundur_vsc.xlsx
+  nominal_frequency_hz: 60.0
+  bess_buses: [5, 9]
+  native_network_dae: true
+  native_synchronous_machines: true
+  native_governors: true
+
+bess:
+  rating_mw: 100.0
+  energy_mwh: 50.0
+  soc_initial_interval: [0.35, 0.65]
+  soc_bounds: [0.1, 0.9]
+  eta_charge: 0.95
+  eta_discharge: 0.95
+  delay_candidate_s: [0.0, 0.2, 0.5, 1.0, 2.0]
+  fixed_pfr_gain_pu_per_pu_frequency: 2.5
+
+information_boundary:
+  public_measurements: [frequency, ACE, tie_line, SG_mechanical_power, BESS_POI_power, issued_commands]
+  forbidden_runtime_inputs: [true_regime, hidden_parameters, true_load, future_load, future_events, unmeasured_soc]
+  oracle_evaluation_only: true
+
+final_firewall:
+  lock_before_final: true
+  independent_factor_draws: true
+  post_final_tuning: false

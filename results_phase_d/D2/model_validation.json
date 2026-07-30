@@ -1,0 +1,53 @@
+{
+  "checks": {
+    "bess_energy_residual_p99_mwh": 1.7148386660323366e-15,
+    "cross_iae_relative_error": 8.960534100090497e-05,
+    "cross_mode_damping_relative_error": 0.0,
+    "cross_mode_frequency_relative_error": 0.0,
+    "cross_nadir_relative_error": 0.000265846660515,
+    "delay_arrival_error_s": 0.0099999999999999,
+    "plant_a_dt_005_vs_010": 4.441846333167538e-05,
+    "plant_a_dt_020_vs_010": 2.5370727710611096e-05,
+    "plant_a_initial_rocof_relative_error": 5.000364861063034e-07,
+    "plant_a_power_balance_p99_pu": 3.469446951953614e-18,
+    "plant_b_dt_005_vs_010": 0.00069073018606,
+    "plant_b_dt_020_vs_010": 0.0006741872945287,
+    "plant_b_long_final_hz": 4.049199556851372e-08,
+    "plant_b_long_tail_slope_hz_s": 6.182162496648401e-26,
+    "plant_b_power_balance_p99_pu": 2.4600570647237418e-08
+  },
+  "cross_validation_errors": {
+    "iae_relative_error": 8.960534100090497e-05,
+    "mode_damping_relative_error": 0.0,
+    "mode_frequency_relative_error": 0.0,
+    "nadir_relative_error": 0.000265846660515
+  },
+  "gate": "PASS",
+  "gates": {
+    "bess_native_injection": true,
+    "delay": true,
+    "dt_convergence": true,
+    "energy_balance": true,
+    "initial_rocof": true,
+    "long_run_no_drift": true,
+    "native_cross_validation": true,
+    "power_balance": true
+  },
+  "known_initialization_limitation": "The bundled Kundur VSC case has a sub-0.013 Hz initialization transient which decays; the 240-300 s tail drift Gate passed.",
+  "plant_b": {
+    "bess_buses": [
+      5,
+      9
+    ],
+    "case": "kundur/kundur_vsc.xlsx",
+    "engine": "ANDES",
+    "interface": "causal external physical BESS actuator to native Norton injection",
+    "native_buses": 10,
+    "native_generators": 4,
+    "native_lines": 15,
+    "separate_surrogate_used": false,
+    "version": "2.0.0"
+  },
+  "reporting_repair": "Simulation results were not changed; numpy.bool_ JSON serialization was converted to built-in bool.",
+  "schema": "direction1.phase_d.d2.v1"
+}

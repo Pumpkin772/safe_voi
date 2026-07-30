@@ -1,0 +1,47 @@
+{
+  "commands": [
+    "python scripts/phase_d/d2_validate_physics.py",
+    "python scripts/phase_d/d2_finalize_cached.py",
+    "python -m pytest tests/phase_d/test_d2_physics.py -q"
+  ],
+  "failures": [],
+  "gate": "PHYSICAL_MODEL_VALIDITY",
+  "gate_passed": true,
+  "goal": "Build and validate corrected Plant A and native networked Plant B",
+  "inputs_sha256": {
+    "master_config": "81399b79310b628ccc3c066b419152bbed952b7c87575ac05a0efd95cde8abdf"
+  },
+  "next_stage": "D3",
+  "outputs_sha256": {
+    "figures_phase_d/D2/native_cross_validation.png": "2a4d69b516e9d6ad7fbf0d9f0032c842e0d6c2460d520d69416adc930775d89e",
+    "research_outputs_phase_d/model/ASSUMPTIONS_AND_LIMITATIONS.md": "e309a4e1746b8ba15bcaec2ab52c53dfd6ddd473ab95e1f89da3704eb8d486bc",
+    "research_outputs_phase_d/model/FORMULA_CODE_MAP.csv": "d0777c04ba4f0981a8d9c9d9ddb75c12aa59d361b947ed158cf64bfcaee19fa3",
+    "research_outputs_phase_d/model/FULL_MATHEMATICAL_MODEL.md": "568a8067f0565ac0d3ffc5ca337e9d4b88e8da22c7892cc9af944a66f8b644b8",
+    "research_outputs_phase_d/model/PARAMETER_SOURCES.csv": "1695ffc4bc7451df7137c82bca73283ec08bc3e96dfe65542873c6cf56866059",
+    "research_outputs_phase_d/validation/CROSS_MODEL_COMPARISON.md": "4f6bd5736f9dc63e6baddd35e04d3cd4db3568aa9667fe81f98e0d226af82e40",
+    "research_outputs_phase_d/validation/DATA_LEAKAGE_AUDIT.md": "35399f639a72a97d1848c9807440c66826d68327d419a75cdb65f63ccb08ce46",
+    "research_outputs_phase_d/validation/MODEL_VALIDATION_REPORT.md": "9e31d641ca3063c0449364773fc3f1770c0e6e090d6e3a58b3fa86f71ed29ec2",
+    "results_phase_d/D2/model_validation.json": "6e0b68c24321a6e5e85d032477795ee99a9d6bc3ffeade478e3f79d22739e522",
+    "results_phase_d/D2/physical_validation_checks.csv": "e9dbf74a35ee44fcf7f83b86bb4c2c5b0fbc7fc5147fd87498c1cd2154fc8395",
+    "results_phase_d/D2/plant_a_validation_trace.parquet": "b830a98dbb410037e7e06dbbf10af2de3c83886052eb4dbac28021f4005f3e1d",
+    "results_phase_d/D2/plant_b_native_validation_trace.parquet": "17a7e4561eb25b37a353fcedf9ce9c673c13458eee0bcf42616df96f0ed43bc5"
+  },
+  "repairs": [
+    "Rejected drifting kundur_full.xlsx",
+    "Qualified native kundur_vsc.xlsx",
+    "Replaced disconnected six-bus surrogate with native Norton-coupled ANDES bridge",
+    "Converted numpy bools in reporting only"
+  ],
+  "stage": "D2",
+  "status": "PASSED",
+  "tests": {
+    "bess_native_injection": true,
+    "delay": true,
+    "dt_convergence": true,
+    "energy_balance": true,
+    "initial_rocof": true,
+    "long_run_no_drift": true,
+    "native_cross_validation": true,
+    "power_balance": true
+  }
+}

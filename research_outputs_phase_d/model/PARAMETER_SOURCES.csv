@@ -1,0 +1,34 @@
+parameter,value_or_range,unit,plant,source_type,source,rationale,sensitivity_range
+f0_A,50,Hz,A,launch benchmark,03_CORRECTED_PLANT_MODELS.md,European/Asian nominal-frequency study,50-60
+Sbase_A,1000,MVA,A,study base,config master,transparent engineering base,500-2000
+H1,5.0,s,A,benchmark,config master,aggregate SG area inertia,3-7
+H2,4.5,s,A,benchmark,config master,asymmetric area inertia,3-7
+D1,1.0,pu/pu,A,benchmark,config master,load damping,0.5-2
+D2,1.0,pu/pu,A,benchmark,config master,load damping,0.5-2
+R1,0.05,pu/pu,A,governor benchmark,Kundur/AGC convention,5 percent droop,0.04-0.06
+R2,0.05,pu/pu,A,governor benchmark,Kundur/AGC convention,5 percent droop,0.04-0.06
+T12,0.07,pu/rad,A,benchmark,config master,visible inter-area dynamics,0.04-0.10
+Tg1,0.20,s,A,benchmark,config master,governor lag,0.1-0.5
+Tg2,0.25,s,A,benchmark,config master,governor lag,0.1-0.5
+Tt1,0.50,s,A,benchmark,config master,turbine lag,0.3-1.0
+Tt2,0.60,s,A,benchmark,config master,turbine lag,0.3-1.0
+GRC_up,0.012,pu/s,A,engineering assumption,config master,mechanical-layer ramp,0.006-0.02
+GRC_down,0.015,pu/s,A,engineering assumption,config master,asymmetric mechanical ramp,0.008-0.025
+BESS_rating,100,MW,A/B,study design,config master,resource-tight relative to 1 GW base,50-150
+BESS_energy,50,MWh,A/B,study design,config master,30 minute duration at rating,25-100
+SOC_min,0.10,fraction,A/B,device assumption,config master,reserve boundary,0.05-0.20
+SOC_max,0.90,fraction,A/B,device assumption,config master,charge headroom,0.80-0.95
+eta_charge,0.95,fraction,A/B,device assumption,config master,one-way efficiency,0.93-0.97
+eta_discharge,0.95,fraction,A/B,device assumption,config master,one-way efficiency,0.93-0.97
+BESS_tau,0.15,s,A/B,device assumption,source code,fast active-power actuator,0.05-0.30
+BESS_ramp,0.08,pu/s,A/B,device assumption,source code,explicit ramp capability,0.01-0.15
+BESS_PFR_gain,2.5,pu/pu,A/B,fixed controller design,config master,shared PFR/SFR capability,1-5
+delay_candidates,"0,0.2,0.5,1,2",s,A/B,preregistered uncertainty,config master,communication/actuator range,listed
+PlantB_case,kundur_vsc.xlsx,file,B,native standard case,ANDES 2.0.0 bundled case,stable native Kundur VSC qualification,fixed
+PlantB_f0,60,Hz,B,native case,ANDES Bus/GENROU data,case-native frequency,fixed
+PlantB_bess_bus_A,5,bus,B,study interface,source code,area-1 network interface,5-7
+PlantB_bess_bus_B,9,bus,B,study interface,source code,area-2 network interface,8-10
+PlantB_machine_M,"117,117,111.15,111.15",s on system conversion,B,native case,ANDES GENROU data,unmodified machine inertia,fixed
+PlantB_network,15 native branches,count,B,native case,ANDES Line data,full native algebraic network retained,fixed
+PlantB_governors,4 TGOV1,count,B,native case,ANDES TGOV1 data,native governor/turbine dynamics,fixed
+PlantB_injection,controlled negative shunt g,Norton interface,B,external-user-model interface,source code,active injection enters Bus P DAE,voltage-compensated later

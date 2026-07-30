@@ -1,0 +1,11 @@
+formula_id,equation,file,symbol,test
+A-omega,2H*omega_dot=pm+pb-pL-D*omega-s*tie,src/direction1freq/models/plant_a.py,_grid_derivative,tests/phase_d/test_d2_physics.py
+A-tie,tie_dot=2*pi*f0*T12*(omega1-omega2),src/direction1freq/models/plant_a.py,_grid_derivative,tests/phase_d/test_d2_physics.py
+A-ACE,ACE=B*omega+signed_tie,src/direction1freq/models/plant_a.py,ace,tests/phase_d/test_d2_physics.py
+SG-GRC,"pm_dot=sat((pv-pm)/Tt,-Gdown,Gup)",src/direction1freq/models/plant_a.py,_grid_derivative,tests/phase_d/test_d2_physics.py
+BESS-share,"utot=-Kpfr*omega+uSFR in U(E,c)",src/direction1freq/models/bess.py,step_bess_fleet,tests/phase_d/test_d2_physics.py
+BESS-delay,"ubar_k=u_tot,k-d",src/direction1freq/models/bess.py,step_bess_fleet,tests/phase_d/test_d2_physics.py
+BESS-energy,E+=-dt/3600*(Pplus/etaD+etaC*Pminus),src/direction1freq/models/bess.py,_energy_derivative_mwh_s,tests/phase_d/test_d2_physics.py
+B-network,"g_bus(x,y,p)=0",src/direction1freq/models/plant_b_andes.py,AndesKundurPlantB,tests/phase_d/test_d2_physics.py
+B-injection,P_b=-g_b*V_b^2,src/direction1freq/models/plant_b_andes.py,callback,tests/phase_d/test_d2_physics.py
+B-swing,M*omega_dot=tm-te-D*(omega-1),ANDES GENROU,native DAE,scripts/phase_d/d2_validate_physics.py
