@@ -23,3 +23,11 @@ Further Gate decisions are appended only from preregistered validation/final evi
 - Frozen baseline regression: 649 passed, 2 pre-existing numerical-accuracy warnings.
 - A clean temporary virtual environment installed the repository editable with no dependency substitution and imported `d5freq` successfully.
 - No fatal source-baseline gap was found. C1 is authorized.
+
+## C1 Gate — PASSED
+
+- Locked question: external-I/O-only detection of control-relevant IBR capability changes before physical control harm, followed by safe multi-area responsibility reallocation.
+- Verified corpus: 50 records, 45 formal peer-reviewed/standard sources, 27 later than 2021, zero fabricated records.
+- Novelty is restricted to the intersection of capability-set change, `Tdet<Tcrit`, unknown-load separation, ACE/tie-line responsibility and Gate-selected safe control; individual black-box, DeePC, adaptive MPC and dual-control components are not claimed novel.
+- H1–H5 and all falsification thresholds are locked before model validation and final seeds.
+- C2 physical/model rebuild is authorized.

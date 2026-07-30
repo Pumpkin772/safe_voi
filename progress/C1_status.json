@@ -1,0 +1,36 @@
+{
+  "stage": "C1",
+  "status": "PASSED",
+  "inputs_sha256": {
+    "goal": "6909f035b3082ffd533b1c22c2e7b806d8dd4a33ca624b953f27322397054b56"
+  },
+  "outputs": [
+    "research_outputs/science/SCIENTIFIC_QUESTION.md",
+    "research_outputs/science/HYPOTHESES_AND_FALSIFICATION.md",
+    "research_outputs/science/SUPPORTED_AND_UNSUPPORTED_CLAIMS.md",
+    "research_outputs/literature/LITERATURE_REVIEW.md",
+    "research_outputs/literature/LITERATURE_MATRIX.csv",
+    "research_outputs/literature/NOVELTY_COMPARISON_TABLE.md",
+    "research_outputs/literature/SOURCE_BIBLIOGRAPHY.bib",
+    "research_outputs/literature/SEARCH_LOG.md",
+    "research_outputs/literature/METADATA_VERIFICATION.json"
+  ],
+  "tests": {
+    "literature_contract_passed": 2,
+    "literature_contract_failed": 0,
+    "exact_doi_records_verified": 45,
+    "official_or_preprint_urls_verified": 5
+  },
+  "success_criteria": {
+    "real_and_engineering_grounded": true,
+    "inputs_hidden_variables_measurements_and_boundaries_explicit": true,
+    "falsifiable_materiality_and_identifiability_gates": true,
+    "minimum_40_relevant_sources": true,
+    "minimum_25_formal_sources": true,
+    "at_least_half_after_2021": true,
+    "novelty_not_mode_classification_or_method_stacking": true
+  },
+  "failure_diagnosis": ["two miscited DOI values", "Conda TLS CA-chain mismatch"],
+  "repairs": ["C1-R1", "C1-R2", "C1-R3", "C1-R4"],
+  "next_stage": "C2"
+}

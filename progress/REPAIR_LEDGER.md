@@ -7,3 +7,35 @@
 - Repair: delimited the interpolated variables explicitly and reran the same hash/size checks.
 - Scientific standards changed: no.
 - Result: all 20 launch-package entries matched `PACKAGE_INDEX.json` exactly.
+
+## C1-R1 — Crossref partial publication date
+
+- Failure class: data/metadata parser code.
+- Evidence: one exact-DOI Crossref record supplied a `published.date-parts` year value of null, causing the first verification pass to stop before writing any literature output.
+- Repair: use the first non-null year from `published`, `issued`, `published-online`, or `published-print`, with the Crossref creation year only as an explicitly recorded final metadata fallback.
+- Scientific standards changed: no; exact DOI and title-fragment matching remain mandatory.
+- Rerun result: parser advanced to exact DOI/title validation, which correctly rejected one miscited CDC DOI.
+
+## C1-R2 — Seed citation DOI correction
+
+- Failure class: metadata/reference.
+- Evidence: exact DOI lookup showed `10.1109/CDC40024.2019.9029462` belongs to an unrelated Lyapunov-exponent paper.
+- Repair: an independent Crossref title query identified and verified `10.1109/CDC40024.2019.9029522` for “Data-Enabled Predictive Control for Grid-Connected Power Converters.”
+- Scientific standards changed: no; the mismatching entry was rejected rather than retained.
+- Rerun result: exact matching advanced and rejected a second unrelated DOI before any output was accepted.
+
+## C1-R3 — Koopman-MPC DOI correction
+
+- Failure class: metadata/reference.
+- Evidence: `10.1016/j.automatica.2018.08.011` resolved to a change-point detection paper, not the intended Korda–Mezić work.
+- Repair: verified the intended paper and replaced the DOI with `10.1016/j.automatica.2018.03.046`.
+- Scientific standards changed: no.
+- Rerun result: all exact-DOI records passed; the run then stopped on the first official NERC URL because Conda Python could not build its TLS chain.
+
+## C1-R4 — Official-source TLS trust chain
+
+- Failure class: environment/network verification.
+- Evidence: `urllib` raised `CERTIFICATE_VERIFY_FAILED` for an official NERC HTTPS document after all DOI metadata had validated.
+- Repair: use the maintained `certifi` CA bundle when present, retaining full certificate verification; do not use an unverified SSL context.
+- Scientific standards changed: no.
+- Rerun result: all 50 records passed; 45 exact-DOI records and five official/preprint URLs were verified, with zero fabricated records.
