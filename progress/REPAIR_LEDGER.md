@@ -126,7 +126,15 @@
 - Evidence: post-build text scanning found no license file, but one retained Phase B1 source template contained the absolute external MOSEK/Gurobi license locations.
 - Repair: replace the two absolute paths with generic environment-variable instructions. No controller, configuration, result or scientific decision is changed.
 - Scientific standards changed: no.
-- Rerun result: pending final package rebuild and scan.
+- Rerun result: targeted 29-test regression passed; rebuilt package scan found no external license path and no `.lic` archive member.
+
+## C9-R3 — Package outputs polluted Git status metadata
+
+- Failure class: packaging metadata.
+- Evidence: the package builder queried Git while the previous generated ZIP and staging directory existed, so an otherwise clean source commit could show self-generated untracked deliverables.
+- Repair: record tracked worktree status explicitly and include a separate `GIT_DIFF.patch`; generated package outputs remain external deliverables.
+- Scientific standards changed: no.
+- Rerun result: pending final rebuild.
 
 ## C5-R1 — Ramp/delay source feature ordering
 

@@ -34,7 +34,8 @@ def main():
     cp('research_outputs/reproducibility/RUN_ALL.md','12_REPRODUCIBILITY/RUN_ALL.md');
     for f in ('reproduce_minimal.ps1','reproduce_all.ps1','regenerate_figures.ps1'):cp('scripts/phase_c/'+f,'12_REPRODUCIBILITY/'+f)
     for f in ('FINAL_RESEARCH_STATUS.md','FINAL_DECISION.json','PAPER_OUTLINE.md','RESULTS_INTERPRETATION.md','NEXT_UNRESOLVED_RISKS.md','DATA_RETENTION_POLICY.md'):cp('research_outputs/final/'+f,'14_FINAL_STATUS/'+f)
-    git={'commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'branch':subprocess.check_output(['git','branch','--show-current'],cwd=ROOT,text=True).strip(),'status':subprocess.check_output(['git','status','--short'],cwd=ROOT,text=True)};(STAGE/'13_GIT_AND_MANIFEST/GIT_STATE.json').write_text(json.dumps(git,indent=2),encoding='utf-8')
+    git={'commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'branch':subprocess.check_output(['git','branch','--show-current'],cwd=ROOT,text=True).strip(),'tracked_status':subprocess.check_output(['git','status','--short','--untracked-files=no'],cwd=ROOT,text=True)};(STAGE/'13_GIT_AND_MANIFEST/GIT_STATE.json').write_text(json.dumps(git,indent=2),encoding='utf-8')
+    (STAGE/'13_GIT_AND_MANIFEST/GIT_DIFF.patch').write_text(subprocess.check_output(['git','diff','HEAD'],cwd=ROOT,text=True),encoding='utf-8')
     # File manifest and package index are generated last.
     rows=[]
     for p in sorted(STAGE.rglob('*')):
