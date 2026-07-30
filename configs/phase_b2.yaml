@@ -1,0 +1,76 @@
+schema_version: d5freq.phase_b2.protocol.v1
+protocol_status: development_before_validation_lock
+
+phase_b1_baseline:
+  commit: 9e003ba975a1f40fc969a360a4f390ec9cbcc105
+  review_zip: D5_PHASE_B1_BOTTLENECK_AUDIT_REVIEW_PACKAGE.zip
+  review_zip_sha256: aeb032be1e4a4f06fc317491064f5fd279c590d00a8cc48c035504704c883f3f
+  corrected_analysis_uses_existing_csv_only: true
+
+corrected_phase_b1:
+  bootstrap_resamples: 10000
+  bootstrap_seed: 20260730
+  primary_effect: scenario_balanced_paired_difference
+  relative_effect: ratio_of_scenario_balanced_means
+  failure_policy: success_first_then_common_success_continuous_metrics
+  failure_penalty_multiplier: 1.25
+  cost:
+    sg_energy_weight: 1.0
+    sg_mileage_weight: 0.1
+    ibr_energy_to_sg_ratio: [0.25, 0.5, 1.0, 2.0]
+    ibr_mileage_uses_same_ratio: true
+  materiality:
+    frequency_improvement_min_fraction: 0.10
+    frequency_noninferiority_tolerance_fraction: 0.02
+    total_cost_improvement_min_fraction: 0.10
+    total_cost_noninferiority_tolerance_fraction: 0.02
+    failure_rate_noninferiority_tolerance: 0.0
+    safety_rate_noninferiority_tolerance: 0.0
+    minimum_supporting_cost_ratios: 2
+  bottleneck:
+    model_mismatch_min_fraction: 0.10
+    delayed_or_censored_fraction_min: 0.50
+    critical_window_s: 5.0
+    isolated_control_gain_min_fraction: 0.10
+    bayes_adequate_max_fraction: 0.50
+  b5_benchmark_classification: exact_plant_finite_action_constant_shooting_not_optimal_oracle
+
+service_scope:
+  name: two_area_supplementary_frequency_regulation
+  upper_control_period_s: 2.0
+  local_primary_control_fixed: true
+
+timebase:
+  integration_step_s: 0.05
+  episode_duration_s: 240.0
+
+oracle:
+  O2:
+    solver: IPOPT
+    framework: CasADi
+    horizon_candidates_s: [8.0, 10.0, 12.0]
+    command_interval_s: 2.0
+    integration_step_s: 0.1
+    multiple_shooting: true
+    warm_start: true
+    representative_multistarts: 3
+
+plant_b:
+  system_base_mw: 1000.0
+  bess_rating_mw: 80.0
+  bess_energy_mwh: 20.0
+  soc_min: 0.1
+  soc_max: 0.9
+  eta_charge: 0.95
+  eta_discharge: 0.95
+  sustainable_horizon_s: 60.0
+  expose_internal_regime_to_controller: false
+  expose_soc_to_controller_default: false
+  expose_headroom_to_controller_default: false
+
+seed_sets:
+  development: {start: 700, count: 10}
+  validation: {start: 800, count: 10}
+  final_known: {start: 5000, count: 30}
+  final_ood: {start: 6000, count: 50}
+  final_feedback_forbidden: true

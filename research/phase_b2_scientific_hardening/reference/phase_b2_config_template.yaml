@@ -1,0 +1,47 @@
+schema_version: d5freq.phase_b2.v1
+protocol_status: preregister_before_final
+
+service_scope:
+  name: two_area_supplementary_frequency_regulation
+  upper_control_period_s: 2.0
+  local_primary_control_fixed: true
+
+timebase:
+  integration_step_s: 0.05
+  episode_duration_s: 240.0
+
+statistics:
+  primary_effect: scenario_balanced_paired_difference
+  relative_effect: ratio_of_scenario_balanced_means
+  bootstrap_resamples: 10000
+  failure_policy: success_first_then_common_success_continuous_metrics
+  no_force_decision_when_no_trigger: true
+  cost_ratio_ibr_to_sg: [0.25, 0.5, 1.0, 2.0]
+
+oracle:
+  O2:
+    solver: IPOPT
+    framework: CasADi
+    horizon_candidates_s: [8.0, 10.0, 12.0]
+    command_interval_s: 2.0
+    integration_step_s: 0.1
+    multiple_shooting: true
+    warm_start: true
+    representative_multistarts: 3
+
+plant_b:
+  system_base_mw: 1000.0
+  bess_rating_mw: 80.0
+  bess_energy_mwh: 20.0
+  soc_min: 0.1
+  soc_max: 0.9
+  eta_charge: 0.95
+  eta_discharge: 0.95
+  sustainable_horizon_s: 60.0
+  expose_internal_regime_to_controller: false
+  expose_soc_to_controller_default: false
+  expose_headroom_to_controller_default: false
+
+final_seeds:
+  known: {start: 5000, count: 30}
+  ood: {start: 6000, count: 50}

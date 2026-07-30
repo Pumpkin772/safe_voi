@@ -1,0 +1,26 @@
+请先完整阅读当前仓库 research/phase_b2_scientific_hardening/ 下的全部文件，然后严格执行 CODEX_GOAL.md。
+
+本轮不要继续调旧 SD-BMPC，也不要直接实现 CORA-MPC、双重控制或新的 AI 方法。先完成科学模型加固与证伪：
+
+1. 修正 Phase B1 判决 bug：三个 trigger 全 false 时不得输出 COMBINED；
+2. 修正材料性统计：使用场景平衡配对差和聚合均值比，不得平均逐 episode 比率；
+3. 失败采用 success-first，不得静默排除；
+4. 资源价值同时计算 SG 和 IBR 总成本；
+5. 保留单区域 Plant A 做 regression，新增物理合理的两区域 Plant B；
+6. 固定本地一次调频，上层研究 supplementary/secondary frequency regulation；
+7. 在机械功率侧建模 SG GRC 与 reserve；
+8. 新黑箱 IBR 必须包含 headroom、SoC/energy、delay、power/ramp constraints 和 service availability；
+9. 新增 O2 多动作 exact nonlinear NMPC Oracle，不能再用 15 个单动作常值 shooting；
+10. 定义 control-relevant regime 和 control-critical window；
+11. 审计 load 与 regime source confusion、passive identifiability 和 OOD；
+12. final seeds 禁止反馈调参，所有失败保留。
+
+本轮完成后停止，只输出科学判决，不要未经评审继续做下一方法。
+
+最终生成小于512MB的：
+D5_PHASE_B2_SCIENTIFIC_HARDENING_REVIEW_PACKAGE.zip
+
+内容严格符合：
+research/phase_b2_scientific_hardening/07_REVIEW_PACKAGE_SPEC.md
+
+并在回复中报告 ZIP 大小、SHA256、Git commit、测试数、corrected B1 decision、Plant B materiality、O2 Oracle质量、被动可辨识性、最终触发器和最严重失败。
