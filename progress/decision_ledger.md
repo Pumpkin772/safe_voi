@@ -62,3 +62,10 @@ Further Gate decisions are appended only from preregistered validation/final evi
 - Headroom, ramp and delay each pass the timing condition; offline labels are used only for scoring.
 - The unique authorized method branch is `C6-A_SET_ADAPTIVE_MPC`. Safe-dual and structural robust branches are rejected for this run and will not be stacked.
 - Final configuration is locked before final seeds at SHA256 `ce54ab4b520e9e7415979403f0a3d0d4b1274969bddf6342b3957c1dea816838`.
+
+## C6-A Gate — PASSED CONDITIONALLY
+
+- Only set-adaptive MPC was implemented. Its public API has no true-regime, hidden-parameter, true-load, SoC or future-information input.
+- Validation success and audited set coverage are 100% on both Plants. Relative frequency/ACE IAE improvements over fixed allocation are 48.6%/50.6% on Plant A and 27.6%/84.9% on Plant B.
+- Set coverage, recursive feasibility and constraint safety are conditional on the explicitly stated noise, disturbance and SG-backup authority assumptions. No unconditional guaranteed-safe claim is made.
+- C7 preregistered experiment lock and dry run are authorized.
