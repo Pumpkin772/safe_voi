@@ -1,0 +1,59 @@
+{
+  "commands": [
+    "python -m scripts.phase_e.run_e5_active_feasibility",
+    "python -m scripts.phase_e.reanalyze_e5",
+    "python -m pytest tests/phase_e/test_e5_active.py -q"
+  ],
+  "decision": "SELECT_BRANCH_R",
+  "failures": [
+    "no_physical_failure_rate_increase",
+    "frequency_ace_not_materially_degraded",
+    "at_least_three_mechanisms_timing",
+    "probe_energy_and_mileage_budget",
+    "plant_a_b_direction_consistent"
+  ],
+  "gate": "G5_ACTIVE",
+  "gate_components": {
+    "adequate_sg_backup_feasible": true,
+    "at_least_three_mechanisms_information": true,
+    "at_least_three_mechanisms_timing": false,
+    "frequency_ace_not_materially_degraded": false,
+    "no_physical_failure_rate_increase": false,
+    "plant_a_b_direction_consistent": false,
+    "plant_b_no_failure_increase": true,
+    "probe_energy_and_mileage_budget": false
+  },
+  "gate_passed": false,
+  "goal": "Determine whether safe active probing adds timely control-relevant capability information",
+  "next_stage": "E6",
+  "outputs_sha256": {
+    "figures_phase_e/E5/e5_active_timing.png": "f256ef6ab37ccdd495bc670e3f5cf74310acc27e8d5994d7b946c4a01481404d",
+    "research_outputs_phase_e/05_IDENTIFICATION/ACTIVE_IDENTIFICATION_FEASIBILITY.md": "02e031def0d7906d07d3fa43361bdc18bf89ee0a6ad4da7fe0d4b01680b6d7ae",
+    "research_outputs_phase_e/09_SUMMARY/E5_BRANCH_DECISION.md": "9564853c3a382cd5953ae7ab70e9a970dd45ba47f38e4416ecf10f02533787a8",
+    "results_phase_e/E5/E5_ACTIVE_FEASIBILITY.parquet": "4ca2f6f26a192a6906d6b08b2a3f32ef3e24a98c66603272452d797498db86c9",
+    "results_phase_e/E5/E5_ACTIVE_MANIFEST.csv": "15b4bd2ea5971b5777211199146fe978e1a3113d08e1525ff219e5cd5cc44d38",
+    "results_phase_e/E5/E5_INFORMATION_SAFETY_TRADEOFF.csv": "d0538dc836b35d3229e2a23055774bf76dce3e13668181a56bf3b964e761178e",
+    "results_phase_e/E5/E5_PLANT_B_ACTIVE.parquet": "56e4b420a054a76192b665b1b5abbb26268235cbab544608c4d75fe10ea506f3",
+    "results_phase_e/E5/E5_PROBE_TRACES.parquet": "2c3059e3c4d721e85b7da21b75a322e45fef45bb04d20081dbc2f7cc8e9c6437",
+    "results_phase_e/E5/E5_TIMING_DENOMINATOR_REANALYSIS.csv": "90b8c3ebd55a70d5fd1ca1278577d2b75a08b9bbbb5b3db97c7f8b9f6d9d1de2"
+  },
+  "repairs": [
+    "Timing probability denominator now contains only rows with finite matched Tcrit; not-evaluated rows remain in raw results. No algorithm, scene, seed, threshold, or episode changed."
+  ],
+  "stage": "E5",
+  "status": "FAILED",
+  "tests": {
+    "ace_iae_degradation": 2.799033633526143,
+    "adequate_backup_feasible_rate": 0.9950554134697357,
+    "frequency_iae_degradation": 2.6099514346087958,
+    "maximum_probe_energy_mwh": 1.0222222222222015,
+    "maximum_probe_mileage_pu": 3.680000000000001,
+    "mechanisms_passing_information": 3,
+    "mechanisms_passing_timing": 0,
+    "not_evaluated_optimized_rows": 83,
+    "plant_a_episode_rows": 600,
+    "plant_a_scenarios": 200,
+    "plant_b_episode_rows": 10,
+    "timing_evaluated_optimized_rows": 117
+  }
+}
