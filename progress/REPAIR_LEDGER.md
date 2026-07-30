@@ -120,6 +120,14 @@
 - Scientific standards changed: no.
 - Rerun result: complete coverage run passed 629 tests with two retained numerical warnings and 68% repository-wide coverage.
 
+## C9-R2 — Legacy report template exposed external license paths
+
+- Failure class: packaging/security hygiene.
+- Evidence: post-build text scanning found no license file, but one retained Phase B1 source template contained the absolute external MOSEK/Gurobi license locations.
+- Repair: replace the two absolute paths with generic environment-variable instructions. No controller, configuration, result or scientific decision is changed.
+- Scientific standards changed: no.
+- Rerun result: pending final package rebuild and scan.
+
 ## C5-R1 — Ramp/delay source feature ordering
 
 - Failure class: identification code.
