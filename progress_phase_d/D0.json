@@ -1,0 +1,32 @@
+{
+  "commands": [
+    "python -m pytest tests/phase_c -q",
+    "python scripts/phase_d/d0_freeze_baseline.py"
+  ],
+  "failures": [],
+  "gate": "SOURCE_BASELINE_INTEGRITY",
+  "gate_passed": true,
+  "goal": "Freeze Phase C and withdraw invalid claims",
+  "inputs_sha256": {
+    "phase_c_zip": "28f64c4668a86c4d336619f27382c16766a0b425a6cd6895fd816f07aff809e9",
+    "phase_d_package_index": "730e09285fafd6f6cf88760662ec326a1f6941128da7d0cec7f4e8ecd315f298"
+  },
+  "next_stage": "D1",
+  "outputs_sha256": {
+    "artifacts_phase_d/D0/PHASE_C_ARCHIVE_MANIFEST.csv": "01af3b0b199ada887e801a6a4e854bbe4a46796d664b4397d458accb5bdec164",
+    "research_outputs_phase_d/D0/BASELINE_FREEZE.md": "eb7ab3d1458d8793a1f37fd160e3ad5f00b7f1b42760addd8f833cd98f4b600c",
+    "research_outputs_phase_d/D0/CURRENT_CODE_AUDIT.csv": "44cb451b8d33dd8188a5137fc7b58fc444ea0cafc247bc13b4dd797381581621",
+    "research_outputs_phase_d/D0/INVALIDATED_CLAIMS.json": "5d3d7175ace5e5fd430eab7a9ef192a80f570caf027bee5087f9f6b32de73a8b"
+  },
+  "repairs": [
+    "Created frozen Phase C annotated tag",
+    "Withdrew C5/C6/C8 claims"
+  ],
+  "stage": "D0",
+  "status": "PASSED",
+  "tests": {
+    "launch_index_entries": 22,
+    "launch_mismatches": 0,
+    "phase_c": "20 passed"
+  }
+}

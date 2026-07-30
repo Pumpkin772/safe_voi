@@ -1,0 +1,12 @@
+area,path_or_symbol,audit_status,finding
+physics,src/d5freq/models/plant_a_two_area.py,retain_and_harden,Correct per-unit frequency and BESS energy foundations remain useful.
+physics,src/d5freq/models/plant_b_native_rms.py,invalid_for_claim,BESS injection is placed in an auxiliary DC solve but is absent from machine electrical-power balance.
+validation,src/d5freq/models/plant_b_native_rms.py:andes_native_qualification,invalid_for_claim,ANDES Kundur is run separately; no common disturbance or BESS control is injected into the native case.
+causality,src/d5freq/identification/passive_capability_detector.py,invalid,Centered convolution uses future residual samples.
+causality,src/d5freq/identification/passive_capability_detector.py,invalid,Post-alarm 8 s window is used to classify the event.
+identifiability,scripts/phase_c/c5_identifiability.py,invalid_for_claim,Synthetic command is persistently exciting and Tcrit starts at a later preregistered load event; it does not establish natural closed-loop capability-set coverage.
+controller,src/d5freq/controllers/set_adaptive_mpc.py,invalid_mpc_name,The action is algebraic allocation and does not solve a finite-horizon optimization.
+controller,src/d5freq/evaluation/phase_c_oracle.py,partial_reuse,"It is a rolling local multiple-shooting NLP, but its surrogate is not the rebuilt native Plant B and requires reliability hardening."
+experiments,scripts/phase_c/c8_final_experiment.py,invalid_for_claim,Scenario identity and dynamics are entangled; Phase D requires explicit independent factors and a locked manifest.
+statistics,scripts/phase_c/c8_reporting.py,historical_only,"Negative method evidence is retained, but C5/C6/C8 scientific claims are withdrawn."
+software,src/d5freq,historical_only,Legacy D5 namespace remains immutable historical evidence; new implementation must use src/direction1freq.

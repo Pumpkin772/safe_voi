@@ -1,0 +1,28 @@
+请先完整阅读当前仓库：
+
+research/direction1_phase_d_crcs_tube_mpc/
+
+下的全部文件，然后将其中 CODEX_GOAL.md 作为本项目唯一总Goal并立即开始执行。
+
+本轮不是短周期探索。请按 D0→D1→D2→D3→D4→D5→D6→D7→D8→D9 连续执行，阶段之间自行依据Gate检查和自动修复，不要等待我再次发送Goal。
+
+关键要求：
+
+1. 项目从本阶段起统一命名为“方向1”/DIRECTION1；旧D5仅作历史证据。
+2. 冻结当前Phase C结果并撤回其C5 passive-identifiable、C6/C8方法结论作为论文证据。
+3. 重建Plant B，使BESS有功真正进入原生多机网络和摆动功率平衡，并与ANDES Kundur或IEEE39在相同扰动下交叉验证。
+4. 修复因果性：禁止centered convolution、报警后未来窗口、真负荷和未来事件泄露。
+5. 所有叫MPC的基线和方法必须真正求解滚动时域优化；不得用代数分配冒充MPC。
+6. 只实现一条最终方法：CRCS-TMPC（控制相关能力集合估计+延迟/能力不确定管束MPC+SG终端备份）。
+7. 先用可靠rolling current-capability NMPC Oracle验证科学问题材料性；若可靠Oracle在Plant A/B均无价值，停止并生成负结果包。
+8. 若自然闭环I/O无法达到能力集合覆盖和因果更新时间Gate，停止为PASSIVE_CAPABILITY_SET_NOT_SUPPORTED，不临时改成主动辨识或其他算法。
+9. final场景因素必须显式独立，运行后不得调参；失败和not_evaluated必须分开保存。
+10. 最终生成小于512MB的：
+
+DIRECTION1_PHASE_D_CRCS_TUBE_MPC_SINGLE_REVIEW_PACKAGE.zip
+
+内容严格符合：
+
+research/direction1_phase_d_crcs_tube_mpc/10_FINAL_REVIEW_PACKAGE_SPEC.md
+
+完成后报告ZIP路径、大小、SHA256、Git commit、全部Gate、H1–H4、最佳基线、known/OOD结果、失败证据和最终研究状态。

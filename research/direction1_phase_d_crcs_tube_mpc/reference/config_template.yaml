@@ -1,0 +1,46 @@
+project:
+  name: direction1_crcs_tube_mpc
+  nominal_frequency_hz: 50.0
+  system_base_mva: 1000.0
+  splits: [development, validation, final_known, final_ood]
+
+simulation:
+  dt_s: 0.01
+  control_period_s: [2.0, 4.0]
+  contingency_duration_s: [300.0, 600.0]
+  normal_duration_s: 3600.0
+
+plant_a:
+  inertia_s: [5.0, 4.5]
+  damping_pu_per_pu_frequency: [1.0, 1.0]
+  tie_coefficient_pu_per_rad: 0.07
+
+bess:
+  rating_mw: 100.0
+  energy_mwh: 50.0
+  soc_initial_interval: [0.35, 0.65]
+  soc_bounds: [0.1, 0.9]
+  eta_charge_interval: [0.93, 0.97]
+  eta_discharge_interval: [0.93, 0.97]
+  delay_candidate_s: [0.0, 0.2, 0.5, 1.0, 2.0]
+
+estimator:
+  type: augmented_kalman_or_constrained_mhe
+  causal_only: true
+  load_error_bound_pu: null
+
+capability_set:
+  required_truth_coverage: 0.95
+  max_false_alarm_rate: 0.05
+  change_detector: one_sided_cusum
+
+mpc:
+  horizon_s: 40.0
+  tube_type: polytopic
+  terminal_backup: sg_only
+  solver: [gurobi, mosek, osqp]
+
+final_firewall:
+  lock_before_final: true
+  seeds_independent_of_factors: true
+  post_final_tuning: false

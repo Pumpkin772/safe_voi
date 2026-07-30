@@ -1,0 +1,38 @@
+{
+  "audit_date": "2026-07-30",
+  "claims": [
+    {
+      "claim": "C5_PASSIVE_IDENTIFIABLE",
+      "reasons": [
+        "centered convolution",
+        "post-alarm future window",
+        "no capability-set coverage Gate"
+      ],
+      "status": "invalidated-by-audit"
+    },
+    {
+      "claim": "C6_A_SET_ADAPTIVE_MPC",
+      "reasons": [
+        "algebraic allocation mislabeled as MPC",
+        "depends on invalid C5 Gate"
+      ],
+      "status": "invalidated-by-audit"
+    },
+    {
+      "claim": "C8_METHOD_COMPARISON",
+      "reasons": [
+        "non-MPC baselines",
+        "scenario-factor confounding",
+        "invalid Plant B power balance"
+      ],
+      "status": "invalidated-by-audit"
+    }
+  ],
+  "disposition": "historical_evidence_only",
+  "not_withdrawn": [
+    "Phase C software/test evidence as historical record",
+    "Plant A engineering components subject to Phase D revalidation"
+  ],
+  "phase_c_commit": "86f982baeda32ee62f8a6117bfe66bc3a9e9bdbb",
+  "schema": "direction1.phase_d.invalidated_claims.v1"
+}
