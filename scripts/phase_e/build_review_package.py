@@ -191,7 +191,12 @@ No Gurobi/MOSEK license file is packaged. Phase E uses OSQP/CLARABEL and ANDES; 
     write_text("08_EXPERIMENT_DESIGN/FINAL_LOCK_STATUS.md", "# Final lock status\n\nG6 failed before E8. No final manifest was created and no final seed was consumed. This is `NOT_EVALUATED`, not a scientific method failure.\n")
 
     copy_into("results_phase_e", "09_RAW_RESULTS/results_phase_e")
-    copy_into("progress_phase_e", "09_RAW_RESULTS/progress_phase_e")
+    # E9 verification contains the ZIP digest and is therefore external to
+    # the self-contained archive.  Copy only pre-package stage contracts.
+    for name in ("E0.json", "E1.json", "E2.json", "E3_full.json", "E3_pilot.json", "E4.json", "E5.json", "E6_full.json", "E6_pilot.json", "E7.json", "E8.json", "READING_ACKNOWLEDGEMENT.md"):
+        source = ROOT / "progress_phase_e" / name
+        if source.exists():
+            copy_into(source, f"09_RAW_RESULTS/progress_phase_e/{name}")
     write_text("09_RAW_RESULTS/NOT_EVALUATED_CONTRACT.md", "# Not-evaluated contract\n\nE7 theorem certification and E8 final known/OOD experiments were stopped by fatal G6. Their absence is not imputed as failed episode data.\n")
 
     copy_into("research_outputs_phase_e/09_SUMMARY", "10_SUMMARY_TABLES/STAGE_REPORTS")
