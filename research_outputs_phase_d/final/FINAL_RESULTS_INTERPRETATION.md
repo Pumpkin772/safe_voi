@@ -1,24 +1,5 @@
 # Final results interpretation and limitations
 
-"
-        "Natural closed-loop public I/O did not maintain the registered joint capability-set "
-        "coverage or update early enough in the evaluated scenarios. Tightening detection to "
-        "remove false alarms reduced coverage/timing; all three allowed candidates are retained.
+Natural closed-loop public I/O did not maintain the registered joint capability-set coverage or update early enough in the evaluated scenarios. Tightening detection to remove false alarms reduced coverage/timing; all three allowed candidates are retained.
 
-"
-        "Most severe limitation: this is an early scientific stop at H2. It establishes failure "
-        "of the registered passive estimator/protocol, not universal impossibility. H1 Oracle "
-        "materiality, H3 method value, H4 theory, the best baseline, and known/OOD controller "
-        "outcomes are all unknown. Active excitation could address identifiability, but pursuing it "
-        "would violate this Goal and is outside the review package.
-",
-        encoding="utf-8",
-    )
-    (REPORTS / "PAPER_OUTLINE.md").write_text(
-        1. Audited motivation and information boundary.
-2. Corrected two-area and native multi-machine ANDES plants.
-3. Causal passive capability-set protocol and preregistered H2.
-4. Development/validation evidence and structural non-identifiability cases.
-5. Binding negative result, limits of inference, and reproducibility.
-
-Any next step is limited to review/submission refinement of this result; this Goal does not authorize development of another controller or active-identification method.
+Most severe limitation: this is an early scientific stop at H2. It establishes failure of the registered passive estimator/protocol, not universal impossibility. H1 Oracle materiality, H3 method value, H4 theory, the best baseline, and known/OOD controller outcomes are all unknown. Active excitation could address identifiability, but pursuing it would violate this Goal and is outside the review package.

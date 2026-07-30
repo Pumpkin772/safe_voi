@@ -220,7 +220,7 @@ def main() -> int:
     write_json(OUT / "FINAL_PROTOCOL_LOCK.json", protocol)
 
     (REPORTS / "STATISTICAL_ANALYSIS_PLAN.md").write_text(
-        """# Locked statistical analysis plan\n\n"
+        "# Locked statistical analysis plan\n\n"
         "The fatal H2 Gate precedes controller/Oracle evaluation. Therefore no H1, H3, H4, "
         "known/OOD, ablation, Pareto, or controller success-first comparison is computed. "
         "Those cells remain `not_evaluated`, never method failures.\n\n"
@@ -243,7 +243,7 @@ def main() -> int:
         encoding="utf-8",
     )
     (REPORTS / "COMPUTE_BUDGET.md").write_text(
-        """# Compute budget and terminal stop\n\n"
+        "# Compute budget and terminal stop\n\n"
         "D0-D2 verification and D3 development/validation were completed locally on Windows "
         "with four worker processes for D3. The planned final matrix contains 2,400 scenarios "
         "per controller, but zero final controller episodes were run because H2 is a fatal "

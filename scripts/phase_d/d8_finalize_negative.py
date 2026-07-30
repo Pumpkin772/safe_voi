@@ -205,6 +205,7 @@ def main() -> int:
         [
             ("D2-report-001", "code_failure", "repaired", "NumPy boolean JSON serialization in reporting only; cached physics re-finalized"),
             ("D3-run-001", "operational_failure", "repaired", "single-process execution interrupted before round completion; identical locked matrix rerun with four workers"),
+            ("D7D8-doc-001", "code_failure", "repaired", "multiline report literal boundaries joined generated documents; generator and document-completeness regression tests added"),
             ("D3-H2-001", "scientific_failure", "unresolved_binding", "passive natural-I/O capability coverage and causal timing thresholds not met"),
         ],
         columns=["failure_id", "category", "resolution", "evidence"],
@@ -242,7 +243,7 @@ def main() -> int:
     figure_catalog.to_csv(RESULTS / "FIGURE_CATALOG.csv", index=False)
 
     (REPORTS / "LOCKED_SCIENCE_AND_DECISIONS.md").write_text(
-        """# Locked science and decisions\n\n"
+        "# Locked science and decisions\n\n"
         "The sole scientific question and H1–H4 are those in "
         "`research/direction1_phase_d_crcs_tube_mpc/02_LOCKED_SCIENTIFIC_QUESTION_AND_HYPOTHESES.md`.\n\n"
         "## Binding decision\n\n"
@@ -256,7 +257,7 @@ def main() -> int:
         encoding="utf-8",
     )
     (REPORTS / "SUPPORTED_AND_UNSUPPORTED_CLAIMS.md").write_text(
-        """# Supported and unsupported claims\n\n"
+        "# Supported and unsupported claims\n\n"
         "Supported: the corrected Plant A and native ANDES Plant B pass the registered D2 "
         "physics/cross-model checks; the evaluated passive set estimator fails H2 under the "
         "registered natural closed-loop I/O protocol.\n\n"
@@ -267,7 +268,7 @@ def main() -> int:
         encoding="utf-8",
     )
     (REPORTS / "DECISION_LOG.md").write_text(
-        """# Decision log\n\n"
+        "# Decision log\n\n"
         "1. D0: freeze Phase C and invalidate its passive-identifiable and method claims.\n"
         "2. D1: lock the scoped Direction1 question after metadata-verified literature review.\n"
         "3. D2: qualify the native ANDES Kundur VSC model after rejecting the drifting alternative case.\n"
@@ -278,7 +279,7 @@ def main() -> int:
         encoding="utf-8",
     )
     (REPORTS / "THEORY_NOT_EVALUATED.md").write_text(
-        """# Theory, RPI, terminal set, and tightening status\n\n"
+        "# Theory, RPI, terminal set, and tightening status\n\n"
         "D5 was not reached. No CRCS-TMPC theorem, RPI set, terminal set, tube, constraint "
         "tightening certificate, or recursive-feasibility claim was constructed. H4 is "
         "`NOT_EVALUATED_DUE_TO_H2_FATAL_GATE`; absence of these artifacts is a mandated early-stop "
@@ -286,7 +287,7 @@ def main() -> int:
         encoding="utf-8",
     )
     (REPORTS / "FINAL_RESULTS_INTERPRETATION.md").write_text(
-        """# Final results interpretation and limitations\n\n"
+        "# Final results interpretation and limitations\n\n"
         "Natural closed-loop public I/O did not maintain the registered joint capability-set "
         "coverage or update early enough in the evaluated scenarios. Tightening detection to "
         "remove false alarms reduced coverage/timing; all three allowed candidates are retained.\n\n"
@@ -298,7 +299,7 @@ def main() -> int:
         encoding="utf-8",
     )
     (REPORTS / "PAPER_OUTLINE.md").write_text(
-        """# Negative-result paper outline\n\n"
+        "# Negative-result paper outline\n\n"
         "1. Audited motivation and information boundary.\n"
         "2. Corrected two-area and native multi-machine ANDES plants.\n"
         "3. Causal passive capability-set protocol and preregistered H2.\n"

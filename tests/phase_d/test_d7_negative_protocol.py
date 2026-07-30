@@ -45,3 +45,13 @@ def test_locked_hashes_match_and_unimplemented_methods_are_not_failures() -> Non
     assert len(controllers) == 7
     assert set(controllers["execution_status"]) == {"not_evaluated"}
     assert controllers["implementation_status"].str.startswith("not_implemented").all()
+
+
+def test_required_experiment_design_documents_are_well_formed() -> None:
+    required = ["STATISTICAL_ANALYSIS_PLAN.md", "METRIC_DICTIONARY.csv", "COMPUTE_BUDGET.md"]
+    for filename in required:
+        path = ROOT / "research_outputs_phase_d" / "experiment_design" / filename
+        assert path.stat().st_size > 100
+        text = path.read_text(encoding="utf-8")
+        assert "write_text(" not in text
+        assert 'encoding="utf-8"' not in text

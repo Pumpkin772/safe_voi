@@ -40,3 +40,20 @@ def test_not_evaluated_is_separate_and_figures_are_nonempty() -> None:
     for filename in catalog["figure"]:
         path = ROOT / "figures_phase_d" / "D8" / filename
         assert path.stat().st_size > 10_000
+
+
+def test_required_final_reports_are_well_formed() -> None:
+    required = [
+        "LOCKED_SCIENCE_AND_DECISIONS.md",
+        "SUPPORTED_AND_UNSUPPORTED_CLAIMS.md",
+        "DECISION_LOG.md",
+        "THEORY_NOT_EVALUATED.md",
+        "FINAL_RESULTS_INTERPRETATION.md",
+        "PAPER_OUTLINE.md",
+    ]
+    for filename in required:
+        path = ROOT / "research_outputs_phase_d" / "final" / filename
+        assert path.stat().st_size > 150
+        text = path.read_text(encoding="utf-8")
+        assert "write_text(" not in text
+        assert 'encoding="utf-8"' not in text
