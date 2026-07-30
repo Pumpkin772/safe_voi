@@ -1,0 +1,68 @@
+schema_version: d5freq.phase_b2.oracle.v1
+protocol_status: validation_locked_before_final_seeds
+evaluation_only: true
+global_optimality_claim: false
+
+hierarchy:
+  O0: conventional_ACE_PI_SG_only
+  O1: truth_regime_offline_identified_linear_MPC
+  O2: exact_current_regime_multiple_shooting_nonlinear_NMPC
+  O3: clairvoyant_exact_NMPC_optional_ceiling
+
+timebase:
+  command_interval_s: 2.0
+  integration_step_s: 0.10
+  horizon_candidates_s: [8.0, 10.0, 12.0]
+  selected_horizon_s: 10.0
+  selection_data: validation_seeds_only
+
+objective:
+  q_frequency: 8000.0
+  q_ace: 4000.0
+  q_tie_line: 1000.0
+  r_sg: 5.0
+  r_ibr: 8.0
+  s_sg: 2.0
+  s_ibr: 3.0
+  terminal_multiplier: 5.0
+
+constraints:
+  frequency_bound_hz: 0.50
+  tie_line_bound_pu: 0.20
+  ibr_command_delta_bound_pu: 0.08
+  plant_projection_enforces_reserve_power_soc_availability: true
+
+solver:
+  framework: CasADi
+  solver: IPOPT
+  hessian_approximation: limited_memory
+  tolerance: 1.0e-6
+  acceptable_tolerance: 1.0e-1
+  constraint_qualification_tolerance: 1.0e-4
+  kkt_qualification_tolerance: 1.0e-1
+  max_iterations: 100
+  warm_start: true
+  representative_initializations: [zero, split_load, ibr_first]
+
+identified_O1:
+  development_seed_start: 700
+  transitions_per_regime_pair: 400
+  ridge_alpha: 1.0e-6
+  known_regimes:
+    - nominal_available
+    - headroom_or_current_limited
+    - energy_limited
+    - communication_degraded
+    - service_disabled
+    - recovery
+  structural_ood_model_available: false
+
+oracle_validation:
+  independent_rollout_max_abs_tolerance: 1.0e-5
+  independent_objective_abs_tolerance: 1.0e-4
+  dense_grid_relative_tolerance: 0.01
+  solver_constraint_tolerance: 1.0e-4
+  solver_kkt_tolerance: 1.0e-1
+  selection_rule: shortest_candidate_with_at_least_two_qualified_cases_and_within_5_percent_of_best_mean_frequency_IAE
+  validation_status: PARTIAL_QUALIFICATION_WITH_RETAINED_SOLVER_FAILURES
+  headroom_critical_solver_failure_retained: true
