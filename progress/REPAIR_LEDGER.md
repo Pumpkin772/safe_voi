@@ -55,3 +55,59 @@
 - Repair: retain the six-bus algebraic solve for inter-area exchange, explicitly allocate regional load plus signed tie-line exchange across the two machines in each area, and retain intra-area synchronizing torque.
 - Scientific standards changed: no; the required sign/trend comparison caught the error before materiality experiments.
 - Rerun result: both Plant A and Plant B COI frequency moved negative after a positive load step; eight combined C2/C3 tests passed.
+
+## C4-R1 — NMPC stage-action indexing
+
+- Failure class: code.
+- Evidence: the first C4 unit test indexed an already sliced CasADi action vector as a matrix and stopped before any experiment or final seed was run.
+- Repair: apply the action penalty directly to the current stage vector.
+- Scientific standards changed: no.
+- Rerun result: stage-vector indexing passed; the next isolated test exposed missing Windows IPOPT dependency resolution before solver creation.
+
+## C4-R2 — CasADi IPOPT Windows DLL search path
+
+- Failure class: environment/solver loading.
+- Evidence: CasADi found the IPOPT plugin DLL but Windows error 126 showed that dependent Conda DLLs were not discoverable.
+- Repair: retain the DLL-directory handle and prepend the environment `Library/bin` directory to the process-local PATH, matching the already validated Phase B2 loader pattern.
+- Scientific standards changed: no.
+- Rerun result: the isolated O2 solve passed with constraint residual below `1e-5`; both C4 unit tests passed.
+
+## C4-R3 — Materiality batch computational timeout
+
+- Failure class: computational implementation, not method/episode failure.
+- Evidence: the first 240-episode batch reached the 604 s process limit before writing any partial result. Profiling by inspection identified a repeated solve of the same constant Plant B network matrix at every 0.005 s substep.
+- Repair: precompute the fixed reduced-network inverse; formally select 0.01 s, whose retained C3 comparison to the 0.005 s reference has maximum audited error 0.699%; rerun the identical 240 episodes and 180 s horizon.
+- Scientific standards changed: no seeds, scenarios, horizons, Gate thresholds or controller parameters changed.
+- Rerun result: representative Plant A/B episodes became bounded and all four fair NMPC runs achieved 100% solver success, but O2 remained worse because both predictors used a zero sustained-load estimate.
+
+## C4-R5 — Fair causal load estimator omission
+
+- Failure class: estimator/experimental fairness.
+- Evidence: after C4-R4, both controllers still passed a zero load estimate for the full 180 s sustained-imbalance episode. Capability-aware reallocation therefore reacted only to lagged frequency state, while the nominal controller's accidental SG action could dominate.
+- Repair: supply both controllers the same causal unknown-input estimate reconstructed from measured frequency derivative, aggregate mechanical/BESS output and tie-line power balance. The estimator never reads the simulator load or a future sample.
+- Scientific standards changed: no; validation repair round 1 remains the same round as C4-R4 and changes no scenario, Gate or final data.
+- Rerun result: Plant A passed materiality and solver qualification; Plant B then exposed plant-specific predictor mismatch.
+
+## C4-R7 — Prohibited episode-wise ratio statistic
+
+- Failure class: statistical implementation.
+- Evidence: the final validation run completed all 240 episodes with qualified O2 solves, but the first summary used the mean and percentile of episode-wise relative ratios. The governing protocol explicitly forbids this as the sole percentage conclusion.
+- Repair: reuse the unchanged episode table; compute a scenario-balanced ratio of aggregate sums and a 5000-draw seed-within-scenario bootstrap CI. No simulation, method or threshold is changed.
+- Scientific standards changed: no; this corrects the estimator to the preregistered rule and is not a third tuning round.
+- Rerun result: corrected aggregate/bootstrap analysis passed materiality on both core metrics for both Plants.
+
+## C4-R6 — Plant-specific Oracle prediction parameters
+
+- Failure class: model mismatch in Oracle qualification.
+- Evidence: validation repair round 1 passed solver qualification and Plant A materiality, but Plant B O2 degraded in adequate/scarce SG cases. The shared predictor still hard-coded Plant A inertia `(5,4.5)`, damping `(1,1)` and a dynamic tie coefficient, whereas Plant B aggregation is `(9,10)`, `(0.6,0.6)` with algebraic network tie output.
+- Repair: parameterize both O2 and nominal MPC predictors by the public Plant model; use zero dynamic tie coefficient for the Plant B algebraic tie output. Both fair controllers receive the same model constants.
+- Scientific standards changed: no; this is validation repair round 2, the final allowed method-performance repair. Final seeds remain unused.
+- Rerun result: all 240 episodes completed; Plant B improvements were 76.1% frequency IAE and 60.1% ACE IAE with positive 95% CI lower bounds and 100% O2 solve success.
+
+## C4-R4 — Coarse Oracle actuator model and Plant B rotor integrator
+
+- Failure class: model/numerical/Oracle qualification.
+- Evidence: the completed first validation matrix retained 240 episodes, but Plant B trajectories grew to `1e41`, O2 solve success fell to 42%, and Plant A O2 was worse than nominal MPC. The Oracle predictor treated SG power as instantaneous despite mechanical GRC, while Plant B used energy-injecting forward Euler for a lightly damped rotor oscillator.
+- Repair: use a semi-implicit rotor-angle update; expose measured aggregate mechanical/BESS power in Plant B's leakage-safe observation; expand both fair MPCs to seven multiple-shooting states with smooth mechanical GRC and BESS actuator dynamics. No hidden state is added to the deployable baseline.
+- Scientific standards changed: no; this is validation repair round 1 of the allowed two, with seeds/scenarios/thresholds unchanged.
+- Rerun result: bounded Plant B trajectories and qualified solvers; subsequent same-round estimator repair was required before performance interpretation.

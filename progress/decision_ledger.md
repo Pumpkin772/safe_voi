@@ -43,7 +43,15 @@ Further Gate decisions are appended only from preregistered validation/final evi
 ## C3 Gate — PASSED
 
 - Analytic and central-difference swing/tie Jacobians agree to machine precision.
-- All required 0.005/0.01/0.02/0.05 s runs are retained. The selected 0.005 s step differs by at most 0.699% from 0.01 s on the audited metrics.
+- All required 0.005/0.01/0.02/0.05 s runs are retained. The selected 0.01 s step differs by at most 0.699% from the 0.005 s reference on the audited metrics.
 - An initially incorrect Plant B slack-bus balance sign was detected, recorded, repaired and rerun; Plant A/B now have consistent physical response direction.
 - Constraint-boundary and observation-API audits passed. Validation configuration is locked at SHA256 `fbbbf9ee49d112b978909035f90c803cbe6df30f3db0f81b4dbacaf49140294f`.
 - C4 current-capability Oracle materiality testing is authorized.
+
+## C4 Gate — PASSED
+
+- All 240 validation episodes are retained; final seeds were not read. O2 solve success was 99.59% on Plant A and 100% on Plant B.
+- Scenario-balanced aggregate ratios with seed-within-scenario bootstrap show Plant A improvements of 54.45% frequency IAE and 40.57% ACE IAE, both with positive 95% CI lower bounds.
+- Plant B improvements are 76.12% and 60.13%, likewise with positive lower bounds.
+- The Oracle is a current-capability, rolling, multi-action nonlinear multiple-shooting local NMPC and is not described as globally/exactly optimal.
+- The scientific problem is material on both validated model classes. C5 identifiability timing is authorized.

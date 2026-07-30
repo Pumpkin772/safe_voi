@@ -89,13 +89,14 @@ class NativeRMSPlantB:
         for i,j,b in edges:
             lap[i,i] += b; lap[j,j] += b; lap[i,j] -= b; lap[j,i] -= b
         self._laplacian = lap
+        self._laplacian_reduced_inverse = np.linalg.inv(lap[1:, 1:])
 
     def _network_angles(self, injections: np.ndarray) -> np.ndarray:
         """Solve B theta=p with bus 0 reference; this is the algebraic DAE block."""
         rhs = np.asarray(injections, dtype=float).copy()
         rhs -= rhs.mean()  # slack balances instantaneous residual
         theta = np.zeros(6)
-        theta[1:] = np.linalg.solve(self._laplacian[1:,1:], rhs[1:])
+        theta[1:] = self._laplacian_reduced_inverse @ rhs[1:]
         return theta
 
     def area_coi(self, state: PlantBState) -> np.ndarray:
@@ -136,7 +137,9 @@ class NativeRMSPlantB:
             (sg_next[g].mechanical_pu - electrical[g] - self.params.damping[g]*state.omega[g])/(2*self.params.inertia_s[g])
             for g in range(4)
         ])
-        delta_dot = 2*np.pi*self.params.nominal_frequency_hz*state.omega
+        # Semi-implicit rotor update avoids the artificial energy growth of
+        # forward Euler on the lightly damped electromechanical oscillator.
+        delta_dot = 2*np.pi*self.params.nominal_frequency_hz*(state.omega+self.dt_s*omega_dot)
         return PlantBState(
             rotor_angle_rad=state.rotor_angle_rad+self.dt_s*delta_dot,
             omega=state.omega+self.dt_s*omega_dot,
@@ -149,4 +152,7 @@ class NativeRMSPlantB:
         tie = 3.0*(state.bus_angle_rad[2]-state.bus_angle_rad[3])
         bias = self.params.damping[0]+self.params.damping[1]+2/self.params.sg.droop_pu_frequency_per_pu_power
         ace = np.array([bias*coi[0]+tie,bias*coi[1]-tie])
-        return np.array([*(self.params.nominal_frequency_hz*coi),*ace,tie,*issued_command])
+        pm = (state.sg[0].mechanical_pu+state.sg[1].mechanical_pu,
+              state.sg[2].mechanical_pu+state.sg[3].mechanical_pu)
+        pb = (state.bess[0].power_pu,state.bess[1].power_pu)
+        return np.array([*(self.params.nominal_frequency_hz*coi),*ace,tie,*pm,*pb,*issued_command])

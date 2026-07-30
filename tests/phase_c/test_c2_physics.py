@@ -51,4 +51,4 @@ def test_multi_machine_network_dae_runs_and_observation_excludes_hidden_state() 
     assert np.isfinite(state.omega).all()
     assert state.omega.shape == (4,)
     obs = plant.observation(state,np.zeros(4))
-    assert len(obs) == 9
+    assert len(obs) == 13

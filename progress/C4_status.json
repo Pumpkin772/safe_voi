@@ -1,0 +1,11 @@
+{
+  "stage": "C4",
+  "status": "PASSED",
+  "inputs_sha256": {"validation_config": "fbbbf9ee49d112b978909035f90c803cbe6df30f3db0f81b4dbacaf49140294f"},
+  "outputs": ["results_phase_c/C4/episode_metrics.parquet", "results_phase_c/C4/materiality_summary.json", "figures_phase_c/C4/oracle_materiality.png", "research_outputs/materiality/MATERIALITY_REPORT.md", "research_outputs/oracle/ORACLE_HIERARCHY.md"],
+  "tests": {"unit_passed": 2, "episodes": 240, "o2_solver_success_plant_a": 0.995925925925926, "o2_solver_success_plant_b": 1.0},
+  "success_criteria": {"plant_a_two_metrics_positive_ci": true, "plant_b_two_metrics_positive_ci": true, "o2_solver_at_least_95_percent": true, "no_future_information": true, "no_final_seeds": true},
+  "failure_diagnosis": ["two validation repair rounds and one statistics-only repair; all retained in repair ledger"],
+  "repairs": ["C4-R1", "C4-R2", "C4-R3", "C4-R4", "C4-R5", "C4-R6", "C4-R7"],
+  "next_stage": "C5"
+}
