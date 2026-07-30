@@ -1,0 +1,55 @@
+{
+  "commands": [
+    "python scripts/phase_e/run_e2_rebuild.py",
+    "python -m pytest tests/phase_e/test_e2_rebuild.py -q"
+  ],
+  "failures": [],
+  "gate": "MODEL_AND_NOMINAL_CLOSED_LOOP",
+  "gate_passed": true,
+  "goal": "Rebuild a stable nominal loop, physical Plant A, and native ANDES Plant B",
+  "next_stage": "E3",
+  "outputs_sha256": {
+    "figures_phase_e/E2/plant_a_step_stability.png": "090d9d81f297aa38d9c6e32cb92fba71d4329a12cac57c034173f6f5bd6d3558",
+    "figures_phase_e/E2/plant_b_native_interface.png": "922dff5cf9653d9b4007d04979e9440d87075c44d67c120684cce8b33273ecec",
+    "research_outputs_phase_e/03_MODEL/EQUATION_CODE_MAP.csv": "6d05583242461588c235a5130fa1335d1e5fed15e47fdca02dd375a921c5ede7",
+    "research_outputs_phase_e/03_MODEL/MATHEMATICAL_MODEL.md": "cc80e91915194efcbbda617a43c4b445ea53d14750d27403299a2f8aea267153",
+    "research_outputs_phase_e/03_MODEL/PARAMETER_SOURCES.md": "77b0ea848ee318b5c1768d87c03825050ef44044711c448131e4daa4d11ee745",
+    "research_outputs_phase_e/03_MODEL/UNITS_AND_PARAMETERS.csv": "e5355cb2e56128de0c88519390cb13db08bd552fad8b9952c2c3e928d15877bf",
+    "research_outputs_phase_e/06_VERIFICATION/CLOSED_LOOP_STABILITY_REPORT.md": "3c3f2469c73f9a494e0748c4795ac189b563f1a70aab5e26eef5849488943966",
+    "research_outputs_phase_e/06_VERIFICATION/E2_DATA_LEAKAGE_AUDIT.md": "de21446950a04be4e0c374df3c8e74af1de0f1185d4161e9e1785ccd861f57b4",
+    "research_outputs_phase_e/06_VERIFICATION/E2_REPAIR_LOG.md": "c2e9c052cf6813789dad7cb314c0a59c8553d06284c1c48c5b8d55004f04e22e",
+    "research_outputs_phase_e/06_VERIFICATION/PLANT_A_B_CROSS_VALIDATION.md": "0d135e0588a88898ec3b3fef55c513463dfc5d5124b54a3b52c1308e68494fd2",
+    "results_phase_e/E2/E2_MODEL_AND_STABILITY_RESULTS.json": "6602a12f3786e8f51c846fd9e0f6a28442fe85d3a35e61ca4916c1ea319a93d5",
+    "results_phase_e/E2/FAILED_ATTEMPT_1_LQI_LIMIT_CYCLE.json": "c04c08693ada038540d4b5d3f373cb5caddf93684a080934a83cc05efa02ac4b",
+    "results_phase_e/E2/FAILED_ATTEMPT_1_LQI_LIMIT_CYCLE.parquet": "363012dd2c3d2c01636fcf33843b1572bbb4b631fe79a93190ce1a78a5e5fe9d",
+    "results_phase_e/E2/background_1h_no_sfr.parquet": "dac0a5ee033371fd3c34dac13b10745c894c1cfb6d442fb1b9c1484093376f06",
+    "results_phase_e/E2/background_1h_pi.parquet": "34c93ee76afcbaba95284fb55c7a70b7868c68c5c1fbcb4d3d2cbda75593e6c7",
+    "results_phase_e/E2/dt_convergence.csv": "86c931fde16100b54382f4fc267efed5b94eee8f70d80507e449f29d2881ced3",
+    "results_phase_e/E2/nonlinear_step_matrix.parquet": "23cbdc5063a1861e30eabca69cbb8a928fab0004ef2a27c3193ba9b76117fe46",
+    "results_phase_e/E2/plant_b_closed_loop_2s_4s.parquet": "1d1b9e0b4b5bce4692c357838725d711491c87c487bb09ab34be566a1851a730",
+    "results_phase_e/E2/small_signal_1e-6.parquet": "17234041e06237d729cdcd752dadeb933ed30af33b312d66908c2c4de41d8e7f"
+  },
+  "repairs": [
+    "Replaced Phase-D gains with exact delayed-ZOH ACE PI at 2/4 s",
+    "Rejected an initially tested aggressive LQI after a 4 s nonlinear limit cycle; retained failure evidence",
+    "Added explicit controller anti-windup and eliminated integrator/state resets",
+    "Centralized delay in CausalDelayChannel for PFR and SFR",
+    "Separated ANDES 100 MVA native units from the 1000 MVA external interface"
+  ],
+  "stage": "E2",
+  "status": "PASSED",
+  "tests": {
+    "background_not_degraded": true,
+    "bess_energy_conservation": true,
+    "discrete_2s_4s_stability": true,
+    "dt_002_vs_001": true,
+    "nonlinear_steps_safe": true,
+    "plant_a_power_balance": true,
+    "plant_b_2s_4s_closed_loop_stable": true,
+    "plant_b_bess_in_network_balance": true,
+    "plant_b_native_interface": true,
+    "shared_delay_timing": true,
+    "small_signal_decay": true,
+    "zero_load_no_self_excitation": true
+  }
+}

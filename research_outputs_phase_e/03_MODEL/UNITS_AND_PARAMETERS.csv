@@ -1,0 +1,17 @@
+symbol,value,unit,source_or_rationale
+omega,per-unit frequency deviation,(f-f0)/f0,Plant A/B public conversion
+f0_A,50,Hz,study convention
+f0_B,60,Hz,native ANDES Kundur case
+Sbase_A,1000,MVA,study base
+Sbase_B,100,MVA,native ANDES case; explicit factor 10 conversion
+H,5.0;4.5,s,aggregate Plant A calibration
+D,1.0;1.0,pu power / pu frequency,aggregate load damping
+R,0.05;0.05,pu frequency / pu power,5% droop
+ACE_bias,21;21,pu power / pu frequency,D+1/R
+SFR_period,4 main;2 sensitivity,s,preregistered Phase-E protocol
+BESS_rating,100 each,MW,resource-tight study design
+BESS_energy,50 each,MWh,30 minute nameplate duration
+BESS_efficiency,0.95 charge;0.95 discharge,fraction,engineering assumption
+BESS_nominal_delay,0.2,s,shared causal delay channel
+BESS_ramp,0.08 up;0.08 down,pu/s on 1000 MVA,physical actuator bound
+GRC,0.012 up;0.015 down,pu/s,mechanical-power derivative bound

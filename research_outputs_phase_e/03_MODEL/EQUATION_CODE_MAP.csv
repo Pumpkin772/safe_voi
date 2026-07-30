@@ -1,0 +1,10 @@
+equation_id,formula,file,symbol
+swing,2H*domega=pm+pb-pL-D*omega-tie,src/direction1freq/models/plant_a_v2.py,_grid_derivative
+tie,dp12=2*pi*f0*T12*(omega1-omega2),src/direction1freq/models/plant_a_v2.py,_grid_derivative
+ACE,ACE=B*omega+signed_tie,src/direction1freq/models/plant_a_v2.py,ace
+GRC,"dpm=sat((pv-pm)/Tt,-Gdown,Gup)",src/direction1freq/models/plant_a_v2.py,_grid_derivative
+shared_PFR_SFR,request=p0-Kpfr*omega+uSFR,src/direction1freq/models/bess_capability_v2.py,step_bess_v2
+delay,delivered=D_tau[request],src/direction1freq/simulation/delay_channel.py,CausalDelayChannel.step
+energy,dE=-(Pplus/etaD+etaC*Pminus)/3600,src/direction1freq/models/bess_capability_v2.py,_energy_derivative
+PI_ZOH_delay,x+=Ad*x+B0*u+B1*u_previous,src/direction1freq/controllers/ace_pi_aw.py,delayed_sampled_closed_loop_matrix
+PlantB_DAE,"g_bus(x,y,p_b)=0",src/direction1freq/models/plant_b_andes_v2.py,run_causal_closed_loop
