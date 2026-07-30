@@ -93,12 +93,18 @@ def _python_solver_versions() -> dict[str, Any]:
 
 
 def _parse_test_log(path: Path) -> dict[str, Any]:
-    text = path.read_text(encoding="utf-8", errors="replace")
+    raw = path.read_bytes()
+    text = raw.decode("utf-16") if raw.startswith((b"\xff\xfe", b"\xfe\xff")) else raw.decode(
+        "utf-8", errors="replace"
+    )
     summary = re.search(
-        r"(?P<passed>\d+) passed(?:, (?P<warnings>\d+) warnings?)? in (?P<seconds>[0-9.]+)s",
+        r"(?P<passed>\d+) passed(?:, (?P<warnings>\d+) warnings?)? in "
+        r"(?P<seconds>[0-9.]+)s(?: \([^)]*\))?",
         text,
     )
-    coverage = re.search(r"^TOTAL\s+\d+\s+\d+\s+(?P<coverage>\d+)%$", text, re.MULTILINE)
+    coverage = re.search(
+        r"^TOTAL\s+\d+\s+\d+\s+(?P<coverage>\d+)%\r?$", text, re.MULTILINE
+    )
     if summary is None or coverage is None:
         raise RuntimeError(f"could not parse test summary from {path}")
     return {
