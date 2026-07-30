@@ -1,0 +1,42 @@
+{
+  "commands": [
+    "python scripts/phase_d/d1_literature.py",
+    "python -m pytest tests/phase_d/test_d1_literature.py -q"
+  ],
+  "failures": [],
+  "gate": "LITERATURE_AND_NOVELTY",
+  "gate_passed": true,
+  "goal": "Lock the scientific question and verified novelty boundary",
+  "inputs_sha256": {
+    "phase_c_literature": "e53f34c9d56a46cd678cee6b3ebb46f6a82be4fdd1f65ca2a24796fceef881fa"
+  },
+  "next_stage": "D2",
+  "outputs_sha256": {
+    "research_outputs_phase_d/literature/LITERATURE_MATRIX.csv": "75cdc0eb12e8ae998841ff3f8fca7605644281528262366c2a6182e2b2d71e47",
+    "research_outputs_phase_d/literature/LITERATURE_REVIEW.md": "52855b1e3bad3a6dde7d94ba2545d91d14efac16cc9324af979ea50576a8ff02",
+    "research_outputs_phase_d/literature/METADATA_VERIFICATION.json": "8ff270ea4cf14c4eaf1b87d7ef241e90edfa6411741e2aae75990b33336d0023",
+    "research_outputs_phase_d/literature/NOVELTY_COMPARISON_TABLE.md": "fdd33b9db8f3bd89b959c401687122cfb10e79b534afb306578b788ec8f56749",
+    "research_outputs_phase_d/literature/SEARCH_LOG.md": "73fd71e9ac16f022333bd75bf540be55172aef44c5b8e78bcfde21107d2cf7c4",
+    "research_outputs_phase_d/literature/SOURCE_BIBLIOGRAPHY.bib": "1a2ab6c8e59dbaafb791c244acf4230594c2f2ef732b5040bf76cd293fa675e4"
+  },
+  "repairs": [
+    "Corrected Lu/Cannon 2019 venue metadata",
+    "Added six set-membership/tube-MPC anchors"
+  ],
+  "stage": "D1",
+  "status": "PASSED",
+  "tests": {
+    "anchors": {
+      "huang_multiple_unknown_modes_tsg": true,
+      "huang_switching_dse_tpwrs": true,
+      "lu_robust_adaptive_tube_acc_2019": true,
+      "nerc_model_quality": true,
+      "recent_set_membership_nmpc": true,
+      "rezaei_koopman_2026": true
+    },
+    "peer_fraction": 0.875,
+    "recent": 32,
+    "total": 56,
+    "verified": 56
+  }
+}
