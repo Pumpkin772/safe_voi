@@ -1,0 +1,50 @@
+{
+  "commands": [
+    "python scripts/phase_e/run_e1_literature.py --refresh-metadata",
+    "python -m pytest tests/phase_e/test_e1_literature.py -q"
+  ],
+  "decision": "CONDITIONAL_INTERSECTION_SUPPORTED_FOR_TESTING",
+  "failures": [],
+  "gate": "SCIENTIFIC_QUESTION_AND_LITERATURE",
+  "gate_passed": true,
+  "goal": "Freeze the scientific question, H1-H5, information boundary, and audited novelty boundary",
+  "inputs_sha256": {
+    "phase_d_literature_matrix": "75cdc0eb12e8ae998841ff3f8fca7605644281528262366c2a6182e2b2d71e47"
+  },
+  "next_stage": "E2",
+  "outputs_sha256": {
+    "research_outputs_phase_e/01_SCIENCE/CLAIM_BOUNDARY.md": "5777f65711dc53523bbaa2d8b283cfce2c102bd134d1fd7cfbc71ae6c15f076f",
+    "research_outputs_phase_e/01_SCIENCE/CLAIM_EVIDENCE_MATRIX.csv": "328f2380d36c6543719153d62743499f204cf2cc9e5703902d856ecdd2724b00",
+    "research_outputs_phase_e/01_SCIENCE/SCIENTIFIC_QUESTION_AND_HYPOTHESES.md": "5ecf62ce5cb39ce7245ff621ec6c2f7c9fd05c07d60a813e697b724d78aaf737",
+    "research_outputs_phase_e/02_LITERATURE/CROSSREF_SNAPSHOT.json": "598948189a17206a5b0ef2533b30f73f9e73ff5920b2c0c537c624ce372c78a6",
+    "research_outputs_phase_e/02_LITERATURE/LITERATURE_MATRIX.csv": "154159555fd4ef45b96231b8d72b910def0100d8e15bb60062bf514f094b2f2c",
+    "research_outputs_phase_e/02_LITERATURE/METADATA_VERIFICATION.json": "cde08287fc368077b377c6a52fa61c23828ef1e87159bef6bbf8c8dca232f438",
+    "research_outputs_phase_e/02_LITERATURE/NOVELTY_COMPARISON.md": "6d2fe37aca5100e19cef7aa9ed0f160cd0061e71ef6437770f9a96b073ff9474",
+    "research_outputs_phase_e/02_LITERATURE/REFERENCES.bib": "f9fc0453e73bacf8fa87b73ddc322d4da194beb5ffb5f165b848dfb6ef5ea4d6",
+    "research_outputs_phase_e/02_LITERATURE/SEARCH_LOG.csv": "3eafff11190761766612ebbbdf705e5104e68807cee3e70440e55f29d95bfab7",
+    "research_outputs_phase_e/02_LITERATURE/SEARCH_PROTOCOL.md": "3189e131eb6eecb5f2ebc94e9bed44c00a835b33fa22bea819e733d290db6ff5"
+  },
+  "repairs": [
+    "Upgraded the Koopman black-box IBR preprint record to its formal EPSR DOI version",
+    "Replaced mutually exclusive coverage accounting with explicit non-exclusive relevance themes",
+    "Added DOI/publisher-verified sources to satisfy every preregistered family quota",
+    "Deduplicated same-title conference/journal versions while retaining both DOI decisions in the audit"
+  ],
+  "stage": "E1",
+  "status": "PASSED",
+  "tests": {
+    "closest_work_rows": 5,
+    "deduplicated_versions": 1,
+    "duplicates": 0,
+    "formal": 69,
+    "theme_counts": {
+      "theme_active_dual_safe_identification": 8,
+      "theme_black_box_ibr_multimode": 11,
+      "theme_data_driven_frequency_control": 12,
+      "theme_multi_area_agc_ace_constrained": 15,
+      "theme_set_adaptive_tube_mpc": 16
+    },
+    "total": 75,
+    "verified": 75
+  }
+}
