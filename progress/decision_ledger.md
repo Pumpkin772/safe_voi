@@ -69,3 +69,10 @@ Further Gate decisions are appended only from preregistered validation/final evi
 - Validation success and audited set coverage are 100% on both Plants. Relative frequency/ACE IAE improvements over fixed allocation are 48.6%/50.6% on Plant A and 27.6%/84.9% on Plant B.
 - Set coverage, recursive feasibility and constraint safety are conditional on the explicitly stated noise, disturbance and SG-backup authority assumptions. No unconditional guaranteed-safe claim is made.
 - C7 preregistered experiment lock and dry run are authorized.
+
+## C7 Gate — PASSED AND LOCKED
+
+- The final manifest contains all 30 known and 50 OOD seeds on both Plants (160 plant/scenario cases), with deterministic scenario and SG-capability assignment.
+- Eight required/optional method statuses, failure classes, metrics, ablations, statistics and compute budget are frozen.
+- A development-seed dry run and final-seed firewall tests passed. Final results had not been observed at lock time.
+- C8 is authorized; from its first final result onward, controller/configuration/threshold edits are prohibited.
