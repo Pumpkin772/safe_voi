@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Direction5 Phase-C Review Manifest",
+  "type": "object",
+  "required": [
+    "package_name",
+    "package_size_bytes",
+    "sha256",
+    "git_commit",
+    "final_status",
+    "science_gates",
+    "files"
+  ],
+  "properties": {
+    "package_name": {
+      "type": "string"
+    },
+    "package_size_bytes": {
+      "type": "integer",
+      "maximum": 536870912
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "git_commit": {
+      "type": "string"
+    },
+    "final_status": {
+      "type": "string"
+    },
+    "science_gates": {
+      "type": "object"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "size_bytes",
+          "sha256"
+        ]
+      }
+    },
+    "known_limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

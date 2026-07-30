@@ -1,0 +1,32 @@
+请先完整阅读当前仓库：
+
+research/phase_c_full_rebuild_and_method_completion/
+
+下的全部文件，然后将其中 `CODEX_GOAL.md` 作为本项目唯一总Goal并立即开始执行。
+
+本轮不是一个小阶段，也不要在内部阶段完成后等待我再次发消息。请按：
+
+C0 → C1 → C2 → C3 → C4 → C5 → C6（根据Gate只选一个分支）→ C7 → C8 → C9
+
+连续执行，阶段之间自行检查成功判据、失败判据和自动处理规则。
+
+关键要求：
+
+- 冻结旧Phase B2，撤回其 `PROBLEM_NOT_MATERIAL` 结论；
+- 先修正频率单位、惯量/阻尼、BESS能量和共享能力约束；
+- 建立两区域Plant A与原生多机RMS/DAE Plant B；
+- 先用公平、滚动、多步NMPC Oracle验证科学问题材料性；
+- 再比较Tdet与Tcrit决定最终方法：被动set-adaptive MPC、safe dual MPC或capability-set robust MPC，只选一个；
+- 普通控制器严禁读取true regime、隐藏参数、真实负荷或未来事件；
+- final seeds禁止调参；不得删除失败或降低评价标准；
+- 只有致命问题才提前停止，但仍必须生成完整负结果包。
+
+最终生成小于512MB的：
+
+DIRECTION5_PHASE_C_FULL_REBUILD_AND_METHOD_COMPLETION_SINGLE_REVIEW_PACKAGE.zip
+
+内容严格符合：
+
+research/phase_c_full_rebuild_and_method_completion/09_FINAL_REVIEW_PACKAGE_SPEC.md
+
+完成后报告ZIP路径、大小、SHA256、Git commit、全部Gate、选定方法分支、最终研究状态和最严重的限制。
