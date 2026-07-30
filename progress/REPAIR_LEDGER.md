@@ -112,6 +112,14 @@
 - Scientific standards changed: no; this is validation repair round 1 of the allowed two, with seeds/scenarios/thresholds unchanged.
 - Rerun result: bounded Plant B trajectories and qualified solvers; subsequent same-round estimator repair was required before performance interpretation.
 
+## C9-R1 — Solver license environment not exported to pytest
+
+- Failure class: environment/license discovery.
+- Evidence: the first full coverage run completed 627 tests but two legacy production-solver tests raised MOSEK `err_missing_license_file`; no Phase C test failed.
+- Repair: export the user-provided external `MOSEKLM_LICENSE_FILE` and `GRB_LICENSE_FILE` paths only to the test process and rerun the complete suite. License files and paths are excluded from the review package environment record.
+- Scientific standards changed: no.
+- Rerun result: complete coverage run passed 629 tests with two retained numerical warnings and 68% repository-wide coverage.
+
 ## C5-R1 — Ramp/delay source feature ordering
 
 - Failure class: identification code.

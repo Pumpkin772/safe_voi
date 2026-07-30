@@ -84,3 +84,10 @@ Further Gate decisions are appended only from preregistered validation/final evi
 - Continuous performance fails decisively. Relative to robust capability-set MPC, proposed known frequency/ACE IAE changes are −2.95%/−32.94%; OOD changes are −37.32%/−121.31% (negative means worse).
 - Solver infeasibility is 0 and online time passes; therefore the failure is method performance, not code or compute.
 - No post-final tuning, scenario change or controller substitution is permitted. C9 must package the complete negative method result with final status `METHOD_NOT_SUPPORTED_BY_EVIDENCE`.
+
+## C9 Gate — COMPLETE NEGATIVE METHOD RESULT
+
+- Full regression and Phase C suite: 629 passed, zero failed, two retained warnings, 68% coverage.
+- Final status is `METHOD_NOT_SUPPORTED_BY_EVIDENCE`; the problem remains material and C6-A remains the uniquely selected tested branch.
+- The 00–14 review package includes the governing specification, complete source/tests/scripts, frozen configs, raw episode metrics, all failures/statuses, summary tables, figures/source data, environment/Git manifests and negative-result interpretation.
+- External solver licenses are excluded. The package is CRC-checked and must remain below 512MB.
