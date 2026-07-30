@@ -1,0 +1,41 @@
+schema: direction1.phase_e.frozen.v1
+environment: topo_sfr
+scientific:
+  mechanisms: [headroom, ramp, delay, energy, availability]
+  sg_tensions_pu: {adequate: 0.10, scarce: 0.05, critical: 0.025}
+  sfr_periods_s: [2.0, 4.0]
+  development_seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  validation_seeds: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+  final_seed_firewall_start: 100
+materiality_gate:
+  oracle_episode_qualification_rate_min: 0.95
+  oracle_residual_p99_max: 1.0e-5
+  success_rate_difference_min: 0.10
+  continuous_improvement_min: 0.10
+  continuous_metrics_required: 2
+  mechanisms_required: 2
+  sg_tensions_required: 2
+  J_mat: 0.02
+passive_gate:
+  joint_truth_coverage_min: 0.95
+  false_alarm_max: 0.05
+  update_before_Tcrit_probability_min: 0.80
+  mechanisms_required: 3
+  normalized_width_max: 0.85
+active_gate:
+  probe_amplitude_pu: 0.04
+  probe_energy_budget_mwh: 1.50
+  probe_mileage_budget_pu: 2.50
+  update_before_Tcrit_probability_min: 0.80
+  mechanisms_required: 3
+method_gate:
+  validation_success_allowed_drop: 0.02
+  core_improvement_min: 0.08
+  core_metrics_required: 2
+  solver_infeasibility_max: 0.01
+  solve_time_fraction_of_period_p99_max: 0.50
+selected_branch:
+  branch: R
+  rule: G3_pass_and_G4_fail_and_G5_fail
+  method: Capability-Set Robust Tube MPC
+  immutable_after_stage: E6

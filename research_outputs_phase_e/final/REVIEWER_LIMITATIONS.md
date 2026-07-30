@@ -1,0 +1,3 @@
+# Reviewer-style limitations
+
+The Oracle online implementation is a real-time-iteration nonlinear multiple-shooting approximation with independent nonlinear multi-start qualification, not a globally optimal exact Oracle. E3 sensitivity did not rerun the entire matrix at doubled horizon/refined integration. Plant B uses a native ANDES Kundur network but a reduced controller prediction model. E6 infeasibility is concentrated in delay scenarios and exceeds the frozen threshold. E7/E8 were governance-stopped, so theory and final known/OOD evidence are absent by design. These omissions constrain publication claims to a carefully documented negative method result.
