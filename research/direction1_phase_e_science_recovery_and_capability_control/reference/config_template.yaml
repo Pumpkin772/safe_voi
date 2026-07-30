@@ -1,0 +1,69 @@
+project:
+  name: DIRECTION1_PHASE_E
+  primary_sfr_period_s: 4.0
+  sensitivity_sfr_period_s: 2.0
+  nominal_frequency_hz: 50.0
+  system_base_mva: 1000.0
+
+plants:
+  plant_a:
+    dt_s: 0.02
+    inertia_s: [5.0, 4.5]
+    damping_pu_per_pu_frequency: [1.0, 1.0]
+    droop_pu_frequency_per_pu_power: [0.05, 0.05]
+    tie_coefficient_pu_per_rad: 0.07
+  plant_b:
+    engine: andes
+    case: kundur_full
+    dt_s: 0.01
+    bess_buses: [5, 9]
+
+bess:
+  rating_mw: [100.0, 100.0]
+  energy_mwh: [50.0, 50.0]
+  soc_min: 0.10
+  soc_max: 0.90
+  eta_charge: 0.95
+  eta_discharge: 0.95
+  pfr_gain: 2.5
+  actuator_time_constant_s: 0.15
+  global_power_pu: 0.10
+  global_ramp_pu_s: 0.08
+  maximum_delay_s: 2.0
+
+science_gates:
+  materiality:
+    success_rate_gain_pp: 10.0
+    metric_improvement_fraction: 0.10
+    minimum_mechanisms: 2
+  passive:
+    joint_coverage: 0.95
+    false_alarm_rate: 0.05
+    timing_probability: 0.80
+    minimum_mechanisms: 3
+  active:
+    timing_probability: 0.80
+    minimum_mechanisms: 3
+    maximum_failure_rate_increase_pp: 0.0
+  method:
+    maximum_success_rate_loss_pp: 2.0
+    minimum_metric_improvement_fraction: 0.08
+    minimum_improved_metrics: 2
+    maximum_solver_infeasibility_rate: 0.01
+
+seeds:
+  development: [0, 49]
+  validation: [100, 149]
+  final: [1000, 1099]
+
+solvers:
+  linear_mpc: gurobi
+  nonlinear_oracle: ipopt
+  sdp_or_rpi: mosek
+  fallback: clarabel
+
+retention:
+  episode_metrics: float64
+  control_grid_trajectories: float32
+  detailed_trajectories: failures_representatives_and_plant_b
+  parquet_compression: zstd

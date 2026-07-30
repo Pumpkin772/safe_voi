@@ -1,0 +1,48 @@
+{
+  "commands": [
+    "python research/direction1_phase_e_science_recovery_and_capability_control/reference/independent_audit_reproduction.py --source-root .",
+    "python -m scripts.phase_e.run_e0_forensic",
+    "python -m pytest tests/phase_e/test_e0_forensic.py -q"
+  ],
+  "failures": [],
+  "gate": {
+    "decision": "PHASE_D_GATE_INVALIDATED_BY_CLOSED_LOOP_AND_EVALUATION_DEFECTS",
+    "name": "G0_BASELINE",
+    "passed": true
+  },
+  "goal": "Freeze Phase D and reproduce the defects that invalidate its H2 scientific Gate",
+  "inputs_sha256": {
+    "independent_audit_reference": "7cd4630b1abe6406ff13c51f9aad7f40dc6f3c8393a01c4bbb48a1762c4a5fce",
+    "phase_d_zip": "ed471534e162d5748cb8d735d9ca1f017ac6ad2c7ab9c125c6351e6ef658ebc6",
+    "phase_e_goal": "71fcdf41505792fc3a4f00fc0033f0eb50b87d072223926a6870a24ba9e660bc"
+  },
+  "next_stage": "E1",
+  "outputs_sha256": {
+    "research_outputs_phase_e/forensic/INDEPENDENT_AUDIT_COMPARISON.csv": "e76379177543f12deed40a5e80820a1f50eefc888b1a37b7d89c7cf5e5cd3414",
+    "research_outputs_phase_e/forensic/INDEPENDENT_AUDIT_RESULTS.json": "4118ce5a53e89b56892fd007f69187cf2ba8367c4c8e3e98ed35a46f0d8291dc",
+    "research_outputs_phase_e/forensic/PHASE_D_EVIDENCE_INDEX.csv": "33075c4e7cc7d45e5a1100b967558b22a6d8de23f70a372e8d060dd0f9fdf9cc",
+    "research_outputs_phase_e/forensic/PHASE_D_INVALIDATED_CLAIMS.json": "9238cb643b01066b8b99142141eb9672e869e55cef9ff17ce7489185e89588af",
+    "research_outputs_phase_e/forensic/PHASE_D_INVALIDATION_REPORT.md": "88cc8d284fd2b77b3c8911ea3d5572b1ecc828506a916db188102087889469b0",
+    "research_outputs_phase_e/forensic/PHASE_E_GOVERNANCE_INVENTORY.csv": "23965758ac94c567a6d3ca793cb00e53d09828a6172ec80c35f4f8847cd60ce1"
+  },
+  "repairs": [
+    "withdrew invalid Phase D H2 generalization; no Phase D evidence modified"
+  ],
+  "stage": "E0",
+  "status": "PASSED",
+  "tests": {
+    "independent_audit_fields": 33,
+    "independent_audit_mismatches": 0,
+    "phase_d_manifest_bad_hashes": 0,
+    "phase_d_manifest_records": 240,
+    "phase_d_tag_commit": "11f0379e0e7bd9b1ddf97be8d88b7f918bbb52e9",
+    "phase_d_zip_crc": "PASS",
+    "phase_d_zip_sha256_match": true,
+    "phase_e_branch": "direction1-phase-e-science-recovery",
+    "source_findings": {
+      "all_failed_selects_last_allowed_candidate": true,
+      "control_loss_deficit_area": true,
+      "update_time_alarm_only": true
+    }
+  }
+}

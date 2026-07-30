@@ -1,0 +1,28 @@
+请先完整阅读当前仓库：
+
+research/direction1_phase_e_science_recovery_and_capability_control/
+
+下的全部文件，然后将其中 CODEX_GOAL.md 作为本项目唯一总Goal并立即执行。
+
+本轮请按 E0→E1→E2→E3→E4→E5（按Gate需要）→E6→E7→E8→E9 连续完成，不要在内部阶段后等待我再次发消息。
+
+关键要求：
+
+1. 冻结旧Phase D，并将其结论改为“旧闭环和评价缺陷使H2 Gate无效”；
+2. 先修复名义闭环自激、delay update-time漏记、control-loss time定义和候选选择逻辑；
+3. 先建立稳定2/4s多区域SFR、物理Plant A和原生ANDES Plant B；
+4. 先用公平rolling current-capability NMPC Oracle验证科学问题材料性；
+5. 再判断被动能力集合是否能在Tcrit前更新；
+6. 被动通过选P，被动失败但安全主动辨识通过选A，否则选R；
+7. 最终只实现一个方法分支，所有叫MPC的方法必须真正滚动求解有限时域优化；
+8. 普通控制器禁止读取真能力、隐藏参数、真负荷和未来事件；
+9. final锁定后禁止调参，不得删除失败或降低标准；
+10. 最终生成小于512MB的：
+
+DIRECTION1_PHASE_E_SCIENCE_RECOVERY_AND_CAPABILITY_CONTROL_SINGLE_REVIEW_PACKAGE.zip
+
+内容严格符合：
+
+research/direction1_phase_e_science_recovery_and_capability_control/11_FINAL_REVIEW_PACKAGE_SPEC.md
+
+完成后报告ZIP路径、大小、SHA256、Git commit、全部Gate、H1–H5、选定方法、最佳基线、Plant A/B known/OOD结果、失败证据和最终研究状态。
