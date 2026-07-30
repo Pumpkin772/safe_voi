@@ -251,6 +251,20 @@ class TwoAreaPlantAV2:
         c[1, 2] = -1.0
         return a, b, c, e
 
+    def linear_continuous_model_separate(
+        self,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Return the nominal model with separate [SG1,B1,SG2,B2] inputs."""
+
+        a, _combined, c, e = self.linear_continuous_model(sg_fraction=0.5)
+        p = self.parameters
+        b = np.zeros((9, 4))
+        b[3, 0] = 1.0 / p.governor_time_constant_s[0]
+        b[7, 1] = 1.0 / p.bess.actuator_time_constant_s
+        b[4, 2] = 1.0 / p.governor_time_constant_s[1]
+        b[8, 3] = 1.0 / p.bess.actuator_time_constant_s
+        return a, b, c, e
+
     @staticmethod
     def state_vector(state: PlantAStateV2) -> np.ndarray:
         return np.r_[

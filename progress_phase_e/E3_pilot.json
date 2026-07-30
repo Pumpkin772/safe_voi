@@ -1,0 +1,52 @@
+{
+  "best_deployable_baseline": "nominal_mpc",
+  "commands": [
+    "python scripts/phase_e/run_e3_materiality.py --pilot",
+    "python scripts/phase_e/run_e3_materiality.py --workers 4",
+    "python -m pytest tests/phase_e/test_e3_materiality.py -q"
+  ],
+  "decision": "PROBLEM_NOT_MATERIAL",
+  "failures": [
+    "at_least_two_mechanisms",
+    "at_least_two_sg_tensions",
+    "plant_a_b_direction_consistent"
+  ],
+  "gate": "G3_MATERIALITY",
+  "gate_components": {
+    "at_least_two_mechanisms": false,
+    "at_least_two_sg_tensions": false,
+    "oracle_solver_qualification": true,
+    "plant_a_b_direction_consistent": false
+  },
+  "gate_passed": false,
+  "goal": "Qualify O2 and test whether current capability knowledge is materially valuable",
+  "mechanisms_passing": 0,
+  "next_stage": "E9",
+  "oracle_qualified": true,
+  "outputs_sha256": {
+    "figures_phase_e/E3/e3_materiality_pilot.png": "a7ab66ab14fa5e8915701e46b70e51930ad5dc50e2b24e07863107adf4375d07",
+    "research_outputs_phase_e/04_ORACLE/INFORMATION_FAIRNESS_AUDIT.md": "6efdf0b42e7552fe46bc85d48f676145f40ac590f5fd1139bfb82bf336ad62c1",
+    "research_outputs_phase_e/04_ORACLE/ORACLE_FORMULATION.md": "d0fab22d00dbcdf13734836ae6596b5ec977a3e307cf735aa3c8b2c8bd27fb27",
+    "research_outputs_phase_e/09_SUMMARY/E3_MATERIALITY_REPORT.md": "fcd8633488966b76e6513b95aed9f0afc49400c226c9c5854a17e36ec73e5dfa",
+    "results_phase_e/E3/pilot/E3_CONTROL_RATE_TRACES.parquet": "045a19a381c71f7d8338ba6310f80c8b080a912fa3fd335c2a68abbeee911e05",
+    "results_phase_e/E3/pilot/E3_EXPERIMENT_MANIFEST.csv": "151af1b867755e4560ad6d195cfe1ae6abbad3091f7c155006c7e39537941f57",
+    "results_phase_e/E3/pilot/E3_MATERIALITY_EPISODES.parquet": "a1ae4aaf69b6f58477b7b24740cd71652f2ca891f102bafbf460c0ea67f1af21",
+    "results_phase_e/E3/pilot/E3_MATERIALITY_SUMMARY.csv": "a92e66f013870d1856a11439f292ae70afc7fa7f9cedd9496f005ffd25f1f76e",
+    "results_phase_e/E3/pilot/ORACLE_QUALIFICATION.csv": "c026e6ab3f10257a03e5ef091bddffcca84f83b69932a777bf5ec9facb30b97f",
+    "results_phase_e/E3/pilot/PLANT_B_DIRECTION_CHECK.parquet": "4c20f8c6a5239d107aadbe02f152fc1f433307935c080800a85db40ec61a72ca",
+    "results_phase_e/E3/pilot/TCRIT_DEVELOPMENT.csv": "880013aef1f160c07fad9e432db2bf06e7322a4802ffca214b1553e5ee1d0e02"
+  },
+  "repairs": [],
+  "run_type": "pilot",
+  "sg_tensions_passing": 0,
+  "stage": "E3",
+  "status": "FAILED",
+  "tests": {
+    "minimum_main_seeds_per_mechanism_tension": 5,
+    "oracle_episode_qualification_rate": 1.0,
+    "oracle_residual_p99": 1.1478557711244793e-07,
+    "plant_a_episode_rows": 120,
+    "plant_a_unique_scenarios": 20,
+    "plant_b_rows": 2
+  }
+}

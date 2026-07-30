@@ -1,0 +1,53 @@
+{
+  "best_deployable_baseline": "fixed_allocation_pi",
+  "commands": [
+    "python -m scripts.phase_e.run_e3_materiality --workers 4",
+    "python -m scripts.phase_e.reanalyze_e3_full",
+    "python -m pytest tests/phase_e/test_e3_materiality.py -q"
+  ],
+  "decision": "CONTINUE_TO_E4",
+  "failures": [],
+  "gate": "G3_MATERIALITY",
+  "gate_components": {
+    "at_least_two_mechanisms": true,
+    "at_least_two_sg_tensions": true,
+    "oracle_solver_qualification": true,
+    "plant_a_b_direction_consistent": true
+  },
+  "gate_passed": true,
+  "goal": "Qualify O2 and test whether current capability knowledge is materially valuable",
+  "mechanisms_passing": 5,
+  "next_stage": "E4",
+  "oracle_qualified": true,
+  "outputs_sha256": {
+    "figures_phase_e/E3/e3_materiality_full.png": "4d0ab799c73f56099bb7b903c99d656b0b9f37cd7212957f357e0aa1a5092565",
+    "research_outputs_phase_e/04_ORACLE/INFORMATION_FAIRNESS_AUDIT.md": "6efdf0b42e7552fe46bc85d48f676145f40ac590f5fd1139bfb82bf336ad62c1",
+    "research_outputs_phase_e/04_ORACLE/ORACLE_FORMULATION.md": "d0fab22d00dbcdf13734836ae6596b5ec977a3e307cf735aa3c8b2c8bd27fb27",
+    "research_outputs_phase_e/09_SUMMARY/E3_MATERIALITY_REPORT.md": "749457da22a412d555defcc52c4f1d2ffdeeec9853af6c7d4d19cb2dea089103",
+    "results_phase_e/E3/full/E3_CONTROL_RATE_TRACES.parquet": "53f79446b8fba78f15af24752de2dd8f050b7a69b0f566454261d9722be06de1",
+    "results_phase_e/E3/full/E3_EXPERIMENT_MANIFEST.csv": "23d96f3245e7628ffc16bdfabc12c7ba893b0acba87bd3b32eacce52e5292f40",
+    "results_phase_e/E3/full/E3_MATERIALITY_EPISODES.parquet": "12ee81026caef082d08abadcb2bf75510c6c3feb368c84e288d04451fb2e4d29",
+    "results_phase_e/E3/full/E3_MATERIALITY_SUMMARY.csv": "45c3d427dfcdf2e32bee0ae9602a53d0c1d064a2c3a404d77d989988a2f91abc",
+    "results_phase_e/E3/full/ORACLE_QUALIFICATION.csv": "748b23884ba19ab0f1509bbf69b75d37ea287bc80d135c4ce93a3ad82aecda61",
+    "results_phase_e/E3/full/ORACLE_RESIDUAL_BOOKKEEPING_REANALYSIS.csv": "4437a6054a58ec56bfaaa66546956ac7e174935b437e6104e10ea8b3ed5d6d71",
+    "results_phase_e/E3/full/PLANT_B_DIRECTION_CHECK.parquet": "b8ccc14f9a8d1cd44afa5ff4704f6e06abbb8559023e64adcf92af42f8b7eae2",
+    "results_phase_e/E3/full/TCRIT_DEVELOPMENT.csv": "7f05a4d3349f33a55ab37aa1839d1941bd5fa11f3564a05dede371c8b58a4185"
+  },
+  "repairs": [
+    "Residual p99 is evaluated over finite successful-solve residuals; failed solves remain counted by the independent success-rate and fallback fields. No episode, algorithm, scenario, threshold, or seed changed."
+  ],
+  "run_type": "full",
+  "sg_tensions_passing": 3,
+  "stage": "E3",
+  "status": "PASSED",
+  "tests": {
+    "minimum_main_seeds_per_mechanism_tension": 20,
+    "oracle_episode_qualification_rate": 0.9775,
+    "oracle_nonfinite_failed_solve_episode_count": 22,
+    "oracle_residual_basis": "finite successful-solve residual summaries; failures retained by solver-success and fallback fields",
+    "oracle_successful_solve_residual_p99": 2.233185843775905e-07,
+    "plant_a_episode_rows": 2400,
+    "plant_a_unique_scenarios": 400,
+    "plant_b_rows": 50
+  }
+}
