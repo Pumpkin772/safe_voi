@@ -1,0 +1,134 @@
+{
+  "stage": "D3",
+  "goal": "Establish causal passive current-capability set coverage",
+  "status": "FAILED",
+  "gate": "H2_PASSIVE_CAPABILITY_SET",
+  "gate_passed": false,
+  "inputs_sha256": {
+    "plant_model": "12326569e84955fdfb739472cd3e49f09439227057f69ea808456d5049b41699"
+  },
+  "commands": [
+    "python scripts/phase_d/d3_capability_gate.py",
+    "python -m pytest tests/phase_d/test_d3_causal_estimation.py -q"
+  ],
+  "tests": {
+    "joint_coverage": 0.7946979166666668,
+    "power_coverage": 0.8632256944444445,
+    "ramp_coverage": 0.9000486111111112,
+    "delay_coverage": 0.9804861111111111,
+    "energy_coverage": 1.0,
+    "false_alarm_rate": 0.0,
+    "prechange_alarm_rate": 0.0,
+    "mechanism_update_before_loss": {
+      "delay": 0.0,
+      "headroom": 0.4166666666666667,
+      "ramp": 0.0
+    },
+    "mechanisms_passing": 0,
+    "load_rmse_pu": 0.002926977985942509,
+    "timing_evaluated_episodes": 36,
+    "not_evaluated_timing_episodes": 84,
+    "h2_passed": false
+  },
+  "failures": [
+    "H2 evidence threshold not met"
+  ],
+  "repairs": [
+    {
+      "round": 0,
+      "parameters": {
+        "noise_bound_pu": 0.0015,
+        "cusum_drift": 1.0,
+        "cusum_threshold": 8.0
+      },
+      "development": {
+        "joint_coverage": 0.9927048611111111,
+        "power_coverage": 0.9981041666666667,
+        "ramp_coverage": 0.9990659722222223,
+        "delay_coverage": 0.9951076388888889,
+        "energy_coverage": 1.0,
+        "false_alarm_rate": 0.10416666666666667,
+        "prechange_alarm_rate": 0.016666666666666666,
+        "mechanism_update_before_loss": {
+          "delay": 0.5,
+          "headroom": 0.3333333333333333,
+          "ramp": 0.5833333333333334
+        },
+        "mechanisms_passing": 0,
+        "load_rmse_pu": 0.002924315170808371,
+        "timing_evaluated_episodes": 36,
+        "not_evaluated_timing_episodes": 84,
+        "h2_passed": false
+      }
+    },
+    {
+      "round": 1,
+      "parameters": {
+        "noise_bound_pu": 0.002,
+        "cusum_drift": 1.2,
+        "cusum_threshold": 10.0
+      },
+      "development": {
+        "joint_coverage": 0.9904375000000001,
+        "power_coverage": 0.99653125,
+        "ramp_coverage": 0.9980347222222223,
+        "delay_coverage": 0.9942569444444445,
+        "energy_coverage": 1.0,
+        "false_alarm_rate": 0.0,
+        "prechange_alarm_rate": 0.0,
+        "mechanism_update_before_loss": {
+          "delay": 0.3333333333333333,
+          "headroom": 0.25,
+          "ramp": 0.3333333333333333
+        },
+        "mechanisms_passing": 0,
+        "load_rmse_pu": 0.002924315170808371,
+        "timing_evaluated_episodes": 36,
+        "not_evaluated_timing_episodes": 84,
+        "h2_passed": false
+      }
+    },
+    {
+      "round": 2,
+      "parameters": {
+        "noise_bound_pu": 0.0025,
+        "cusum_drift": 1.5,
+        "cusum_threshold": 12.0
+      },
+      "development": {
+        "joint_coverage": 0.7373993055555557,
+        "power_coverage": 0.8030868055555556,
+        "ramp_coverage": 0.8864583333333333,
+        "delay_coverage": 0.983701388888889,
+        "energy_coverage": 1.0,
+        "false_alarm_rate": 0.0,
+        "prechange_alarm_rate": 0.0,
+        "mechanism_update_before_loss": {
+          "delay": 0.0,
+          "headroom": 0.16666666666666666,
+          "ramp": 0.0
+        },
+        "mechanisms_passing": 0,
+        "load_rmse_pu": 0.002924315170808371,
+        "timing_evaluated_episodes": 36,
+        "not_evaluated_timing_episodes": 84,
+        "h2_passed": false
+      }
+    }
+  ],
+  "outputs_sha256": {
+    "results_phase_d/D3/h2_gate.json": "7d8f334e4aa746d4248a9e898a86e104e8de2478f4199561a3bc684af0c718a1",
+    "results_phase_d/D3/validation_episode_summary.parquet": "0a853c740094b5503754dd25ecd16d199f4a426fcfada0577ff6f0263442de67",
+    "results_phase_d/D3/representative_causal_traces.parquet": "2eb49b1a7c82bdc92449d104ce1ecd60bafe5ec387691378e739f415c92d2f70",
+    "results_phase_d/D3/capability_coverage_summary.csv": "525cc0c61b164bd5e04796f5119d770d9c58f247c2ffa82f256468e148662912",
+    "results_phase_d/D3/update_before_loss.csv": "41285c125302342fe9c2e8282e4f3eee6380a79a029c578b5286b63bee05e641",
+    "results_phase_d/D3/structural_nonidentifiability.csv": "0d6c6018feaab795471d2a2e35213ee29b2d72d52274a66ecd59378e87fc8a85",
+    "figures_phase_d/D3/capability_coverage.png": "10a18072f6d3965c3d947eb8e9f5eaea3f330b98f6c11063e4882c6794f38e38",
+    "figures_phase_d/D3/causal_update_timing.png": "d16465da499c014e41bee048b69a2635bd2a0218db02734e26fff4c7b937b786",
+    "research_outputs_phase_d/identification/CAPABILITY_SET_MODEL.md": "e7c545f2fc0eb5f87c4a4f5e04a1fc16503b6b443efb916433dc3da15f75650a",
+    "research_outputs_phase_d/identification/CAUSALITY_AUDIT.md": "bc96c1fba8448b3ab7965960b896f04a66e5b6233a9ab93e9dafd15447d36512",
+    "research_outputs_phase_d/identification/H2_GATE_REPORT.md": "220104fccec0f32bd631fa3eb70c3772ffcc4a70b10c022a8095fc98b636fff1",
+    "research_outputs_phase_d/identification/STRUCTURAL_NONIDENTIFIABILITY_CERTIFICATES.md": "8e171cfc2a7d3ab1f27e379c6100c7d3507a1478cb2103e9cbac06e94fb1b19f"
+  },
+  "next_stage": "D7_NEGATIVE_PACKAGE"
+}
