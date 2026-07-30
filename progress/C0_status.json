@@ -1,0 +1,33 @@
+{
+  "stage": "C0",
+  "status": "PASSED",
+  "inputs_sha256": {
+    "phase_b2_review_zip": "5280a39e97a99f0bd831d0d5d2f72c7faae6b04b45e5e8fcf5b644325c9b1ebe",
+    "codex_goal": "6909f035b3082ffd533b1c22c2e7b806d8dd4a33ca624b953f27322397054b56"
+  },
+  "outputs": [
+    "artifacts_phase_c/baseline/baseline_freeze.json",
+    "artifacts_phase_c/baseline/source_inventory.csv",
+    "artifacts_phase_c/baseline/environment.json",
+    "logs_phase_c/C0/pytest_baseline.log",
+    "logs_phase_c/C0/pytest_baseline.xml",
+    "logs_phase_c/C0/fresh_import_install.log",
+    "logs_phase_c/C0/fresh_import_check.log"
+  ],
+  "tests": {
+    "baseline_pytest_passed": 649,
+    "baseline_pytest_warnings": 2,
+    "baseline_pytest_failed": 0,
+    "fresh_environment_editable_install": true,
+    "fresh_environment_import": true
+  },
+  "success_criteria": {
+    "phase_b2_evidence_archived_read_only": true,
+    "working_tree_baseline_identified": true,
+    "phase_b2_files_overwritten": false,
+    "complete_source_enumerable": true
+  },
+  "failure_diagnosis": [],
+  "repairs": ["C0-R1"],
+  "next_stage": "C1"
+}
