@@ -1,0 +1,70 @@
+{
+  "commands": [
+    "python -m scripts.phase_e.run_e4_passive_identifiability",
+    "python -m pytest tests/phase_e/test_e4_passive.py -q"
+  ],
+  "decision": "CONTINUE_TO_E5",
+  "failures": [
+    "No passive baseline jointly met coverage, false-alarm, >=3/5 timing, set contraction, and Plant A/B direction requirements."
+  ],
+  "gate": "G4_PASSIVE",
+  "gate_passed": false,
+  "gate_table": [
+    {
+      "estimator": "glr_set_reset",
+      "joint_truth_coverage": 1.0,
+      "mean_final_normalized_width": 1.0,
+      "mechanisms_passing_timing": 0,
+      "no_change_false_alarm_rate": 0.0,
+      "passive_gate_pass": false,
+      "plant_a_b_direction_consistent": true,
+      "plant_b_mechanisms_passing_timing": 0
+    },
+    {
+      "estimator": "imm_interval",
+      "joint_truth_coverage": 1.0,
+      "mean_final_normalized_width": 1.0,
+      "mechanisms_passing_timing": 0,
+      "no_change_false_alarm_rate": 0.0,
+      "passive_gate_pass": false,
+      "plant_a_b_direction_consistent": true,
+      "plant_b_mechanisms_passing_timing": 0
+    },
+    {
+      "estimator": "set_membership",
+      "joint_truth_coverage": 0.9613285714285715,
+      "mean_final_normalized_width": 1.0,
+      "mechanisms_passing_timing": 0,
+      "no_change_false_alarm_rate": 0.0,
+      "passive_gate_pass": false,
+      "plant_a_b_direction_consistent": true,
+      "plant_b_mechanisms_passing_timing": 0
+    }
+  ],
+  "goal": "Determine whether passive capability sets update before control loss",
+  "next_stage": "E5",
+  "outputs_sha256": {
+    "figures_phase_e/E4/e4_passive_timing.png": "f96bbe1eb7275647b4d4a7cb4fe82a20f9a36fd7ebac9f51d6676f963395a1c6",
+    "research_outputs_phase_e/05_IDENTIFICATION/PASSIVE_IDENTIFIABILITY_REPORT.md": "301a86cb89dc9897662de900d9d08c5da178d11ceecb5471b2c753ab9c6c9169",
+    "research_outputs_phase_e/09_SUMMARY/E4_BRANCH_DECISION.md": "a081e11aea0f99c77c468768c0cac54136c0d9173e3587684c6e6c8164aa330d",
+    "results_phase_e/E4/E4_ESTIMATOR_GATE_SUMMARY.csv": "d3acfb31dfa5be50a1dc1094ebb008ef3eb674529f0c9362a2bb91e3dc68dd37",
+    "results_phase_e/E4/E4_NO_CHANGE_FALSE_ALARM.csv": "a16fdf5710b4fa198f447bce8cb11ffd112db1838ccd741ea63a5672ed18f269",
+    "results_phase_e/E4/E4_PASSIVE_COVERAGE_TIMING.csv": "7a930219451014f5ffe2165d047d855f374c2b09bf6a2b18dca3ea71e3f77464",
+    "results_phase_e/E4/E4_PASSIVE_EPISODES.parquet": "1c6731f4148f97c916908be092e7ddd8f30d4ebb460aac2088b3fd1189d7edc8",
+    "results_phase_e/E4/E4_PLANT_B_PASSIVE.parquet": "4ed6df9d42a5676c3c8888babc6f2f742f25e1ce43f6473f53abbb608c111846",
+    "results_phase_e/E4/E4_SET_EVENTS.parquet": "0ae9f49237f9b4d32c6dac0358bc43249ff9559678127e2bb7b7b635d57f8a9f"
+  },
+  "repairs": [],
+  "selected_passive_estimator": "none_qualified",
+  "stage": "E4",
+  "status": "FAILED",
+  "tests": {
+    "accident_300s_episode_rows": 15,
+    "main_episode_rows": 1200,
+    "normal_background_duration_s": 3600,
+    "not_evaluated_timing_rows": 666,
+    "plant_b_episode_rows": 30,
+    "random_change_episode_rows": 150,
+    "set_event_rows": 43836
+  }
+}
