@@ -1,0 +1,102 @@
+.......................................s................................ [ 11%]
+........................................................................ [ 22%]
+......F................................................................. [ 33%]
+........................................................................ [ 44%]
+........................................................................ [ 55%]
+........................................................................ [ 66%]
+........................................................................ [ 77%]
+........................................................................ [ 88%]
+...............................F........................................ [ 99%]
+.                                                                        [100%]
+================================== FAILURES ===================================
+__________ test_singleton_epigraph_is_anchored_and_tight_at_optimum ___________
+
+>   ???
+
+C:\Users\Lenovo\Desktop\zhr\研究生材料\方向5实现\d5_hidden_mode_frequency_from_scratch\tests\test_final_arx_mpc.py:151: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+D:\Miniconda3\envs\topo_sfr\Lib\site-packages\cvxpy\problems\problem.py:687: in solve
+    return solve_func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+D:\Miniconda3\envs\topo_sfr\Lib\site-packages\cvxpy\problems\problem.py:1144: in _solve
+    solution = solving_chain.solve_via_data(
+D:\Miniconda3\envs\topo_sfr\Lib\site-packages\cvxpy\reductions\solvers\solving_chain.py:562: in solve_via_data
+    return self.solver.solve_via_data(data, warm_start, verbose,
+D:\Miniconda3\envs\topo_sfr\Lib\site-packages\cvxpy\reductions\solvers\conic_solvers\mosek_conif.py:253: in solve_via_data
+    rescode = task.optimize()
+              ^^^^^^^^^^^^^^^
+D:\Miniconda3\envs\topo_sfr\Lib\site-packages\mosek\__init__.py:11416: in optimize
+    return self.__optimizetrm__1(*args,**kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <mosek.Task object at 0x00000210D91746D0>
+
+    def __optimizetrm__1(self):
+      _res_optimizetrm,_retargs_optimizetrm = self.__obj.optimizetrm__1()
+      if _res_optimizetrm != 0:
+        _,_msg_optimizetrm = self.__getlasterror(_res_optimizetrm)
+>       raise Error(rescode(_res_optimizetrm),_msg_optimizetrm)
+E       mosek.Error: rescode.err_missing_license_file(1008): License cannot be located. The default search path is ';C:\Users\Administrator\mosek\mosek.lic;'.
+
+D:\Miniconda3\envs\topo_sfr\Lib\site-packages\mosek\__init__.py:11405: Error
+___ test_native_k6_n20_production_solver_regression_for_degenerate_beliefs ____
+
+>   ???
+
+C:\Users\Lenovo\Desktop\zhr\研究生材料\方向5实现\d5_hidden_mode_frequency_from_scratch\tests\test_sd_bmpc_problem.py:403: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+D:\Miniconda3\envs\topo_sfr\Lib\site-packages\cvxpy\problems\problem.py:687: in solve
+    return solve_func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+D:\Miniconda3\envs\topo_sfr\Lib\site-packages\cvxpy\problems\problem.py:1144: in _solve
+    solution = solving_chain.solve_via_data(
+D:\Miniconda3\envs\topo_sfr\Lib\site-packages\cvxpy\reductions\solvers\solving_chain.py:562: in solve_via_data
+    return self.solver.solve_via_data(data, warm_start, verbose,
+D:\Miniconda3\envs\topo_sfr\Lib\site-packages\cvxpy\reductions\solvers\conic_solvers\mosek_conif.py:253: in solve_via_data
+    rescode = task.optimize()
+              ^^^^^^^^^^^^^^^
+D:\Miniconda3\envs\topo_sfr\Lib\site-packages\mosek\__init__.py:11416: in optimize
+    return self.__optimizetrm__1(*args,**kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <mosek.Task object at 0x00000210DEDC9090>
+
+    def __optimizetrm__1(self):
+      _res_optimizetrm,_retargs_optimizetrm = self.__obj.optimizetrm__1()
+      if _res_optimizetrm != 0:
+        _,_msg_optimizetrm = self.__getlasterror(_res_optimizetrm)
+>       raise Error(rescode(_res_optimizetrm),_msg_optimizetrm)
+E       mosek.Error: rescode.err_missing_license_file(1008): License cannot be located. The default search path is ';C:\Users\Administrator\mosek\mosek.lic;'.
+
+D:\Miniconda3\envs\topo_sfr\Lib\site-packages\mosek\__init__.py:11405: Error
+============================== warnings summary ===============================
+tests/test_oracle_isolation.py::test_oracle_switches_parameterized_arx_and_unseen_mode_immediately_falls_back
+tests/test_rls_adaptive_mpc.py::test_rls_equations_update_once_and_keep_same_precompiled_graph
+  C:\Users\Administrator\Desktop\zhr\研究生材料\方向5实现\d5_hidden_mode_frequency_from_scratch\src\d5freq\optimization\solver_utils.py:287: UserWarning: Solution may be inaccurate. Try another solver, adjusting the solver settings, or solve with verbose=True for more information.
+    solve_return = problem.solve(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============================== tests coverage ================================
+______________ coverage: platform win32, python 3.11.15-final-0 _______________
+
+Name                                                  Stmts   Miss  Cover
+-------------------------------------------------------------------------
+src\direction1freq\__init__.py                            1      0   100%
+src\direction1freq\estimation\__init__.py                 2      0   100%
+src\direction1freq\estimation\load_kalman.py             42      1    98%
+src\direction1freq\identification\__init__.py             2      0   100%
+src\direction1freq\identification\capability_set.py      74      3    96%
+src\direction1freq\models\__init__.py                     4      0   100%
+src\direction1freq\models\bess.py                        91      1    99%
+src\direction1freq\models\plant_a.py                     88      2    98%
+src\direction1freq\models\plant_b_andes.py              142     16    89%
+-------------------------------------------------------------------------
+TOTAL                                                   446     23    95%
+Coverage XML written to file logs_phase_d/D9/coverage.xml
+=========================== short test summary info ===========================
+SKIPPED [1] tests\phase_d\test_d9_audit_and_package.py:45: run d9_build_review_package.py before the final package audit
+FAILED tests/test_final_arx_mpc.py::test_singleton_epigraph_is_anchored_and_tight_at_optimum
+FAILED tests/test_sd_bmpc_problem.py::test_native_k6_n20_production_solver_regression_for_degenerate_beliefs
+2 failed, 646 passed, 1 skipped, 2 warnings in 261.75s (0:04:21)

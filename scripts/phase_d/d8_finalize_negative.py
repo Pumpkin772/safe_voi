@@ -206,6 +206,7 @@ def main() -> int:
             ("D2-report-001", "code_failure", "repaired", "NumPy boolean JSON serialization in reporting only; cached physics re-finalized"),
             ("D3-run-001", "operational_failure", "repaired", "single-process execution interrupted before round completion; identical locked matrix rerun with four workers"),
             ("D7D8-doc-001", "code_failure", "repaired", "multiline report literal boundaries joined generated documents; generator and document-completeness regression tests added"),
+            ("D9-env-001", "environment_failure", "repaired", "first full legacy-suite run lacked the MOSEK license search path; two failures passed after process-only license variables and the complete suite was rerun"),
             ("D3-H2-001", "scientific_failure", "unresolved_binding", "passive natural-I/O capability coverage and causal timing thresholds not met"),
         ],
         columns=["failure_id", "category", "resolution", "evidence"],
@@ -284,6 +285,19 @@ def main() -> int:
         "tightening certificate, or recursive-feasibility claim was constructed. H4 is "
         "`NOT_EVALUATED_DUE_TO_H2_FATAL_GATE`; absence of these artifacts is a mandated early-stop "
         "outcome, not a numerical failure or evidence of an empty terminal set.\n",
+        encoding="utf-8",
+    )
+    (REPORTS / "ORACLE_AND_CONTROLLER_NOT_EVALUATED.md").write_text(
+        "# Oracle, MPC baselines, and CRCS-TMPC qualification status\n\n"
+        "D4 was not reached because D3/H2 is a fatal scientific Gate. The Direction1 "
+        "current-capability rolling NMPC Oracle, SG-only/fixed-allocation baselines, nominal "
+        "linear MPC, true RLS adaptive MPC, worst-case tube MPC, and CRCS-TMPC were therefore "
+        "neither implemented nor executed.\n\n"
+        "H1, H3, Oracle reliability/KKT checks, rolling-horizon audits, infeasibility rates, "
+        "P99 solve time, RPI/tube/terminal certificates, ablations, costs, Pareto comparisons, "
+        "and known/OOD controller outcomes are all `NOT_EVALUATED_DUE_TO_H2_FATAL_GATE`. "
+        "No historical Phase C controller is relabeled as a Direction1 baseline, and no "
+        "algebraic allocation is called MPC.\n",
         encoding="utf-8",
     )
     (REPORTS / "FINAL_RESULTS_INTERPRETATION.md").write_text(

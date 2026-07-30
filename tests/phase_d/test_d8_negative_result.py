@@ -48,6 +48,7 @@ def test_required_final_reports_are_well_formed() -> None:
         "SUPPORTED_AND_UNSUPPORTED_CLAIMS.md",
         "DECISION_LOG.md",
         "THEORY_NOT_EVALUATED.md",
+        "ORACLE_AND_CONTROLLER_NOT_EVALUATED.md",
         "FINAL_RESULTS_INTERPRETATION.md",
         "PAPER_OUTLINE.md",
     ]

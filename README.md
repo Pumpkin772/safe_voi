@@ -1,22 +1,22 @@
-# SD-BMPC: Hidden-Mode Frequency Control from Scratch
+# DIRECTION1: CRCS-TMPC for black-box IBR capability changes
 
-This repository is an independent implementation of **Self-Diagnosing
-Belief-Space Model Predictive Frequency Control (SD-BMPC)** for a single-area
-frequency system with a black-box inverter-based resource (IBR). It is built
-from first principles and does not import, copy, or depend on prior paper
-reproduction repositories.
+This repository is the Direction1 research implementation for control-relevant capability-set adaptive tube MPC (CRCS-TMPC) in multi-area frequency regulation. The governing contract is `research/direction1_phase_d_crcs_tube_mpc/CODEX_GOAL.md`.
 
-The controller will infer an online probability distribution over externally
-identified IBR modes, account for that uncertainty in a shared-input MPC, and
-fall back to synchronous-generation LQI control when the model library is not
-credible or the optimizer fails.
+The former D5/SD-BMPC and Phase C code under `src/d5freq` is retained only as historical evidence. It is not the active method namespace and its passive-identifiable or method-performance conclusions are invalidated for paper evidence. New Direction1 implementation lives under `src/direction1freq`.
+
+## Binding Phase D result
+
+Phase D stopped at its preregistered H2 Gate. Natural closed-loop public I/O did not maintain the required joint capability-set coverage or causal update timing after the initial estimator and two allowed development repairs. The research status is:
+
+```text
+PASSIVE_CAPABILITY_SET_NOT_SUPPORTED
+```
+
+Per the Goal, no Direction1 Oracle, CRCS-TMPC, active-identification substitute, or other controller was implemented after this fatal Gate. H1, H3, H4, the best baseline, and known/OOD controller outcomes are `not_evaluated`, not failures.
 
 ## Environment
 
-The original project brief requested a new Python 3.11 Conda environment. The
-user subsequently chose to reuse the existing environment named `topo_sfr`;
-that decision is recorded in `environment.yml`. Synchronize that environment
-with:
+Use the existing Python 3.11 Conda environment `topo_sfr`:
 
 ```powershell
 conda env update --name topo_sfr --file environment.yml
@@ -24,47 +24,14 @@ conda activate topo_sfr
 python -m pip install -e ".[dev,notebook,solvers]"
 ```
 
-MOSEK is the preferred optimization backend and Gurobi is the fallback. Their
-Python packages are listed, but valid local licenses remain the user's
-responsibility and must never be committed or packaged.
+The completed negative path uses ANDES 2.0.0 for native Kundur Plant B validation and does not require commercial solver licenses. License files must never be committed or packaged.
 
-## Phase 0 check
-
-From the repository root:
+## Reproduction
 
 ```powershell
-conda run -n topo_sfr python -m pytest -q
+powershell -ExecutionPolicy Bypass -File scripts/phase_d/reproduce_minimal.ps1
 ```
 
-The package uses a `src` layout. Pytest is configured to include `src` during
-development; installing the editable package is still recommended.
+The full D2–D3 reproduction, figure regeneration, raw evidence, failure ledger, and Gate decisions are documented under `research_outputs_phase_d/`, `results_phase_d/`, `figures_phase_d/`, `logs_phase_d/`, and `progress_phase_d/`.
 
-## Repository layout
-
-- `configs/`: versioned physical, diagnosis, control, and experiment settings.
-- `src/d5freq/`: implementation package.
-- `tests/`: unit, integration, and numerical regression tests.
-- `scripts/`: reproducible pipeline entry points.
-- `artifacts/`: learned model libraries and calibration outputs.
-- `results/`: saved episode data, summaries, and figures.
-- `progress/`: phase acceptance reports.
-- `research_docs/`: derivations, experiment notes, and limitations.
-
-## Information boundary
-
-True IBR modes are simulator-private. Mode schedules and OOD truth in the
-configuration files are available only to simulation orchestration and the
-evaluation merge step. A controller receives measurements, identified mode
-models, belief/OOD diagnostics, and previous commands; it never receives true
-mode names, truth indices, truth ordering, or an evaluation record. Oracle MPC
-will be isolated as an evaluation-only upper bound.
-
-Failed episodes, solver failures, timeouts, constraint violations, and OOD
-misses are research results and must be retained.
-
-## Phase status
-
-Phase 0 establishes the repository, environment declaration, deterministic
-configuration, output locations, and minimal import test. Later phases must
-follow the acceptance gates in the supplied project specification; no result
-claim is made by this scaffold.
+All failed episodes are retained. Planned post-H2 experiments are explicitly stored as `not_evaluated`; they are never counted as method failures.
