@@ -397,7 +397,7 @@ No next controller is authorized. The scientifically appropriate next action, if
 - Average-value Plant B is not an EMT or vendor model. Pure delay/dropout is discretized, and O2 predicts expected packet delivery.
 - The final run contains 2,150 rows, 1,449 scientific failures, zero missing/deleted rows, and no tuning from final results.
 """,
-        "09_REPRODUCIBILITY_COMMANDS.md": """# Reproducibility Commands
+        "09_REPRODUCIBILITY_COMMANDS.md": r"""# Reproducibility Commands
 
 Run from the repository root with the `topo_sfr` Conda environment. On Windows, set `MOSEKLM_LICENSE_FILE` only for legacy tests; the final path itself is not packaged.
 

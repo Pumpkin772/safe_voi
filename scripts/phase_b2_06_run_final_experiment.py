@@ -289,7 +289,7 @@ def _empty_failure_row(
     for name in (
         "freq_iae",
         "ace_iae",
-        "max_abs_frequency_hz",
+        "max_abs_freq_hz",
         "max_abs_rocof",
         "tie_line_iae",
         "settling_time",
@@ -361,7 +361,7 @@ def _metrics_from_trajectory(
         "catastrophic": max_frequency > 0.50,
         "freq_iae": freq_iae,
         "ace_iae": ace_iae,
-        "max_abs_frequency_hz": max_frequency,
+        "max_abs_freq_hz": max_frequency,
         "max_abs_rocof": float(np.max(np.abs(rocof))),
         "tie_line_iae": float(np.sum(np.abs(tie[:-1])) * dt),
         "settling_time": settling,
@@ -677,7 +677,7 @@ def _materiality(metrics: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     ]
     o0 = metrics.loc[metrics["method"] == "O0_conventional_ACE_PI"]
     keys = ["scenario_id", "partition", "seed", "sg_level"]
-    continuous = ["freq_iae", "ace_iae", "max_abs_frequency_hz"]
+    continuous = ["freq_iae", "ace_iae", "max_abs_freq_hz"]
     cost_columns = [f"total_cost_ratio_{str(value).replace('.', 'p')}" for value in COST_RATIOS]
     paired = o2[keys + ["scientific_success", *continuous, *cost_columns]].merge(
         o0[keys + ["scientific_success", *continuous, *cost_columns]],
@@ -765,7 +765,7 @@ def _select_representatives(
             selections.append((label, key))
     completed = metrics.loc[metrics["run_completed"]]
     if len(completed):
-        worst = completed.sort_values("max_abs_frequency_hz", ascending=False).iloc[0]
+        worst = completed.sort_values("max_abs_freq_hz", ascending=False).iloc[0]
         selections.append(
             (
                 "worst_completed_episode",
