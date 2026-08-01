@@ -1,0 +1,72 @@
+{
+  "capability_floor_audit": {
+    "delay": true,
+    "energy": true,
+    "power": true,
+    "ramp": true
+  },
+  "gate": "G3_MODEL_SET",
+  "gate_components": {
+    "delay_curvature_outer_bound_finite": true,
+    "delay_dense_grid_audited": true,
+    "envelope_nonzero": true,
+    "explicit_independent_factor_manifest": true,
+    "power_ramp_energy_model_consistent": true,
+    "registered_capability_floors_physical": true,
+    "truth_absent_from_controller_contract": true,
+    "validation_residual_coverage_at_least_95pct": true
+  },
+  "gate_passed": true,
+  "maximum_bounded_one_step_state_remainder": 0.017507896765605824,
+  "maximum_dense_hull_matrix_error": 0.291414639364725,
+  "next_stage": "F4",
+  "outputs_sha256": {
+    "research_outputs_phase_f/03_MODEL/DELAY_AUGMENTED_MODEL.md": "5129bf96101098a6cfd45aa570d8040c8a42f0e3ca07fa78faad76346db221bf",
+    "research_outputs_phase_f/03_MODEL/EQUATION_CODE_MAP.csv": "33b73249302e854b22ffa764f280bf5e1a3443fddf345818161ca618d5c76289",
+    "research_outputs_phase_f/03_MODEL/GUARANTEED_CAPABILITY_ENVELOPE.md": "3e3ea966f992cbfe35a2929c7aa03fddbba569950b0924bad2aa914d3f5936a8",
+    "research_outputs_phase_f/03_MODEL/UNCERTAINTY_SET_CALIBRATION.md": "5961a8197e9c4e15372d08b7df3381166bd2f1f0a0b28febd19cc9d5ac6282bb",
+    "results_phase_f/F3/CAPABILITY_SOURCE_AUDIT.csv": "14048da3cdd828414179c214fb105680a42411dd334e4a71dbbef449d1d344a8",
+    "results_phase_f/F3/DELAY_MODEL_HULL_ERROR.csv": "72479f1edc5f8874dc083beaa5c12f57a5452c7a0b2d0723c02535987d85e224",
+    "results_phase_f/F3/F3_CALIBRATION_MANIFEST.csv": "a368b705e2dcfd6868cfffb94e4ebe29d91cb93fc4d82c4a41409c0a8882c752",
+    "results_phase_f/F3/F3_CALIBRATION_TRAJECTORIES.parquet": "9cbf852fc38fd2f3826ae2a7dc110dd622e1b989ef3c860c9cc782fd6616b34c",
+    "results_phase_f/F3/F3_RESIDUAL_WINDOWS.parquet": "7eabc9be26657cc683f1b0fb41de191fd3490079357daeb08d324e5f91dba150",
+    "results_phase_f/F3/RESIDUAL_SET_COVERAGE.csv": "363aa4e85af98ff9ec5d42900b6930da5f2e370d617c69f71428907e7e2d52e2",
+    "results_phase_f/F3/RESIDUAL_UNCERTAINTY_SET.npz": "58fa3f9c6bb9f2719fa51035bb55014ec0a9d4c3644dc438b7d5ce55a7340ca8"
+  },
+  "schema": "direction1.phase_f.progress.v1",
+  "stage": "F3",
+  "validation_coverage": [
+    {
+      "horizon_steps": 1,
+      "joint_state_coverage": 0.975095785440613,
+      "passed": true,
+      "split": "validation",
+      "target": 0.95,
+      "windows": 522
+    },
+    {
+      "horizon_steps": 2,
+      "joint_state_coverage": 0.9741035856573705,
+      "passed": true,
+      "split": "validation",
+      "target": 0.95,
+      "windows": 502
+    },
+    {
+      "horizon_steps": 4,
+      "joint_state_coverage": 0.974025974025974,
+      "passed": true,
+      "split": "validation",
+      "target": 0.95,
+      "windows": 462
+    },
+    {
+      "horizon_steps": 6,
+      "joint_state_coverage": 0.9715639810426541,
+      "passed": true,
+      "split": "validation",
+      "target": 0.95,
+      "windows": 422
+    }
+  ]
+}
