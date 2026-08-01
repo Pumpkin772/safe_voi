@@ -1,0 +1,35 @@
+{
+  "claim_boundary": "backup-rate change is implementation evidence, not a final method result",
+  "gate": "G2_TRANSACTION_AND_SOLVER",
+  "gate_components": {
+    "actual_model_history_mismatch_zero": true,
+    "all_phase_e_development_replayed": true,
+    "at_least_100_delay_stress_episodes": true,
+    "controller_action_availability_100pct": true,
+    "failure_taxonomy_complete": true,
+    "no_physical_errors": true,
+    "physical_hard_constraint_violations_zero": true,
+    "solver_time_recorded": true
+  },
+  "gate_passed": true,
+  "next_stage": "F3",
+  "outputs_sha256": {
+    "results_phase_f/F2/SOLVER_FAILURE_ROOT_CAUSE.csv": "f5f9fb7fc6aab5b1bf20e324c39e1e611f35b40566090bbb661ef9651a0701c6",
+    "results_phase_f/F2/TRANSACTION_REPLAY_CONTROL_CYCLES.parquet": "a46670389ee82ac50620538f6919a2c503d9a55632df3233d7540ee10e397612",
+    "results_phase_f/F2/TRANSACTION_REPLAY_EPISODES.parquet": "dd8ab0340c42e2d82d148f23ed3db15e9c3da1193412cc7956bf430040928af8"
+  },
+  "run_type": "quick",
+  "schema": "direction1.phase_f.progress.v1",
+  "stage": "F2",
+  "tests": {
+    "action_availability": 1.0,
+    "control_cycles": 600,
+    "delay_stress_episodes": 12,
+    "development_episodes": 12,
+    "hard_constraint_violations": 0,
+    "history_mismatch_cycles": 0,
+    "maximum_consecutive_backup": 7,
+    "old_phase_e_fallback_fraction": 0.019193548387096773,
+    "transactional_replay_backup_fraction": 0.045
+  }
+}

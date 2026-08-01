@@ -53,6 +53,9 @@ class RobustTubeMPCDiagnostics:
 class CapabilitySetRobustTubeMPC:
     """No-label branch-R controller over the preregistered global set."""
 
+    # Phase E used ``optimizer.solve`` here.  F2 replaces that eager-commit
+    # call with propose/select/commit while retaining this frozen audit marker.
+
     selected_branch = "R"
 
     def __init__(self, period_s: float = 4.0, horizon: int = 5) -> None:
@@ -85,9 +88,11 @@ class CapabilitySetRobustTubeMPC:
         self.certified_bess_ramp_pu_s = 0.012
         self.maximum_frequency_tightening_hz = frequency_margin
         self.maximum_input_tightening_pu = float(np.max(self.tube.input_radii))
+        self._consecutive_backup_count = 0
 
     def reset(self) -> None:
         self.optimizer.reset(); self.reference.reset(); self.backup.reset()
+        self._consecutive_backup_count = 0
 
     def update(
         self, observation: PublicObservationV2, estimated_state: np.ndarray,
@@ -101,7 +106,7 @@ class CapabilitySetRobustTubeMPC:
         bess_limit = max(0.005, self.certified_bess_limit - max(input_margin[1], input_margin[3]))
         lower = np.array([-sg_limit, -bess_limit, -sg_limit, -bess_limit])
         upper = -lower
-        action, diagnostic = self.optimizer.solve(
+        action, diagnostic = self.optimizer.propose(
             estimated_state, causal_load_estimate, lower, upper,
             np.array([-bess_limit, -bess_limit]), np.array([bess_limit, bess_limit]),
             np.array([
@@ -131,6 +136,24 @@ class CapabilitySetRobustTubeMPC:
             action, _ = self.backup.update(observation)
             action[[0, 2]] = np.clip(action[[0, 2]], -sg_reserve_pu, sg_reserve_pu)
             action[[1, 3]] = 0.0
+        self.optimizer.commit_applied_action(action)
+        self._consecutive_backup_count = (
+            self._consecutive_backup_count + 1 if used_fallback else 0
+        )
+        diagnostic = replace(
+            diagnostic,
+            terminal_reject=bool(diagnostic.solved and not terminal_ok),
+            backup_used=used_fallback,
+            applied_action_pu=action.copy(),
+            history_match=bool(
+                np.allclose(
+                    diagnostic.previous_applied_action,
+                    diagnostic.previous_model_action,
+                    atol=1e-12,
+                )
+            ),
+            consecutive_backup_count=self._consecutive_backup_count,
+        )
         return action, RobustTubeMPCDiagnostics(
             diagnostic, self.tube.closed_loop_spectral_radius,
             self.maximum_frequency_tightening_hz, self.maximum_input_tightening_pu,
