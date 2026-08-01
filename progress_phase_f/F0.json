@@ -1,0 +1,50 @@
+{
+  "claim_correction": "METHOD_IMPLEMENTATION_AND_CERTIFICATE_INCOMPLETE",
+  "gate": "G0_FORENSIC",
+  "gate_components": {
+    "action_history_mismatch_reproduced": true,
+    "legacy_failure_layer_at_least_95pct_classified": true,
+    "legacy_solver_subtype_overclaim_withdrawn": true,
+    "phase_e_outputs_not_overwritten": true,
+    "phase_e_tag_matches_commit": true,
+    "phase_e_zip_sha256_matches": true,
+    "review_zip_minimal_replay_defect_reproduced": true
+  },
+  "gate_passed": true,
+  "next_stage": "F1",
+  "outputs_sha256": {
+    "research_outputs_phase_f/00_FORENSIC/PHASE_E_REVIEW_CORRECTION.md": "ca7434e842742e32f33b2a2f70ad97803c96a6c5715b20c9b428113dd95967c4",
+    "results_phase_f/F0/ACTION_HISTORY_MISMATCH.csv": "5d5a308d8b7692bfe843af68bb570e8821ed941dbac55afd93ac913c1eb4ebbe",
+    "results_phase_f/F0/E6_FAILURE_DECOMPOSITION.csv": "2ed0e38f378d6fc927c129600142d25572e604fd95b8a1b3e6ec1500cce263c2",
+    "results_phase_f/F0/E6_FAILURE_DECOMPOSITION_SUMMARY.csv": "ff3d33fe3dce51f98d90c06102a56adb639edfdc2f4c748ac8009e13b3c22a9c"
+  },
+  "phase_e_commit": "8fd7d4515377996cd9e17809ecd045a835d2916d",
+  "phase_e_tag": "direction1-phase-e-reviewed",
+  "phase_e_worktree_note": "review artifacts were intentionally untracked at freeze; tracked tree at tag is clean",
+  "phase_e_zip_sha256": "d30be15f1d1a4c0a80339ff3408a50397adc1e98e85a4e673a5b2b7c66b61d9c",
+  "schema": "direction1.phase_f.progress.v1",
+  "stage": "F0",
+  "tests": {
+    "failure_decomposition": {
+      "actual_model_action_match_identifiable": false,
+      "control_cycles": 12400,
+      "fallback_after_fallback_cycles": 78,
+      "fallback_cycles": 238,
+      "layer_classification_fraction": 1.0,
+      "mathematical_vs_numerical_identifiable": false,
+      "scientific_interpretation": "legacy 1.846% cannot be called mathematical infeasibility or method-class failure",
+      "terminal_reject_identifiable": true
+    },
+    "maximum_mismatch_inf_norm_pu": 0.03454125165314765,
+    "mismatch_cases": 3,
+    "review_replay": {
+      "expected_failure": true,
+      "passed_from_extracted_root": false,
+      "returncode": 1,
+      "root_mapping_defect": "parents[2] resolves outside extracted review root",
+      "script_present": true,
+      "stderr_tail": "inimal.py\", line 40, in <module>\n    main()\n  File \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\phase_f_f0_review_prbddw2m\\review\\14_REPRODUCIBILITY\\reproduce_minimal.py\", line 20, in main\n    status = json.loads((ROOT / \"research_outputs_phase_e\" / \"final\" / \"FINAL_STATUS.json\").read_text())\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\Miniconda3\\envs\\topo_sfr\\Lib\\pathlib.py\", line 1058, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\Miniconda3\\envs\\topo_sfr\\Lib\\pathlib.py\", line 1044, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\Administrator\\\\AppData\\\\Local\\\\Temp\\\\phase_f_f0_review_prbddw2m\\\\research_outputs_phase_e\\\\final\\\\FINAL_STATUS.json'\n",
+      "stdout_tail": ""
+    }
+  }
+}

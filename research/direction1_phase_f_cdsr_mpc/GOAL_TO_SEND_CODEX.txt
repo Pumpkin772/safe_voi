@@ -1,0 +1,33 @@
+请先完整阅读当前仓库：
+
+research/direction1_phase_f_cdsr_mpc/
+
+下的全部文件，然后将 CODEX_GOAL.md 作为本项目唯一总Goal立即执行。
+
+请按 F0→F1→F2→F3→F4→F5→F6→F7→F8→F9 连续完成，不要在内部阶段后等待我再次发消息。
+
+本轮不更换科学问题，也不再探索多个算法。唯一方法为：
+
+CDSR-MPC：
+Capability-and-Delay-Set Robust MPC
+with Feasibility Restoration。
+
+必须优先完成：
+1. 修复fallback/terminal reject后MPC previous-action与实际动作不同步；
+2. 区分数学不可行、数值失败、终端拒绝、restoration和fallback；
+3. 修正H1的validation泄露与failure-aware统计；
+4. 将H2/H3收缩为“已测试方法未通过”，不得作类别级不可能声明；
+5. 建立保证能力包络、显式delay set、累计能量和共同控制序列的鲁棒预测；
+6. 实现真正滚动CDSR-MPC、可行性恢复和SG终端backup；
+7. 只有得到可重算证书后才能声称递归可行或鲁棒安全；
+8. final锁定后禁止调参，失败和not_evaluated必须完整保留。
+
+最终生成小于512MB的：
+
+DIRECTION1_PHASE_F_CDSR_MPC_SINGLE_REVIEW_PACKAGE.zip
+
+内容严格符合：
+
+research/direction1_phase_f_cdsr_mpc/09_FINAL_REVIEW_PACKAGE_SPEC.md
+
+完成后报告ZIP路径、大小、SHA256、Git commit、全部Gate、H1–H5、最佳基线、known/OOD结果、solver/restoration/fallback统计、certificate状态和最严重限制。
