@@ -15,6 +15,7 @@ SOURCE = ROOT / "06_SOURCE" / "src"
 sys.path.insert(0, str(SOURCE))
 
 from direction1freq.optimization.robust_backup_set import (  # noqa: E402
+    any_admissible_backup,
     lqr_backup_attempt,
     pi_backup_attempt,
 )
@@ -39,7 +40,7 @@ def main() -> None:
         for period in (2.0, 4.0)
         for function in (pi_backup_attempt, lqr_backup_attempt)
     ]
-    recomputed_nonempty = all(item.constraints_satisfied for item in attempts)
+    recomputed_nonempty = any_admissible_backup(attempts)
     assert status["final_research_status"] == "NO_NONEMPTY_ROBUST_BACKUP_SET"
     assert status["final_seeds_consumed"] is False
     assert status["known_results"] == "NOT_EVALUATED"
@@ -66,4 +67,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

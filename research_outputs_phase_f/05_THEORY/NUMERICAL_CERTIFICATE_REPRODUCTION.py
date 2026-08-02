@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 
 from direction1freq.optimization.robust_backup_set import (
+    any_admissible_backup,
     lqr_backup_attempt,
     pi_backup_attempt,
 )
@@ -24,7 +25,7 @@ def main() -> None:
         for period in (2.0, 4.0)
         for function in (pi_backup_attempt, lqr_backup_attempt)
     ]
-    recomputed_nonempty = all(item.constraints_satisfied for item in attempts)
+    recomputed_nonempty = any_admissible_backup(attempts)
     certificate = json.loads(
         (root / "research_outputs_phase_f" / "05_THEORY" / "ROBUST_BACKUP_SET_CERTIFICATE.json").read_text()
     )
@@ -52,4 +53,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

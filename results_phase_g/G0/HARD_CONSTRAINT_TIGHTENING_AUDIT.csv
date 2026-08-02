@@ -1,0 +1,10 @@
+constraint,phase_f_status,evidence
+sg_valve,missing,no stage constraint on x[3:5]
+sg_mechanical_power,nominal_only,x[5:7] is bounded without a propagated state-error margin
+sg_grc,request_proxy_only,command slew is bounded; actual valve/mechanical GRC is not tightened
+bess_actual_delayed_power,missing,"power bounds apply to request total_bess, not delayed actuator power"
+bess_actual_ramp,request_proxy_only,ramp is request-to-request rather than actual delayed power ramp
+bess_energy,request_proxy_only,energy integrates requested total_bess rather than predicted actual power
+tie_physical_limit,performance_slack_only,stage tie envelope has performance slack; no separate physical hard limit
+terminal_error_margins,missing,terminal box constrains nominal terminal state without error margins
+delay_pipeline,partial,"five vertices are modeled, but resource constraints use requested power"

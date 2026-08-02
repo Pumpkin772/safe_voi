@@ -12,6 +12,7 @@ import pandas as pd
 from direction1freq.controllers.cdsr_mpc import CapabilityDelaySetRobustMPC
 from direction1freq.optimization.robust_backup_set import (
     BackupSetAttempt,
+    any_admissible_backup,
     lqr_backup_attempt,
     pi_backup_attempt,
 )
@@ -64,7 +65,7 @@ def main() -> None:
     table = pd.DataFrame([attempt_record(item) for item in attempts])
     attempt_path = output / "F5_BACKUP_SET_ATTEMPTS.csv"
     table.to_csv(attempt_path, index=False)
-    backup_nonempty = bool(table.constraints_satisfied.all())
+    backup_nonempty = any_admissible_backup(attempts)
 
     set_path = theory / "ROBUST_BACKUP_SET.npz"
     np.savez_compressed(
@@ -242,4 +243,3 @@ no possible backup controller can exist.
 
 if __name__ == "__main__":
     main()
-

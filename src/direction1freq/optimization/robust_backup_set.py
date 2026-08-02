@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 import numpy as np
@@ -34,6 +35,17 @@ class BackupSetAttempt:
     tail_generator_inf: float
     iterations: int
     constraints_satisfied: bool
+
+
+def any_admissible_backup(attempts: Iterable[BackupSetAttempt]) -> bool:
+    """Return whether at least one candidate backup has an admissible set.
+
+    Existence is an existential condition.  Phase F accidentally required all
+    tested designs to pass; that did not change its all-false numerical result,
+    but it is the wrong aggregation for a candidate family.
+    """
+
+    return any(attempt.constraints_satisfied for attempt in attempts)
 
 
 def reachable_zonotope_support(
