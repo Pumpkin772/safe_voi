@@ -1,0 +1,81 @@
+{
+  "commands": [
+    "python scripts/phase_h/run_h3_estimators.py",
+    "python -m pytest tests/phase_h/test_h3_no_truth_or_future_leakage.py -q"
+  ],
+  "estimator_repairs_used": 1,
+  "failures": [
+    {
+      "attempt": 1,
+      "classification": "CODE_DELAY_EVENT_MISATTRIBUTION",
+      "evidence": "results_phase_h/H3/attempt1_delay_event_misattribution",
+      "failed_components": [
+        "validation_capability_set_coverage_at_least_95pct",
+        "validation_false_shrinkage_at_most_5pct"
+      ],
+      "maximum_false_shrinkage": 0.5882352941176471,
+      "minimum_coverage": 0.4117647058823529
+    }
+  ],
+  "final_seeds_consumed": false,
+  "gate": "H3_DISTURBANCE_CAPABILITY_SEPARATION",
+  "gate_components": {
+    "actual_bess_poi_is_known_load_observer_input": true,
+    "at_least_partial_capability_contraction_demonstrated": true,
+    "augmented_observability_rank_full_and_condition_reported": true,
+    "final_seeds_not_consumed": true,
+    "load_capability_confusion_reduced_vs_phase_g": true,
+    "no_excitation_holds_wide_without_false_detection": true,
+    "no_truth_or_future_leakage": true,
+    "plant_a_b_and_2s_4s_covered": true,
+    "selected_observer_has_no_systematic_validation_drift": true,
+    "validation_capability_set_coverage_at_least_95pct": true,
+    "validation_false_shrinkage_at_most_5pct": true
+  },
+  "gate_passed": true,
+  "inputs": {
+    "candidate_observers": [
+      "reduced_order_kalman_actual_bess_input",
+      "unknown_input_observer",
+      "constrained_mhe"
+    ],
+    "development_seeds": [
+      0,
+      19
+    ],
+    "plant_b_scenarios": 4,
+    "validation_seeds": [
+      20,
+      39
+    ]
+  },
+  "next_stage": "H4",
+  "outputs": {
+    "configs/phase_h/H3_SELECTED_ESTIMATORS.json": "3181ede9845954a8702d998092f9064c85088bb8c60b700669b631e8833f4256",
+    "research_outputs_phase_h/03_MODEL/CAPABILITY_SET_ESTIMATOR.md": "77d4e4e3e74e07b09df6e02635388cac2929377de40c5c0fa9c924fddbfe6cd4",
+    "research_outputs_phase_h/03_MODEL/DISTURBANCE_OBSERVER.md": "5961e8e9f584bb49b06a11fb5d2409f0f7221376b5845a611b08c68ec26ca7b7",
+    "research_outputs_phase_h/04_METHOD/INFORMATION_BOUNDARY.md": "56307c8b90908be04e8d8a5b5f4fb961fab019cf749102365d226ae48dd80cd8",
+    "results_phase_h/H3/CAPABILITY_SET_COVERAGE.parquet": "b16c8adc2109437f6630a3664befca9172154c0768ba41800262bf016bf0e413",
+    "results_phase_h/H3/CAPABILITY_SET_TRAJECTORIES.parquet": "855fdd4e05426fc2c733a40121ada4ca82fc4cae79c4d17b35ccb795459ed1fa",
+    "results_phase_h/H3/ESTIMATOR_CONTROL_CYCLE_TRAJECTORIES.parquet": "5656b54994f94369f7731c626254e0a4aeed137f5ce23331d7f2bb4a7651a259",
+    "results_phase_h/H3/H3_SCENARIO_MANIFEST.csv": "1a50111da63e12bb1f618e2602be292e4757f0fcaa8451281cd2984257cb9276",
+    "results_phase_h/H3/LOAD_CAPABILITY_CONFUSION.parquet": "a283bb8f6254e09d358d7590ade3cc875594157be028326d33b94172c9dae096",
+    "results_phase_h/H3/OBSERVABILITY_CONDITIONING.csv": "cb5da2bbfdb3c40f52aeddd8c150f8b3436d50f1e5df7a5c0796b91cd09fa33f",
+    "results_phase_h/H3/OBSERVER_COMPARISON.parquet": "a283bb8f6254e09d358d7590ade3cc875594157be028326d33b94172c9dae096"
+  },
+  "repairs": [
+    {
+      "change": "replace first-response event pairing with causal command-output model-set retention and wide-set fallback when unidentifiable",
+      "repair": 1,
+      "scope": "delay estimator within the registered public-I/O interval-set framework",
+      "unchanged": "observer candidates, seeds, scenarios, truth boundary, thresholds, and all non-delay estimators"
+    }
+  ],
+  "schema": "direction5.phase_h.progress.v1",
+  "selected_capability_estimator": "causal_public_io_model_set_v2",
+  "selected_observer": "reduced_order_kalman_actual_bess_input",
+  "stage": "H3",
+  "validation_confusion_ratio_vs_phase_g": 0.06996274974754446,
+  "validation_maximum_false_shrinkage": 0.0,
+  "validation_minimum_capability_coverage": 1.0
+}

@@ -1,0 +1,62 @@
+{
+  "commands": [
+    "python scripts/phase_h/run_h3_estimators.py",
+    "python -m pytest tests/phase_h/test_h3_no_truth_or_future_leakage.py -q"
+  ],
+  "estimator_repairs_used": 0,
+  "failures": [],
+  "final_seeds_consumed": false,
+  "gate": "H3_DISTURBANCE_CAPABILITY_SEPARATION",
+  "gate_components": {
+    "actual_bess_poi_is_known_load_observer_input": true,
+    "at_least_partial_capability_contraction_demonstrated": true,
+    "augmented_observability_rank_full_and_condition_reported": true,
+    "final_seeds_not_consumed": true,
+    "load_capability_confusion_reduced_vs_phase_g": true,
+    "no_excitation_holds_wide_without_false_detection": true,
+    "no_truth_or_future_leakage": true,
+    "plant_a_b_and_2s_4s_covered": true,
+    "selected_observer_has_no_systematic_validation_drift": true,
+    "validation_capability_set_coverage_at_least_95pct": false,
+    "validation_false_shrinkage_at_most_5pct": false
+  },
+  "gate_passed": false,
+  "inputs": {
+    "candidate_observers": [
+      "reduced_order_kalman_actual_bess_input",
+      "unknown_input_observer",
+      "constrained_mhe"
+    ],
+    "development_seeds": [
+      0,
+      19
+    ],
+    "plant_b_scenarios": 4,
+    "validation_seeds": [
+      20,
+      39
+    ]
+  },
+  "next_stage": "H3_REPAIR_1",
+  "outputs": {
+    "configs/phase_h/H3_SELECTED_ESTIMATORS.json": "ddb1b658abc8f8523f2df484839a4e88c385a39978c9d6b45236973be39aa123",
+    "research_outputs_phase_h/03_MODEL/CAPABILITY_SET_ESTIMATOR.md": "449fe2270ebfc36607f6142361b323e475d8f389e663aa17a78df4f274b68101",
+    "research_outputs_phase_h/03_MODEL/DISTURBANCE_OBSERVER.md": "5961e8e9f584bb49b06a11fb5d2409f0f7221376b5845a611b08c68ec26ca7b7",
+    "research_outputs_phase_h/04_METHOD/INFORMATION_BOUNDARY.md": "56307c8b90908be04e8d8a5b5f4fb961fab019cf749102365d226ae48dd80cd8",
+    "results_phase_h/H3/CAPABILITY_SET_COVERAGE.parquet": "0590c921480deafee3b94da135d565c52ce3305c8f75ab1a48c1b3230c60b845",
+    "results_phase_h/H3/CAPABILITY_SET_TRAJECTORIES.parquet": "ab0da5d730fbb712f9d8277856f1c1cee2fabb2e7721f2b0059db52ec3bc6647",
+    "results_phase_h/H3/ESTIMATOR_CONTROL_CYCLE_TRAJECTORIES.parquet": "5656b54994f94369f7731c626254e0a4aeed137f5ce23331d7f2bb4a7651a259",
+    "results_phase_h/H3/H3_SCENARIO_MANIFEST.csv": "1a50111da63e12bb1f618e2602be292e4757f0fcaa8451281cd2984257cb9276",
+    "results_phase_h/H3/LOAD_CAPABILITY_CONFUSION.parquet": "a283bb8f6254e09d358d7590ade3cc875594157be028326d33b94172c9dae096",
+    "results_phase_h/H3/OBSERVABILITY_CONDITIONING.csv": "cb5da2bbfdb3c40f52aeddd8c150f8b3436d50f1e5df7a5c0796b91cd09fa33f",
+    "results_phase_h/H3/OBSERVER_COMPARISON.parquet": "a283bb8f6254e09d358d7590ade3cc875594157be028326d33b94172c9dae096"
+  },
+  "repairs": [],
+  "schema": "direction5.phase_h.progress.v1",
+  "selected_capability_estimator": "causal_public_io_interval_set_v1",
+  "selected_observer": "reduced_order_kalman_actual_bess_input",
+  "stage": "H3",
+  "validation_confusion_ratio_vs_phase_g": 0.06996274974754446,
+  "validation_maximum_false_shrinkage": 0.5882352941176471,
+  "validation_minimum_capability_coverage": 0.4117647058823529
+}
