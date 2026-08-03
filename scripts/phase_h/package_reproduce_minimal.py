@@ -40,8 +40,12 @@ def main() -> None:
         env=environment,
         text=True,
         capture_output=True,
-        check=True,
+        check=False,
     )
+    if tests.returncode != 0:
+        print(tests.stdout)
+        print(tests.stderr, file=sys.stderr)
+        raise SystemExit(tests.returncode)
     if "39 passed" not in tests.stdout:
         raise SystemExit(f"unexpected packaged test result: {tests.stdout}")
     print("DIRECTION5_PHASE_H_MINIMAL_REPLAY_OK 39_tests final_seeds=false")

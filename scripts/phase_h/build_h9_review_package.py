@@ -45,7 +45,9 @@ SOURCE_PREFIXES = (
     "tests/phase_h/",
     "configs/phase_h/",
     "progress_phase_h/",
+    "progress_phase_g/",
     "results_phase_h/",
+    "figures_phase_h/",
     "research_outputs_phase_h/",
     "results_phase_g/G2/",
     "research_outputs_phase_g/03_MODEL/",
@@ -218,9 +220,9 @@ def main() -> None:
     args = parser.parse_args()
     artifacts = REPO / "artifacts_direction5_phase_h"
     artifacts.mkdir(parents=True, exist_ok=True)
-    package_root = artifacts / PACKAGE_ROOT_NAME
+    package_root = artifacts / "direction5_h9_staging"
     if package_root.exists():
-        if package_root.parent.resolve() != artifacts.resolve() or package_root.name != PACKAGE_ROOT_NAME:
+        if package_root.parent.resolve() != artifacts.resolve() or package_root.name != "direction5_h9_staging":
             raise RuntimeError("refusing to remove an unexpected staging path")
         shutil.rmtree(package_root)
     for directory in DIRECTORIES:
