@@ -1,0 +1,66 @@
+Initialization results were not verified.
+Initialization results were not verified.
+{
+  "classification_counts": {
+    "BRIDGE_ONLY": 58,
+    "PHYSICALLY_INFEASIBLE_UNDER_REGISTERED_CAPABILITY": 26,
+    "SUSTAINABLE": 240
+  },
+  "commands": [
+    "python scripts/phase_h/run_h2_domains.py",
+    "python -m pytest tests/phase_h/test_h2_power_balance_and_partition.py -q"
+  ],
+  "domain_manifest_sha256": "8bd2914f6819d6b41171436b43f24304821c526b83050a89a419e50bbfcd00e2",
+  "failures": [],
+  "final_seeds_consumed": false,
+  "gate": "H2_PHYSICAL_DOMAIN_AND_EQUILIBRIA",
+  "gate_components": {
+    "all_cells_uniquely_preclassified": true,
+    "all_static_balance_residuals_below_1e_8_pu": true,
+    "final_seeds_not_consumed": true,
+    "known_and_ood_contracts_covered": true,
+    "manifest_hash_locked_before_terminal_calibration": true,
+    "native_plant_b_crosscheck_present": true,
+    "nonempty_physically_interpretable_bridge_domain": true,
+    "nonempty_predeclared_infeasible_domain": true,
+    "nonempty_sustainable_domain": true,
+    "plant_a_b_and_2s_4s_covered": true,
+    "plant_a_b_time_domain_crosschecks_converged": true
+  },
+  "gate_passed": true,
+  "inputs": {
+    "capability_contracts": [
+      "known_nominal",
+      "known_derated_joint",
+      "ood_asymmetric_mixed"
+    ],
+    "periods_s": [
+      2.0,
+      4.0
+    ],
+    "plants": [
+      "A",
+      "B"
+    ],
+    "sg_tensions": {
+      "adequate": 0.1,
+      "critical": 0.025,
+      "scarce": 0.05
+    },
+    "slow_reserve_arrival_s": 60.0
+  },
+  "next_stage": "H3",
+  "outputs": {
+    "configs/phase_h/H2_DOMAIN_MANIFEST_LOCK.json": "45cd2f7df796440723831c00a0388967a1da3a5ac9eaec9415ab596d695c0ec8",
+    "research_outputs_phase_h/03_MODEL/BRIDGE_ENERGY_MODEL.md": "f9273f51070e56cfc53b8e73799fc91ab45d5d0fdd62c244cc29b63fcdbb9e61",
+    "research_outputs_phase_h/03_MODEL/LOAD_PARAMETERIZED_EQUILIBRIA.md": "4f4e6b35881bef835dcff22648af27db77fb3a70b35a6d7496d9c4eaa0b65774",
+    "research_outputs_phase_h/03_MODEL/SUSTAINABILITY_LP.md": "300d34e6dbec148200cda91909e14ec72c9fa521651a30ffca309f80f929eea6",
+    "results_phase_h/H2/BRIDGE_REQUIREMENTS.parquet": "a896a86baae5e54a57b95e6a2fa735033e676f2ca50b9f8a98359b82ecda8aac",
+    "results_phase_h/H2/EQUILIBRIUM_TIME_DOMAIN_CROSSCHECK.csv": "99aad892086ff68d39ff34673473748375608ac415ae47c76c43b869f0e52849",
+    "results_phase_h/H2/PHYSICALLY_INFEASIBLE_CELLS.csv": "e1cbe23c83a35623eae843b02d25d043b1ddef292fbfa44cfb19079681ee0f17",
+    "results_phase_h/H2/SUSTAINABILITY_CELLS.parquet": "8bd2914f6819d6b41171436b43f24304821c526b83050a89a419e50bbfcd00e2"
+  },
+  "repairs": [],
+  "schema": "direction5.phase_h.progress.v1",
+  "stage": "H2"
+}

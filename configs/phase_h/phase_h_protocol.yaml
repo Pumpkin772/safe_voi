@@ -1,0 +1,18 @@
+schema: direction5.phase_h.dcsv.v1
+project: DIRECTION5
+method: DCSV-MPC
+splits:
+  development_seeds: [0, 19]
+  validation_seeds: [20, 39]
+  final_seeds: [100, 159]
+  final_consumed: false
+plants: [A, B]
+sfr_periods_s: [2.0, 4.0]
+sg_reserve_pu:
+  adequate: 0.10
+  scarce: 0.05
+  critical: 0.025
+tie_limits_pu:
+  A: 0.08
+  B: 0.06
+domain_manifest_locked_before_terminal_calibration: true
