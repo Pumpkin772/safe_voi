@@ -1,0 +1,88 @@
+{
+  "best_deployable_baseline": "contract_robust_mpc",
+  "failures": [
+    {
+      "attempt": 1,
+      "baseline_failure_aware_cost": 59.22595862797651,
+      "classification": "EVALUATION_BRIDGE_TAIL_OMITTED_REGISTERED_SLOW_RESERVE_HANDOFF",
+      "dcsv_failure_aware_cost": 72.34190230598526,
+      "evidence": "results_phase_h/H7/attempt1_missing_slow_reserve_handoff",
+      "metrics_passing": 0
+    },
+    {
+      "attempt": 2,
+      "baseline_failure_aware_cost": 82.30187648495672,
+      "classification": "PHYSICAL_MODEL_SG_GRC_AND_VALVE_BOUNDS_OMITTED",
+      "dcsv_failure_aware_cost": 82.88093348569994,
+      "evidence": "results_phase_h/H7/attempt2_missing_sg_grc",
+      "metrics_passing": 0
+    },
+    {
+      "attempt": 3,
+      "baseline_failure_aware_cost": 72.79653100251663,
+      "classification": "METHOD_VALIDATION_GATE_NOT_MET_AFTER_TWO_REPAIRS",
+      "dcsv_failure_aware_cost": 62.44666971607908,
+      "evidence": "results_phase_h/H7",
+      "metrics_passing": 0,
+      "unsolved_calls": 13,
+      "unsolved_fraction": 0.004593639575971731
+    }
+  ],
+  "fallback_calls": 13,
+  "fallback_fraction": 0.004593639575971731,
+  "final_locked": false,
+  "final_seeds_consumed": false,
+  "gate": "H7_DEVELOPMENT_VALIDATION_LOCK",
+  "gate_components": {
+    "action_history_mismatch_zero": true,
+    "at_least_two_of_three_metrics_improve_8pct_positive_ci": false,
+    "failure_aware_not_worse": true,
+    "fallback_fraction_at_most_1pct": true,
+    "final_seeds_not_consumed": true,
+    "normal_1h_rows_present_and_safe": true,
+    "p99_solve_time_below_half_period": true,
+    "physical_hard_violations_zero": true,
+    "plant_a_b_direction_consistent": true,
+    "success_rate_drop_at_most_2pp": true,
+    "unsolved_fraction_at_most_0_1pct": false
+  },
+  "gate_passed": false,
+  "maximum_solver_p99_s": 0.47968302298337223,
+  "next_stage": "H9_NEGATIVE_NO_FINAL",
+  "outputs": {
+    "configs/phase_h/H7_FINAL_LOCK.json": "59cc7887e5f6c1c5a85617313877ec833ebe3b8c0bcffb67306e137041530517",
+    "research_outputs_phase_h/06_EXPERIMENT/H7_VALIDATION_REPORT.md": "2f71663804a3eb7ac0376c67dc0d082d1977b0e059edba4caa0d73ed3844f1fe",
+    "results_phase_h/H7/H7_METHOD_SUMMARY.csv": "ec69f7a63283fc97fad069a6cbf6b49648a4f68cc1e81a638a699cf36417cf4e",
+    "results_phase_h/H7/H7_PAIRED_METRICS.csv": "1854e1f226bc4a1edfa3b53887ed3411b43220e478867a6a0ef0eb068cec3e2d",
+    "results_phase_h/H7/H7_VALIDATION_EPISODES.parquet": "2d6dc8c6c91c07b07a0ba77520e50c45fbb475185540d565a78040ca1ccb043f",
+    "results_phase_h/H7/H7_VALIDATION_SCENARIO_MANIFEST.csv": "650fdbe56fbb28369fe70123992d2fb9c44e2f19bc05b845a6a0f4c8b6ef27f9"
+  },
+  "paired_validation_summary": {
+    "baseline_failure_aware_cost": 72.79653100251663,
+    "baseline_success_rate": 1.0,
+    "dcsv_failure_aware_cost": 62.44666971607908,
+    "dcsv_success_rate": 1.0,
+    "metrics_passing": 0,
+    "pairs": 16
+  },
+  "plant_b_consistent": true,
+  "repairs": [
+    {
+      "change": "run every bridge controller through 60 s registered slow-reserve handoff plus four settling updates",
+      "repair": 1,
+      "unchanged": "controllers, horizon, weights, capability sets, physical limits, seeds, metrics, Gate thresholds, and final split"
+    },
+    {
+      "change": "add registered SG mechanical GRC and valve bounds to every MPC prediction and physical execution",
+      "repair": 2,
+      "unchanged": "method objectives, horizon, capability sets, seeds, metrics, Gate thresholds, and final split"
+    }
+  ],
+  "repairs_used": 2,
+  "restoration_calls": 0,
+  "schema": "direction5.phase_h.progress.v1",
+  "stage": "H7",
+  "total_mpc_calls": 2830,
+  "unsolved_calls": 13,
+  "unsolved_fraction": 0.004593639575971731
+}

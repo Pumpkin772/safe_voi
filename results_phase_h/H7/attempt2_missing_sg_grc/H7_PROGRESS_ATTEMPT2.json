@@ -1,0 +1,65 @@
+{
+  "best_deployable_baseline": "nominal_offset_free_mpc",
+  "failures": [
+    {
+      "attempt": 1,
+      "baseline_failure_aware_cost": 59.22595862797651,
+      "classification": "EVALUATION_BRIDGE_TAIL_OMITTED_REGISTERED_SLOW_RESERVE_HANDOFF",
+      "dcsv_failure_aware_cost": 72.34190230598526,
+      "evidence": "results_phase_h/H7/attempt1_missing_slow_reserve_handoff",
+      "metrics_passing": 0
+    }
+  ],
+  "fallback_calls": 0,
+  "fallback_fraction": 0.0,
+  "final_locked": false,
+  "final_seeds_consumed": false,
+  "gate": "H7_DEVELOPMENT_VALIDATION_LOCK",
+  "gate_components": {
+    "action_history_mismatch_zero": true,
+    "at_least_two_of_three_metrics_improve_8pct_positive_ci": false,
+    "failure_aware_not_worse": false,
+    "fallback_fraction_at_most_1pct": true,
+    "final_seeds_not_consumed": true,
+    "normal_1h_rows_present_and_safe": true,
+    "p99_solve_time_below_half_period": true,
+    "physical_hard_violations_zero": true,
+    "plant_a_b_direction_consistent": true,
+    "success_rate_drop_at_most_2pp": true,
+    "unsolved_fraction_at_most_0_1pct": true
+  },
+  "gate_passed": false,
+  "maximum_solver_p99_s": 0.3629969970008824,
+  "next_stage": "H7_REPAIR_2",
+  "outputs": {
+    "configs/phase_h/H7_FINAL_LOCK.json": "ac559592a9afe703b5e82f89c85a946b7a79ebed1845bf01ef8e7b631ddd951c",
+    "research_outputs_phase_h/06_EXPERIMENT/H7_VALIDATION_REPORT.md": "e3857467f4835db9bb589352da4cea5002b3671f5fe6cff1dd420e0a4e9e14c9",
+    "results_phase_h/H7/H7_METHOD_SUMMARY.csv": "6de326eb202d655b59a97ab492551e96084e1907235d6cdf6a195c3e3ac42968",
+    "results_phase_h/H7/H7_PAIRED_METRICS.csv": "969bfc20e72aeb9cc8a8b5ea52b94eb8d0c5507c78fd2d5731ab8aab09ce0151",
+    "results_phase_h/H7/H7_VALIDATION_EPISODES.parquet": "827bffcc8604686c21b0d8c2924a3f35f153ee408d64fbef58cdc568b491bf03",
+    "results_phase_h/H7/H7_VALIDATION_SCENARIO_MANIFEST.csv": "650fdbe56fbb28369fe70123992d2fb9c44e2f19bc05b845a6a0f4c8b6ef27f9"
+  },
+  "paired_validation_summary": {
+    "baseline_failure_aware_cost": 82.30187515691146,
+    "baseline_success_rate": 1.0,
+    "dcsv_failure_aware_cost": 82.88093299321801,
+    "dcsv_success_rate": 1.0,
+    "metrics_passing": 0,
+    "pairs": 16
+  },
+  "plant_b_consistent": true,
+  "repairs": [
+    {
+      "change": "run every bridge controller through 60 s registered slow-reserve handoff plus four settling updates",
+      "repair": 1,
+      "unchanged": "controllers, horizon, weights, capability sets, physical limits, seeds, metrics, Gate thresholds, and final split"
+    }
+  ],
+  "repairs_used": 1,
+  "restoration_calls": 0,
+  "schema": "direction5.phase_h.progress.v1",
+  "stage": "H7",
+  "total_mpc_calls": 2830,
+  "unsolved_calls": 0,
+  "unsolved_fraction": 0.0
+}

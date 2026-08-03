@@ -306,6 +306,14 @@ class DisturbanceCapabilitySeparatedViabilityMPC:
                         previous_total - total_bess <= self.period_s * ramp_down,
                         states[scenario][5:7, stage + 1] >= -self.sg_reserve,
                         states[scenario][5:7, stage + 1] <= self.sg_reserve,
+                        states[scenario][3:5, stage + 1] >= -1.20 * self.sg_reserve,
+                        states[scenario][3:5, stage + 1] <= 1.20 * self.sg_reserve,
+                        states[scenario][5:7, stage + 1]
+                        - states[scenario][5:7, stage]
+                        <= self.period_s * 0.012,
+                        states[scenario][5:7, stage]
+                        - states[scenario][5:7, stage + 1]
+                        <= self.period_s * 0.015,
                     ]
                 )
                 constraints.append(
