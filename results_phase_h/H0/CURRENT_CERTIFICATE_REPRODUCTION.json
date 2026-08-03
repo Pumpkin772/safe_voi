@@ -1,0 +1,91 @@
+{
+  "full_g2_dependencies_missing_from_historical_zip": [
+    "06_SOURCE/scripts/phase_e/run_e3_materiality.py",
+    "06_SOURCE/scripts/phase_f/run_f3_model_sets.py"
+  ],
+  "historical_certificate": {
+    "all_registered_terminal_metrics_incompatible": true,
+    "cvxpy_required_for_verification": false,
+    "effective_metrics": [
+      {
+        "compatible": false,
+        "effective_one_step_radius": 0.4448684753350753,
+        "excess": 0.1448684753350753,
+        "quantity": "frequency_area_1_hz",
+        "terminal_limit": 0.3
+      },
+      {
+        "compatible": false,
+        "effective_one_step_radius": 0.39578960093757043,
+        "excess": 0.09578960093757044,
+        "quantity": "frequency_area_2_hz",
+        "terminal_limit": 0.3
+      },
+      {
+        "compatible": false,
+        "effective_one_step_radius": 0.15689915067185545,
+        "excess": 0.07689915067185545,
+        "quantity": "tie_pu",
+        "terminal_limit": 0.08
+      },
+      {
+        "compatible": false,
+        "effective_one_step_radius": 0.3437439103125871,
+        "excess": 0.19374391031258711,
+        "quantity": "ace_area_1_pu",
+        "terminal_limit": 0.15
+      },
+      {
+        "compatible": false,
+        "effective_one_step_radius": 0.32313078306563503,
+        "excess": 0.17313078306563504,
+        "quantity": "ace_area_2_pu",
+        "terminal_limit": 0.15
+      }
+    ],
+    "global_minimum_validation_coverage": 0.993006993006993,
+    "local_minimum_validation_coverage": 0.9666666666666667,
+    "schema": "direction1.phase_g.local_terminal_incompatibility.v1",
+    "status": "LOCAL_TERMINAL_MODEL_NOT_CERTIFIABLE"
+  },
+  "historical_phase_g_zip_hash_matches": true,
+  "historical_phase_g_zip_sha256": "018dc05b6d78bec9069114b19986b21fbfdba6d04f5caeb42d9c563f03c53d79",
+  "large_local_model_residual_windows": 9,
+  "large_residual_source_explained_fraction": 1.0,
+  "old_included_windows_audited": 1009,
+  "old_included_windows_physically_clean_h0": 694,
+  "packaged_minimal_replays": [
+    {
+      "returncode": 0,
+      "script": "verify_manifest.py",
+      "stderr": "",
+      "stdout": "verified 281 package files\n"
+    },
+    {
+      "returncode": 0,
+      "script": "reproduce_minimal.py",
+      "stderr": "",
+      "stdout": "{\n  \"final_status\": \"LOCAL_TERMINAL_MODEL_NOT_CERTIFIABLE\",\n  \"g2_gate\": \"FAIL\",\n  \"local_terminal_one_step_compatible\": false,\n  \"final_seeds_consumed\": false,\n  \"known\": \"NOT_EVALUATED\",\n  \"ood\": \"NOT_EVALUATED\"\n}\n"
+    },
+    {
+      "returncode": 0,
+      "script": "verify_negative_boundary.py",
+      "stderr": "",
+      "stdout": "{\n  \"status\": \"LOCAL_TERMINAL_MODEL_NOT_CERTIFIABLE\",\n  \"frequency_hz\": [\n    0.4448684753350753,\n    0.39578960093757043\n  ],\n  \"tie_pu\": 0.15689915067185545,\n  \"ace_pu\": [\n    0.3437439103125871,\n    0.32313078306563503\n  ],\n  \"all_incompatible\": true,\n  \"cvxpy_used\": false\n}\n"
+    }
+  ],
+  "periods_replayed_s": [
+    2.0,
+    4.0
+  ],
+  "primary_exclusion_reason_counts": {
+    "DOMAIN_NOT_SUSTAINABLE": 239,
+    "FAR_FROM_LOAD_PARAMETERIZED_EQUILIBRIUM": 28,
+    "GRC_ACTIVE": 47,
+    "INCLUDED_PHYSICALLY_CLEAN": 694,
+    "SG_VALVE_BOUNDARY": 1
+  },
+  "reclassification": "TERMINAL_SET_CALIBRATION_PREMATURE_AND_MISSPECIFIED",
+  "scenarios_replayed": 40,
+  "schema": "direction5.phase_h.h0.current_certificate_reproduction.v1"
+}

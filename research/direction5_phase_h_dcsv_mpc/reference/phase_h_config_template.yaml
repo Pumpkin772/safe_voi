@@ -1,0 +1,37 @@
+schema: direction5.phase_h.dcsv.v1
+
+splits:
+  development_seeds: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+  validation_seeds: [20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+  final_seed_start: 100
+  final_seed_end: 159
+
+control:
+  sfr_periods_s: [2.0, 4.0]
+  physical_dt_s: 0.02
+  episode_horizons_s: [300.0, 600.0, 3600.0]
+
+observer:
+  candidates:
+    - reduced_order_kalman_actual_bess_input
+    - unknown_input_observer
+    - constrained_mhe
+  minimum_validation_coverage: 0.95
+  false_shrinkage_max: 0.05
+
+terminal_windows:
+  full_prediction_horizon_event_free: true
+  require_sustainable: true
+  require_grc_inactive: true
+  require_sg_bounds_inactive: true
+  require_bess_limits_inactive: true
+  require_no_solver_fallback: true
+
+gates:
+  success_allowed_drop: 0.02
+  core_improvement_min: 0.08
+  core_metrics_required: 2
+  unresolved_math_infeasibility_max: 0.001
+  fallback_fraction_max: 0.01
+  p99_solve_fraction_of_period_max: 0.50
+  physical_hard_violations_max: 0

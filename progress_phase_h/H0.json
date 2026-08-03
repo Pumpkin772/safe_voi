@@ -1,0 +1,38 @@
+{
+  "commands": [
+    "python scripts/phase_h/run_h0_forensic.py",
+    "python -m pytest tests/phase_h/test_h0_phase_g_defects.py -q"
+  ],
+  "failures": [],
+  "final_reclassification": "TERMINAL_SET_CALIBRATION_PREMATURE_AND_MISSPECIFIED",
+  "final_seeds_consumed": false,
+  "gate": "H0_PHASE_G_FORENSIC_REPRODUCTION",
+  "gate_components": {
+    "all_old_near_terminal_windows_audited": true,
+    "at_least_20_scenarios_exactly_replayed": true,
+    "both_periods_exactly_replayed": true,
+    "g2_negative_reclassified": true,
+    "historical_phase_e_f_dependency_gap_reproduced": true,
+    "large_residual_sources_at_least_95pct_explained": true,
+    "original_data_reused_not_regenerated": true,
+    "phase_g_evidence_preserved": true,
+    "phase_g_zip_hash_and_minimal_replay_pass": true
+  },
+  "gate_passed": true,
+  "inputs": {
+    "phase_g_original_parquet_sha256": "ba3d8157aed9e27d62b756a30164a335bd63c19134d4278bf5182e0b69c02212",
+    "phase_g_scientific_commit": "b254a6e5a4ca57851dfce9a4badcfa3be4e13adf",
+    "phase_g_zip_sha256": "018dc05b6d78bec9069114b19986b21fbfdba6d04f5caeb42d9c563f03c53d79"
+  },
+  "next_stage": "H1",
+  "outputs": {
+    "research_outputs_phase_h/00_FORENSIC/PHASE_G_CORRECTION.md": "a23aef7387f7064b31828c8b05d66e612607a80c98d0df14ade571d442d1cc0c",
+    "results_phase_h/H0/CURRENT_CERTIFICATE_REPRODUCTION.json": "49fa4010b4dd40fc749c82ddc79f9ce44df64bb0b3af828c85fffa67c6b25000",
+    "results_phase_h/H0/G2_DEPENDENCY_AUDIT.csv": "829c7a8fe26fa61f99114e7dcfb68e9c777285bad2944cf5bcd0e5783d30f152",
+    "results_phase_h/H0/H0_EXACT_REPLAY_INTERVAL_FLAGS.parquet": "ba1b0e3c7d69cae219c6c93888d3a396ef4f84446c3167c497174cb25dfa22ee",
+    "results_phase_h/H0/NEAR_TERMINAL_VALIDITY_AUDIT.parquet": "05331f70c4b05d0a2f3e55541500a71fc3064a2e894256b10f6835c7391f24eb"
+  },
+  "repairs": [],
+  "schema": "direction5.phase_h.progress.v1",
+  "stage": "H0"
+}
