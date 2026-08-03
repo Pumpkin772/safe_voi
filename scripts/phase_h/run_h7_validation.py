@@ -255,10 +255,39 @@ def input_from_estimates(
     )
 
 
-def simulate_episode(row, method: str, active_updates: int = 8) -> dict[str, object]:
+def simulate_episode(
+    row,
+    method: str,
+    active_updates: int = 8,
+    trace_sink: list[dict[str, object]] | None = None,
+) -> dict[str, object]:
     truth, values = capability_truth(str(row.mechanism))
     evaluation_domain = preclassified_domain(row, values)
     if evaluation_domain.startswith("PHYSICALLY_INFEASIBLE"):
+        if trace_sink is not None:
+            trace_sink.append(
+                {
+                    "scenario_id": row.scenario_id,
+                    "plant": row.plant,
+                    "seed": int(row.seed),
+                    "method": method,
+                    "mechanism": row.mechanism,
+                    "domain": evaluation_domain,
+                    "period_s": float(row.period_s),
+                    "update": -1,
+                    "time_s": 0.0,
+                    "trace_kind": "PHYSICAL_INFEASIBILITY_PRECLASSIFICATION",
+                    "controller_active": False,
+                    "solver_solved": False,
+                    "physical_infeasibility_preclassified": True,
+                    "primary_status": "NOT_SOLVED_PRECLASSIFIED_PHYSICAL_INFEASIBILITY",
+                    "restoration_status": "NOT_ATTEMPTED",
+                    "restoration_used": False,
+                    "fallback_used": False,
+                    "load0_pu": float(row.load0),
+                    "load1_pu": float(row.load1),
+                }
+            )
         return {
             **row.to_dict(),
             "method": method,
@@ -318,6 +347,13 @@ def simulate_episode(row, method: str, active_updates: int = 8) -> dict[str, obj
     last_action = previous_action.copy()
     for update in range(total_updates):
         time_s = update * period
+        trace_kind = "HELD_CERTIFIED_OR_NO_NEW_EVENT_TAIL"
+        trace_solved = False
+        trace_physical_preclassification = False
+        trace_primary_status = "HELD_TAIL_NO_SOLVER_CALL"
+        trace_restoration_status = "NOT_ATTEMPTED"
+        trace_restoration = False
+        trace_fallback = False
         if evaluation_domain == "BRIDGE_ONLY" and update == slow_reserve_update:
             slow_reserve = np.clip(load, -0.08, 0.08)
             load = load - slow_reserve
@@ -345,6 +381,7 @@ def simulate_episode(row, method: str, active_updates: int = 8) -> dict[str, obj
             energy / 50.0,
         )
         if update < executed_updates:
+            trace_kind = "ACTIVE_CONTROLLER_UPDATE"
             if method in ("sg_only_pi", "fixed_allocation_pi"):
                 observation = public_observation(
                     time_s, state, previous_action, nominal_frequency
@@ -353,6 +390,7 @@ def simulate_episode(row, method: str, active_updates: int = 8) -> dict[str, obj
                 action[[0, 2]] = np.clip(
                     action[[0, 2]], -row.sg_reserve_pu, row.sg_reserve_pu
                 )
+                trace_primary_status = "NOT_APPLICABLE_PI"
             else:
                 data = input_from_estimates(
                     estimate,
@@ -378,6 +416,14 @@ def simulate_episode(row, method: str, active_updates: int = 8) -> dict[str, obj
                 else:
                     action, diagnostic = controller.control(data)
                 solve_times.append(perf_counter() - started)
+                trace_solved = bool(diagnostic.solved)
+                trace_physical_preclassification = bool(
+                    diagnostic.physical_infeasibility_preclassified
+                )
+                trace_primary_status = diagnostic.primary_status
+                trace_restoration_status = diagnostic.restoration_status
+                trace_restoration = bool(diagnostic.restoration_used)
+                trace_fallback = bool(diagnostic.fallback_used)
                 unsolved += int(
                     not diagnostic.solved
                     and not diagnostic.physical_infeasibility_preclassified
@@ -450,6 +496,48 @@ def simulate_episode(row, method: str, active_updates: int = 8) -> dict[str, obj
             or np.any(energy < 5.0 - 1e-8)
             or np.any(energy > 45.0 + 1e-8)
         )
+        if trace_sink is not None:
+            trace_sink.append(
+                {
+                    "scenario_id": row.scenario_id,
+                    "plant": row.plant,
+                    "seed": int(row.seed),
+                    "method": method,
+                    "mechanism": row.mechanism,
+                    "domain": evaluation_domain,
+                    "period_s": period,
+                    "update": update,
+                    "time_s": time_s,
+                    "trace_kind": trace_kind,
+                    "controller_active": update < executed_updates,
+                    "solver_solved": trace_solved,
+                    "physical_infeasibility_preclassified": trace_physical_preclassification,
+                    "primary_status": trace_primary_status,
+                    "restoration_status": trace_restoration_status,
+                    "restoration_used": trace_restoration,
+                    "fallback_used": trace_fallback,
+                    "load0_pu": float(load[0]),
+                    "load1_pu": float(load[1]),
+                    "frequency0_hz": float(frequency[0]),
+                    "frequency1_hz": float(frequency[1]),
+                    "ace0_pu": float(ace[0]),
+                    "ace1_pu": float(ace[1]),
+                    "tie_line_pu": float(next_state[2]),
+                    "valve0_pu": float(next_state[3]),
+                    "valve1_pu": float(next_state[4]),
+                    "mechanical0_pu": float(next_state[5]),
+                    "mechanical1_pu": float(next_state[6]),
+                    "actual_bess0_pu": float(next_state[7]),
+                    "actual_bess1_pu": float(next_state[8]),
+                    "issued_sg0_pu": float(issued[0]),
+                    "issued_bess0_pu": float(issued[1]),
+                    "issued_sg1_pu": float(issued[2]),
+                    "issued_bess1_pu": float(issued[3]),
+                    "energy0_mwh": float(energy[0]),
+                    "energy1_mwh": float(energy[1]),
+                    "hard_violation": bool(hard_violation),
+                }
+            )
         state = next_state
         previous_action = issued
         actual_bess_command = target_bess
