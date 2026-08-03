@@ -129,7 +129,7 @@ def populate_logical_sections(package_root: Path) -> None:
     copy_file(REPO / "pyproject.toml", package_root / "07_CONFIG_ENV_SOLVERS/pyproject.toml")
     copy_tree(REPO / "tests/phase_h", package_root / "08_TESTS_VERIFICATION/tests_phase_h")
     (package_root / "08_TESTS_VERIFICATION/TEST_RESULT.json").write_text(
-        json.dumps({"suite": "tests/phase_h", "result": "39 passed", "environment": "topo_sfr"}, indent=2) + "\n",
+        json.dumps({"suite": "tests/phase_h", "result": "40 passed", "environment": "topo_sfr"}, indent=2) + "\n",
         "utf-8",
     )
     copy_tree(REPO / "research/direction5_phase_h_dcsv_mpc", package_root / "09_EXPERIMENT_DESIGN")

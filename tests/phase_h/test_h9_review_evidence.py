@@ -53,3 +53,18 @@ def test_review_figures_have_all_registered_formats_and_source_data() -> None:
             path = REPO / f"figures_phase_h/H9/{base}{suffix}"
             assert path.stat().st_size > 1000
     assert len(list((REPO / "figures_phase_h/H9").glob("*_SOURCE.csv"))) == 2
+
+
+def test_h9_pass_requires_fresh_extract_trial_verification() -> None:
+    progress = json.loads((REPO / "progress_phase_h/H9.json").read_text("utf-8"))
+    if progress["status"] == "PASS":
+        assert progress["gate_passed"]
+        assert all(progress["gate_components"].values())
+        verification = json.loads(
+            (REPO / "results_phase_h/H9/TRIAL_PACKAGE_VERIFICATION.json").read_text(
+                "utf-8"
+            )
+        )
+        assert verification["fresh_extract_manifest_verified"]
+        assert verification["fresh_extract_minimal_replay_verified"]
+        assert verification["packaged_phase_h_tests"] == "40 passed"

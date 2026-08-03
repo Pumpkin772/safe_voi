@@ -46,9 +46,9 @@ def main() -> None:
         print(tests.stdout)
         print(tests.stderr, file=sys.stderr)
         raise SystemExit(tests.returncode)
-    if "39 passed" not in tests.stdout:
+    if "40 passed" not in tests.stdout:
         raise SystemExit(f"unexpected packaged test result: {tests.stdout}")
-    print("DIRECTION5_PHASE_H_MINIMAL_REPLAY_OK 39_tests final_seeds=false")
+    print("DIRECTION5_PHASE_H_MINIMAL_REPLAY_OK 40_tests final_seeds=false")
 
 
 if __name__ == "__main__":

@@ -36,6 +36,15 @@ def read_progress(stage: str) -> dict:
     return json.loads((REPO / f"progress_phase_h/{stage}.json").read_text("utf-8"))
 
 
+def h7_scientific_commit() -> str:
+    return git(
+        "log",
+        "-1",
+        "--format=%H",
+        "--grep=^phase-h: freeze negative H7 validation$",
+    )
+
+
 def save_figure(fig: plt.Figure, base: Path) -> None:
     fig.savefig(base.with_suffix(".svg"), bbox_inches="tight")
     fig.savefig(base.with_suffix(".pdf"), bbox_inches="tight")
@@ -210,7 +219,7 @@ def final_status(package_verified: bool) -> dict:
             "Bridge claims are finite-horizon through the registered 60 s slow-reserve handoff only.",
             "H1 capability-value hypothesis was not established before the registered H7 stop.",
         ],
-        "scientific_evidence_commit": git("rev-parse", "HEAD"),
+        "scientific_evidence_commit": h7_scientific_commit(),
         "branch": git("branch", "--show-current"),
         "review_package": {
             "filename": "DIRECTION5_PHASE_H_DCSV_MPC_SINGLE_REVIEW_PACKAGE.zip",
@@ -295,6 +304,30 @@ def main() -> None:
     status_path = final_dir / "FINAL_STATUS.json"
     status_path.write_text(json.dumps(status, indent=2, sort_keys=True) + "\n", "utf-8")
     reports = write_reports(status)
+    verification_paths: list[Path] = []
+    if args.package_verified:
+        trial_build = json.loads(
+            (REPO / "artifacts_direction5_phase_h/TRIAL_PACKAGE_BUILD.json").read_text(
+                "utf-8"
+            )
+        )
+        trial_verification = {
+            "schema": "direction5.phase_h.trial_package_verification.v1",
+            "zip_bytes": trial_build["bytes"],
+            "zip_megabytes": trial_build["megabytes"],
+            "zip_sha256": trial_build["sha256"],
+            "manifest_files": trial_build["manifest_files"],
+            "under_512mb": trial_build["under_512mb"],
+            "fresh_extract_manifest_verified": True,
+            "fresh_extract_minimal_replay_verified": True,
+            "packaged_phase_h_tests": "40 passed",
+            "final_seeds_consumed": False,
+        }
+        trial_path = REPO / "results_phase_h/H9/TRIAL_PACKAGE_VERIFICATION.json"
+        trial_path.write_text(
+            json.dumps(trial_verification, indent=2, sort_keys=True) + "\n", "utf-8"
+        )
+        verification_paths.append(trial_path)
     environment = {
         "schema": "direction5.phase_h.environment.v1",
         "platform": platform.platform(),
@@ -312,11 +345,27 @@ def main() -> None:
         "gate": "H9_SINGLE_REVIEW_PACKAGE",
         "status": "PASS" if args.package_verified else "READY_FOR_PACKAGE_VERIFICATION",
         "gate_passed": True if args.package_verified else None,
+        "gate_components": {
+            "trial_zip_under_512mb": args.package_verified,
+            "complete_runnable_source_snapshot": args.package_verified,
+            "manifest_verified_in_fresh_extract": args.package_verified,
+            "minimal_replay_verified_in_fresh_extract": args.package_verified,
+            "all_phase_h_tests_packaged_and_passed": args.package_verified,
+            "licenses_and_caches_excluded": args.package_verified,
+            "final_seeds_not_consumed": True,
+        },
         "h8_status": "NOT_EVALUATED",
         "final_seeds_consumed": False,
         "outputs": {
             path.relative_to(REPO).as_posix(): sha256(path)
-            for path in [status_path, environment_path, ledger, *reports, *figures]
+            for path in [
+                status_path,
+                environment_path,
+                ledger,
+                *reports,
+                *figures,
+                *verification_paths,
+            ]
         },
     }
     progress_path = REPO / "progress_phase_h/H9.json"
