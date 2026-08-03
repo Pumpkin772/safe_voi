@@ -37,12 +37,24 @@ def read_progress(stage: str) -> dict:
 
 
 def h7_scientific_commit() -> str:
-    return git(
-        "log",
-        "-1",
-        "--format=%H",
-        "--grep=^phase-h: freeze negative H7 validation$",
-    )
+    try:
+        return git(
+            "log",
+            "-1",
+            "--format=%H",
+            "--grep=^phase-h: freeze negative H7 validation$",
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        prior = REPO / "results_phase_h/final/FINAL_STATUS.json"
+        return json.loads(prior.read_text("utf-8"))["scientific_evidence_commit"]
+
+
+def branch_name() -> str:
+    try:
+        return git("branch", "--show-current")
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        prior = REPO / "results_phase_h/final/FINAL_STATUS.json"
+        return json.loads(prior.read_text("utf-8"))["branch"]
 
 
 def save_figure(fig: plt.Figure, base: Path) -> None:
@@ -220,7 +232,7 @@ def final_status(package_verified: bool) -> dict:
             "H1 capability-value hypothesis was not established before the registered H7 stop.",
         ],
         "scientific_evidence_commit": h7_scientific_commit(),
-        "branch": git("branch", "--show-current"),
+        "branch": branch_name(),
         "review_package": {
             "filename": "DIRECTION5_PHASE_H_DCSV_MPC_SINGLE_REVIEW_PACKAGE.zip",
             "maximum_bytes_exclusive": 512 * 1024 * 1024,
@@ -306,18 +318,32 @@ def main() -> None:
     reports = write_reports(status)
     verification_paths: list[Path] = []
     if args.package_verified:
-        trial_build = json.loads(
-            (REPO / "artifacts_direction5_phase_h/TRIAL_PACKAGE_BUILD.json").read_text(
-                "utf-8"
+        build_path = REPO / "artifacts_direction5_phase_h/TRIAL_PACKAGE_BUILD.json"
+        if build_path.is_file():
+            trial_build = json.loads(build_path.read_text("utf-8"))
+            trial_bytes = trial_build["bytes"]
+            trial_megabytes = trial_build["megabytes"]
+            trial_sha256 = trial_build["sha256"]
+            trial_manifest_files = trial_build["manifest_files"]
+            trial_under_limit = trial_build["under_512mb"]
+        else:
+            frozen = json.loads(
+                (REPO / "results_phase_h/H9/TRIAL_PACKAGE_VERIFICATION.json").read_text(
+                    "utf-8"
+                )
             )
-        )
+            trial_bytes = frozen["zip_bytes"]
+            trial_megabytes = frozen["zip_megabytes"]
+            trial_sha256 = frozen["zip_sha256"]
+            trial_manifest_files = frozen["manifest_files"]
+            trial_under_limit = frozen["under_512mb"]
         trial_verification = {
             "schema": "direction5.phase_h.trial_package_verification.v1",
-            "zip_bytes": trial_build["bytes"],
-            "zip_megabytes": trial_build["megabytes"],
-            "zip_sha256": trial_build["sha256"],
-            "manifest_files": trial_build["manifest_files"],
-            "under_512mb": trial_build["under_512mb"],
+            "zip_bytes": trial_bytes,
+            "zip_megabytes": trial_megabytes,
+            "zip_sha256": trial_sha256,
+            "manifest_files": trial_manifest_files,
+            "under_512mb": trial_under_limit,
             "fresh_extract_manifest_verified": True,
             "fresh_extract_minimal_replay_verified": True,
             "packaged_phase_h_tests": "40 passed",

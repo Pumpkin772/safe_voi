@@ -75,7 +75,42 @@ def git(*args: str) -> str:
 
 
 def tracked_files() -> list[str]:
-    return git("ls-files").splitlines()
+    try:
+        return git("ls-files").splitlines()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        files = []
+        for path in REPO.rglob("*"):
+            if not path.is_file():
+                continue
+            relative = path.relative_to(REPO).as_posix()
+            if any(part in {"__pycache__", ".pytest_cache"} for part in path.parts):
+                continue
+            if relative in SOURCE_SINGLE_FILES or relative.startswith(SOURCE_PREFIXES):
+                files.append(relative)
+        return sorted(files)
+
+
+def snapshot_git_identity() -> tuple[str, str, bool | None, list[str], bool]:
+    try:
+        tracked_status = git("status", "--short", "--untracked-files=no")
+        return (
+            git("rev-parse", "HEAD"),
+            git("branch", "--show-current"),
+            tracked_status == "",
+            tracked_status.splitlines(),
+            True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        status = json.loads(
+            (REPO / "results_phase_h/final/FINAL_STATUS.json").read_text("utf-8")
+        )
+        return (
+            status["scientific_evidence_commit"],
+            status["branch"],
+            None,
+            [],
+            False,
+        )
 
 
 def copy_file(source: Path, destination: Path) -> None:
@@ -156,8 +191,13 @@ From `06_SOURCE/repository` in the repository-owned `topo_sfr` environment,
 run `python scripts/phase_h/run_h0_forensic.py` through
 `python scripts/phase_h/run_h7_validation.py` in stage order. H7 exits on its
 registered negative Gate. Do not run H8. Then run
-`python scripts/phase_h/export_h9_control_cycle_evidence.py` and
-`python scripts/phase_h/run_h9_finalize.py --package-verified`.
+        `python scripts/phase_h/export_h9_control_cycle_evidence.py`, then
+        `python scripts/phase_h/run_h9_finalize.py`. Build a trial with
+        `python scripts/phase_h/build_h9_review_package.py --trial`, verify its
+        manifest and minimal replay in a fresh extraction, then run
+        `python scripts/phase_h/run_h9_finalize.py --package-verified` and build
+        the final package. The builder supports both a Git checkout and this
+        package-local source snapshot.
 """,
         "utf-8",
     )
@@ -166,13 +206,14 @@ registered negative Gate. Do not run H8. Then run
 
 
 def write_git_state(package_root: Path, tracked: list[str]) -> None:
-    tracked_status = git("status", "--short", "--untracked-files=no")
+    head, branch, tracked_clean, tracked_status, checkout_available = snapshot_git_identity()
     state = {
         "schema": "direction5.phase_h.git_state.v1",
-        "branch": git("branch", "--show-current"),
-        "head": git("rev-parse", "HEAD"),
-        "tracked_tree_clean": tracked_status == "",
-        "tracked_status": tracked_status.splitlines(),
+        "branch": branch,
+        "head": head,
+        "tracked_tree_clean": tracked_clean,
+        "tracked_status": tracked_status,
+        "git_checkout_available": checkout_available,
         "historical_untracked_delivery_artifacts_excluded": True,
     }
     (package_root / "16_GIT_MANIFEST/GIT_STATE.json").write_text(
@@ -251,7 +292,7 @@ def main() -> None:
         "sha256": digest,
         "manifest_files": len(rows),
         "under_512mb": output.stat().st_size < 512 * 1024 * 1024,
-        "git_commit": git("rev-parse", "HEAD"),
+        "git_commit": snapshot_git_identity()[0],
     }
     result_name = "TRIAL_PACKAGE_BUILD.json" if args.trial else "FINAL_PACKAGE_BUILD.json"
     (artifacts / result_name).write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", "utf-8")
