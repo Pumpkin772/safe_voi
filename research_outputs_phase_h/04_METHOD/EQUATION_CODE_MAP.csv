@@ -1,0 +1,9 @@
+equation_or_contract,code_object
+load augmented random walk,GridDisturbanceObserver persistent load state
+"x[j,k+1]=A[j]x+B0[j]u[k]+B1[j]u[k-1]+Edhat",dcsv_mpc._solve_problem dynamics
+-Pchg<=Pbess<=Pdis,delivered total_bess constraints
+-Rdown*T<=delta Pbess<=Rup*T,actual-power ramp constraints
+Eused[k+1]=Eused[k]+loss-adjusted throughput,energy_used recursion
+x[N]-xstar(dhat) in Xf,sustainable terminal constraint
+bridge energy and required handoff power,bridge terminal constraints
+common u across delay vertices,single u variable shared by scenario states
