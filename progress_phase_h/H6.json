@@ -1,0 +1,56 @@
+{
+  "bridge_certificate_rows": 58,
+  "bridge_viable_rows": 58,
+  "certificate_level": "MIXED_PLANT_A_LEVEL_B_CONDITIONAL_PLANT_B_LEVEL_A_FINITE_HORIZON",
+  "conditional_recursive_feasibility_by_plant": {
+    "A": true,
+    "B": false
+  },
+  "conditional_recursive_feasibility_certified": false,
+  "failures": [
+    {
+      "attempt": 1,
+      "classification": "PLANT_B_LOCAL_RPI_EXCEEDS_REGISTERED_TERMINAL_AND_SG_MARGIN",
+      "evidence": "results_phase_h/H6/attempt1_all_plant_rpi_gate"
+    }
+  ],
+  "final_seeds_consumed": false,
+  "gate": "H6_THEORY_AND_CERTIFICATES",
+  "gate_components": {
+    "bridge_power_ramp_energy_safety_handoff_certified": true,
+    "certificates_independently_recomputable": true,
+    "empirical_coverage_not_overstated_as_deterministic": true,
+    "exact_rpi_object_used_by_supported_mpc_scope": true,
+    "finite_horizon_certificate_present": true,
+    "physical_infeasibility_certificates_nonempty": true,
+    "plant_a_and_plant_b_2s_4s_present": true,
+    "recursive_claim_scoped_per_plant_not_unqualified": true,
+    "sustainable_rpi_recomputed_nonempty": true
+  },
+  "gate_passed": true,
+  "next_stage": "H7",
+  "outputs": {
+    "research_outputs_phase_h/05_THEORY/ASSUMPTIONS.md": "09ea62614cbf0e11b94193700664bddd0922ffc26888659a6ea3f69f1f896553",
+    "research_outputs_phase_h/05_THEORY/BRIDGE_CERTIFICATES.parquet": "12ffd11d2beecea26737d616e0a4d3f78ed0d8f1e02218e12255deac70db0908",
+    "research_outputs_phase_h/05_THEORY/INFEASIBILITY_CERTIFICATES.parquet": "2c772212cb794f363a09aabd2292c7c03cdd7e56bdfdf825b9de7432987c03e6",
+    "research_outputs_phase_h/05_THEORY/REPRODUCE_CERTIFICATES.py": "a29e9f7a0de7aae5bae0f80595a2156f7d164cd339453d63b9288e4da9c069e0",
+    "research_outputs_phase_h/05_THEORY/SUSTAINABLE_CERTIFICATE.json": "bd25e268482540b50a00f8d2c95320ef17b88a69c996a6de95d74e8736c8c9f3",
+    "research_outputs_phase_h/05_THEORY/SUSTAINABLE_TERMINAL_SET.npz": "9e25ca13aef77931a8eeb907b2731b29e7699f8af9db89df2b62d038e1b5274b",
+    "research_outputs_phase_h/05_THEORY/THEOREMS_AND_PROOFS.md": "65f3144aa2cf4fb3885f751a76f4c7bfda20c2a91c19f31e19f166e566a0387d",
+    "results_phase_h/H6/EXACT_TERMINAL_CODE_OBJECT_REPLAY.csv": "6862358b16a25b9a160390a7c1dc92fa6bf8f0a4033b8450f1dea3e616ddbd69",
+    "results_phase_h/H6/SUSTAINABLE_TERMINAL_SET_AUDIT.csv": "b1ad6e084a43687eb921af5ae9ed4579d544f70894495c01b8e3cd1c5387b85a"
+  },
+  "physical_infeasibility_certificate_rows": 26,
+  "repairs": [
+    {
+      "change": "enforce exact H6 zonotope in DCSV and restrict Level-B claim to supported Plant-A initial domain",
+      "repair": 1,
+      "unchanged": "H4 disturbance sets, terminal limits, SG margins, bridge/infeasibility cells, and all physical thresholds"
+    }
+  ],
+  "repairs_used": 1,
+  "schema": "direction5.phase_h.progress.v1",
+  "stage": "H6",
+  "sustainable_rpi_rows": 4,
+  "sustainable_rpi_supported_rows": 2
+}

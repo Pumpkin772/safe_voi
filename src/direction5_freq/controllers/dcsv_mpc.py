@@ -143,6 +143,33 @@ class DisturbanceCapabilitySeparatedViabilityMPC:
         self.previous_applied_action = np.zeros(4)
         self.bridge_state: BridgeState | None = None
         self._terminal_radius = self._load_terminal_radius()
+        self.terminal_generator_matrix = self._load_certified_terminal_object()
+
+    def _load_certified_terminal_object(self) -> np.ndarray | None:
+        path = (
+            Path(__file__).resolve().parents[3]
+            / "research_outputs_phase_h/05_THEORY/SUSTAINABLE_TERMINAL_SET.npz"
+        )
+        if not path.is_file():
+            return None
+        data = np.load(path)
+        matches = np.flatnonzero(
+            (data["plants"].astype(str) == self.plant_name)
+            & np.isclose(data["periods_s"].astype(float), self.period_s)
+        )
+        if len(matches) != 1:
+            return None
+        index = int(matches[0])
+        if not bool(
+            data["invariant"][index]
+            and data["admissible"][index]
+            and data["terminal_radius_compatible"][index]
+        ):
+            return None
+        columns = int(data["generator_columns"][index])
+        return np.asarray(
+            data["generator_matrices_padded"][index, :, :columns], dtype=float
+        )
 
     def _load_terminal_radius(self) -> np.ndarray:
         path = (
@@ -313,10 +340,32 @@ class DisturbanceCapabilitySeparatedViabilityMPC:
                 previous_total = total_bess
             terminal = states[scenario][:, horizon]
             if decision.classification == "SUSTAINABLE":
-                constraints.append(
-                    cp.abs(terminal - reference) <= self._terminal_radius + terminal_slack
-                )
-                constraints.append(cp.abs(u[[1, 3], horizon - 1]) <= 0.01 + terminal_slack)
+                if self.terminal_generator_matrix is not None and not restoration:
+                    coefficient = cp.Variable(
+                        self.terminal_generator_matrix.shape[1],
+                        name=f"terminal_zonotope_coefficient_{scenario}",
+                    )
+                    terminal_augmented = cp.hstack(
+                        [
+                            terminal - reference,
+                            u[[0, 2], horizon - 1] - reference[5:7],
+                        ]
+                    )
+                    constraints.extend(
+                        [
+                            terminal_augmented
+                            == self.terminal_generator_matrix @ coefficient,
+                            cp.norm_inf(coefficient) <= 1.0,
+                        ]
+                    )
+                else:
+                    constraints.append(
+                        cp.abs(terminal - reference)
+                        <= self._terminal_radius + terminal_slack
+                    )
+                # The certified shift policy is SG-only; a residual issued BESS
+                # command would leave an unmodelled delay-pipeline input.
+                constraints.append(u[[1, 3], horizon - 1] == 0.0)
             else:
                 remaining = max(
                     min(float(data.time_to_slow_reserve_s), horizon * self.period_s),
