@@ -1,0 +1,53 @@
+{
+  "excluded_windows": 976,
+  "failures": [
+    {
+      "attempt": 1,
+      "classification": "VALIDATION_SAMPLE_SIZE_INSUFFICIENT_FOR_REGISTERED_CONFIDENCE_LOWER_BOUND",
+      "evidence": "results_phase_h/H4/attempt1_finite_sample_lower_bound",
+      "minimum_empirical_coverage": 0.975,
+      "minimum_finite_sample_lower_bound": 0.9437070147599348,
+      "unchanged_passes": "physical activation zero; local nested; semantics; no leakage"
+    }
+  ],
+  "final_seeds_consumed": false,
+  "gate": "H4_PHYSICALLY_CLEAN_LOCAL_TERMINAL_SET",
+  "gate_components": {
+    "all_exclusions_have_unique_primary_and_complete_reason_list": true,
+    "at_least_60_validation_samples_each_plant_period_horizon": true,
+    "final_seeds_not_consumed": true,
+    "h2_domain_labels_precede_local_calibration": true,
+    "local_set_nested_in_global_set": true,
+    "near_terminal_physical_limit_activation_rate_zero": true,
+    "no_future_leakage": true,
+    "one_step_persistent_load_compatibility": true,
+    "plant_a_and_native_plant_b_2s_4s_present": true,
+    "validation_empirical_and_finite_sample_coverage_pass": true
+  },
+  "gate_passed": true,
+  "minimum_empirical_coverage": 0.9902597402597403,
+  "minimum_finite_sample_lower_bound": 0.9750194684977117,
+  "minimum_validation_samples": 174,
+  "next_stage": "H5",
+  "outputs": {
+    "research_outputs_phase_h/03_MODEL/GLOBAL_PREDICTION_SET.npz": "01e2ffc8ba77801088cb3632c93c331dc34fd362582b45cb8fe80adffe0939bc",
+    "research_outputs_phase_h/03_MODEL/LOCAL_TERMINAL_SET.npz": "e6ab76ef2ee77d5c7d5919067d8bec7e39dee9436ebc694528c4826609e34508",
+    "research_outputs_phase_h/03_MODEL/TERMINAL_WINDOW_FILTER_SPEC.md": "476ded9ccf5e28c1740ca707ff7510f91dae955a01b96b93dda176a68aba875c",
+    "results_phase_h/H4/COVERAGE_WITH_CONFIDENCE.csv": "56bb8ec1e7e78dc00a5c99e0ed18a6e8e383617d0c15535a482aa82cfbae17f2",
+    "results_phase_h/H4/EXCLUSION_REASONS.csv": "2c82045ea98399310961e9d097da0ce8a37939d60688cb221c23daa8c84cbbde",
+    "results_phase_h/H4/TERMINAL_CALIBRATION_TRAJECTORIES.parquet": "32bc99f22e884f28f79c8deff9782f26f3f7f1abcf32e7abbf0ed85a5dcd738a",
+    "results_phase_h/H4/WINDOW_LABELS.parquet": "2aab6584d4a4ce9d3370ba4e418754ef0d032eb7925f00e9d729d52549b1e752"
+  },
+  "physical_limit_activations_in_included_windows": 0,
+  "repairs": [
+    {
+      "change": "double independent development/validation trajectories and include registered public sensor noise",
+      "repair": 1,
+      "unchanged": "domain labels, observer, controller, radii rule, confidence level, coverage targets, physical thresholds, and final split"
+    }
+  ],
+  "repairs_used": 1,
+  "schema": "direction5.phase_h.progress.v1",
+  "stage": "H4",
+  "terminal_windows": 7960
+}
