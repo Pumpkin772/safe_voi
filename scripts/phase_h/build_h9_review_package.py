@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import tempfile
 import zipfile
 
 
@@ -70,7 +71,11 @@ def sha256(path: Path) -> str:
 
 def git(*args: str) -> str:
     return subprocess.check_output(
-        ["git", *args], cwd=REPO, text=True, encoding="utf-8"
+        ["git", *args],
+        cwd=REPO,
+        text=True,
+        encoding="utf-8",
+        stderr=subprocess.DEVNULL,
     ).strip()
 
 
@@ -259,7 +264,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--trial", action="store_true")
     args = parser.parse_args()
-    artifacts = REPO / "artifacts_direction5_phase_h"
+    try:
+        git("rev-parse", "--is-inside-work-tree")
+        artifacts = REPO / "artifacts_direction5_phase_h"
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        # Keep staging short on Windows even when the extracted package itself
+        # has a deeply nested path. The final ZIP still lands in REPO.
+        artifacts = Path(tempfile.mkdtemp(prefix="direction5_h9_artifacts_"))
     artifacts.mkdir(parents=True, exist_ok=True)
     package_root = artifacts / "direction5_h9_staging"
     if package_root.exists():

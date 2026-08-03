@@ -28,7 +28,11 @@ def sha256(path: Path) -> str:
 
 def git(*args: str) -> str:
     return subprocess.check_output(
-        ["git", *args], cwd=REPO, text=True, encoding="utf-8"
+        ["git", *args],
+        cwd=REPO,
+        text=True,
+        encoding="utf-8",
+        stderr=subprocess.DEVNULL,
     ).strip()
 
 
