@@ -58,6 +58,11 @@ SOURCE_SINGLE_FILES = {
     "environment.yml",
     "pyproject.toml",
     "scripts/__init__.py",
+    # Minimal frozen Phase-H assets needed by the I0 forensic tests. They are
+    # historical evidence, not active Phase-I runtime dependencies.
+    "scripts/phase_h/__init__.py",
+    "scripts/phase_h/run_h7_validation.py",
+    "results_phase_h/H7/H7_VALIDATION_EPISODES.parquet",
 }
 CHECKPOINT_NAMES = {
     "ALL_EPISODES_CHECKPOINT.parquet",
