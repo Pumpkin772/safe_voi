@@ -1,0 +1,31 @@
+schema: direction5.final_repair.manifest.v1
+
+required_columns:
+  - scenario_id
+  - split
+  - seed
+  - design_cell
+  - plant
+  - control_period_s
+  - sg_tension
+  - capability_mechanism
+  - capability_change_time_s
+  - load_event_time_s
+  - load_area
+  - load_sign
+  - load_magnitude_pu
+  - initial_soc_area1
+  - initial_soc_area2
+  - measurement_noise_std_hz
+  - communication_jitter_s
+  - dropout_probability
+  - slow_reserve_arrival_s
+  - domain
+  - known_ood
+  - contract_status
+
+rules:
+  every_factor_explicit: true
+  seed_must_not_encode_multiple_factors_by_modulo: true
+  methods_paired_within_scenario: true
+  final_manifest_hashed_before_execution: true

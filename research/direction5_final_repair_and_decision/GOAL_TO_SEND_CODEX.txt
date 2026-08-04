@@ -1,0 +1,62 @@
+项目命名锁定：本项目统一称为“方向5 / DIRECTION5 / direction5”。
+
+请先完整阅读当前仓库：
+
+research/direction5_final_repair_and_decision/
+
+下的全部文件，然后将 CODEX_GOAL.md 作为本项目唯一总Goal立即执行。
+
+请按 R0→R1→R2→R3→R4→R5→R6→R7→R8 连续完成，
+不要在内部阶段后等待我再次发消息。
+
+这是方向5的最终修复与裁决，不允许继续创建新的Phase。
+
+唯一方法：
+
+DCSV-CR-MPC：
+Disturbance–Capability-Separated Contract-Recourse MPC。
+
+必须：
+
+1. 撤回Phase I的决定性终止结论并重算统计；
+2. 禁止mean episode-relative ratio作为主指标；
+3. 使用scenario-balanced aggregate means、paired absolute differences
+   和seed/design-cell hierarchical bootstrap；
+4. solver失败率分母必须包含全部attempted optimization calls；
+5. 将contract-only rolling MPC作为首要公平基线；
+6. 用真实set-membership/MHE维护power/ramp/delay可交付集合；
+7. 区分contract guaranteed floor与online performance envelope；
+8. 实现contract-safe base command和surplus-loss future recourse；
+9. 使用真实SoC能量和完整delay pipeline；
+10. 核心episode必须包含nominal warm-up、随机未通知能力变化、
+    独立负荷事件和300–600s全时域滚动控制；
+11. Plant A使用完整非线性，Plant B使用原生ANDES；
+12. normal1h必须是真实仿真并检查频率品质；
+13. 所有MPC基线必须是真实滚动优化；
+14. ordinary controller禁止读取true capability、true load和future event；
+15. development/validation/final严格隔离；
+16. final后禁止调参，不删除失败或降低物理标准；
+17. 若R5两轮修复后仍失败，必须终止并输出决定性负结果，
+    不得再创建新Phase或临时更换算法。
+
+最终只允许：
+
+PAPER_READY_WITH_BOUNDED_CLAIMS
+
+或：
+
+DIRECTION5_TERMINATED_WITH_DECISIVE_NEGATIVE_EVIDENCE。
+
+最终生成小于512MB的：
+
+DIRECTION5_FINAL_REPAIR_AND_DECISION_SINGLE_REVIEW_PACKAGE.zip
+
+内容严格符合：
+
+research/direction5_final_repair_and_decision/
+10_FINAL_REVIEW_PACKAGE_SPEC.md
+
+完成后报告ZIP路径、大小、SHA256、Git commit、全部Gate、
+材料性、selected observer/estimator、最佳基线、known/OOD、
+contract violation、normal1h、solver/fallback、certificate、
+Plant A/B、最严重失败和唯一最终状态。
