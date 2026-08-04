@@ -164,7 +164,7 @@ def populate_sections(package_root: Path, test_count: int) -> None:
     copy_file(REPO / "environment.yml", package_root / "07_CONFIG_ENV_SOLVERS/environment.yml")
     copy_file(REPO / "pyproject.toml", package_root / "07_CONFIG_ENV_SOLVERS/pyproject.toml")
     copy_tree(REPO / "tests/phase_i", package_root / "08_TESTS_VERIFICATION/tests_phase_i")
-    copy_tree(REPO / "logs_phase_i/I8", package_root / "08_TESTS_VERIFICATION/logs")
+    copy_tree(REPO / "logs_phase_i", package_root / "08_TESTS_VERIFICATION/logs_phase_i")
     (package_root / "08_TESTS_VERIFICATION/TEST_RESULT.json").write_text(
         json.dumps({"suite": "tests/phase_i", "passed": test_count, "environment": "topo_sfr"}, indent=2) + "\n",
         "utf-8",
@@ -185,6 +185,10 @@ def populate_sections(package_root: Path, test_count: int) -> None:
     ):
         for path in (REPO / "results_phase_i").rglob(name):
             copy_file(path, package_root / "13_FAILURES" / path.relative_to(REPO / "results_phase_i"))
+    copy_file(
+        REPO / "logs_phase_i/I6/run_i6_resume_1_stderr.log",
+        package_root / "13_FAILURES/I6_NATIVE_ANDES_INITIALIZATION_WARNINGS.log",
+    )
     copy_tree(final_docs, package_root / "14_PAPER_ANALYSIS")
     copy_file(REPO / "scripts/phase_i/package_verify_manifest.py", package_root / "15_REPRODUCIBILITY/verify_manifest.py")
     copy_file(REPO / "scripts/phase_i/package_reproduce_minimal.py", package_root / "15_REPRODUCIBILITY/reproduce_minimal.py")

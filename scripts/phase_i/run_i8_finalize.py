@@ -39,6 +39,19 @@ def write_text(path: Path, value: str) -> None:
     path.write_text(value.strip() + "\n", "utf-8")
 
 
+def dataframe_markdown(frame: pd.DataFrame) -> str:
+    """Render a compact Markdown table without pandas' optional tabulate."""
+    columns = [str(column) for column in frame.columns]
+    lines = [
+        "| " + " | ".join(columns) + " |",
+        "| " + " | ".join("---" for _ in columns) + " |",
+    ]
+    for values in frame.itertuples(index=False, name=None):
+        escaped = [str(value).replace("|", "\\|").replace("\n", " ") for value in values]
+        lines.append("| " + " | ".join(escaped) + " |")
+    return "\n".join(lines)
+
+
 def git(*args: str) -> str:
     return subprocess.check_output(["git", *args], cwd=REPO, text=True, encoding="utf-8").strip()
 
@@ -47,7 +60,12 @@ def stage_gates(i6: dict[str, Any], package_verified: bool) -> dict[str, str]:
     gates = {}
     for stage in range(6):
         progress = read_json(PROGRESS / f"I{stage}.json")
-        gates[f"I{stage}"] = "PASS" if progress.get("status") == "PASS" else str(progress.get("status"))
+        if progress.get("status") == "PASS" or progress.get("gate_passed") is True:
+            gates[f"I{stage}"] = "PASS"
+        elif progress.get("status"):
+            gates[f"I{stage}"] = str(progress["status"])
+        else:
+            gates[f"I{stage}"] = "FAIL"
     gates["I6"] = "PASS" if i6["method_gate_passed"] else "FAIL"
     gates["I7"] = "PASS" if i6["method_gate_passed"] else "NOT_EVALUATED"
     gates["I8"] = "PASS" if package_verified else "PENDING_PACKAGE_VERIFICATION"
@@ -134,6 +152,28 @@ def make_figures(episodes: pd.DataFrame, normals: pd.DataFrame) -> None:
                       arrowprops={"arrowstyle": "->", "color": "#006D77", "lw": 1.5})
     axis.set_title("Direction5 Phase-I causal information flow")
     fig.tight_layout(); save_figure(fig, "SYSTEM_METHOD_DIAGRAM")
+
+    fig, axis = plt.subplots(figsize=(9.2, 4.2)); axis.axis("off")
+    axis.text(0.08, 0.78, "Load-parameterized\ndomain supervisor", transform=axis.transAxes,
+              ha="center", va="center", bbox={"boxstyle": "round,pad=0.5", "facecolor": "#E9ECEF"})
+    branches = [
+        (0.46, 0.84, "SUSTAINABLE\nlocal Plant-A RPI\nconditional terminal constraint", "#D8F3DC"),
+        (0.46, 0.50, "BRIDGE\npower-ramp-energy clock\nslow-reserve handoff", "#FFF3B0"),
+        (0.46, 0.16, "PHYSICALLY INFEASIBLE\nearly certificate\nnot controller failure", "#FFCCD5"),
+    ]
+    for x, y, label, color in branches:
+        axis.text(x, y, label, transform=axis.transAxes, ha="center", va="center",
+                  bbox={"boxstyle": "round,pad=0.5", "facecolor": color, "edgecolor": "#495057"}, fontsize=9)
+        axis.annotate("", xy=(x-0.13, y), xytext=(0.17, 0.76), xycoords=axis.transAxes,
+                      arrowprops={"arrowstyle": "->", "color": "#495057"})
+    axis.text(0.82, 0.50, "Rolling DCSV-MPC\ncommon control sequence\npower/ramp/delay/SoC constraints\nrestoration + transactional commit",
+              transform=axis.transAxes, ha="center", va="center",
+              bbox={"boxstyle": "round,pad=0.55", "facecolor": "#DDEAF7", "edgecolor": "#1D3557"}, fontsize=9)
+    for y in (0.84, 0.50):
+        axis.annotate("", xy=(0.69, 0.53), xytext=(0.59, y), xycoords=axis.transAxes,
+                      arrowprops={"arrowstyle": "->", "color": "#1D3557"})
+    axis.set_title("DCSV-MPC domain and certificate routing")
+    fig.tight_layout(); save_figure(fig, "DCSV_DOMAIN_CERTIFICATE_DIAGRAM")
 
 
 def main() -> None:
@@ -331,8 +371,8 @@ independent reserve. Global or native-DAE recursive feasibility is not claimed.
 I7 status is **{gates['I7']}**; final seeds consumed: **{str(i7['final_seeds_consumed']).lower()}**.
 No failed episode was deleted and NOT_EVALUATED is neither success nor failure.
 """)
-    write_text(FINAL_DOCS / "SUPPORTED_UNSUPPORTED_CLAIMS.md", "# Supported and unsupported claims\n\n" + claims.to_markdown(index=False))
-    write_text(FINAL_DOCS / "REVIEWER_RISK_REGISTER.md", "# Reviewer risk register\n\n" + risks.to_markdown(index=False))
+    write_text(FINAL_DOCS / "SUPPORTED_UNSUPPORTED_CLAIMS.md", "# Supported and unsupported claims\n\n" + dataframe_markdown(claims))
+    write_text(FINAL_DOCS / "REVIEWER_RISK_REGISTER.md", "# Reviewer risk register\n\n" + dataframe_markdown(risks))
     paper_route = (
         "No affirmative method paper route is supported. Publish only a decisive negative/methodology report "
         "covering corrected full-event validation and bounded theoretical results."
@@ -351,6 +391,48 @@ No failed episode was deleted and NOT_EVALUATED is neither success nor failure.
 - Manifest verification and minimal replay are mandatory and dependency-aware.
 - Historical Phase H source is present only for I0 forensic replay; active
   Phase-I method source is `src/direction5freq`.
+""")
+    write_text(FINAL_DOCS / "MATHEMATICAL_APPENDIX.md", """
+# Mathematical appendix and claim boundary
+
+The recomputable certificate sources and numerical tables are in
+`results_phase_i/I5` and `research_outputs_phase_i/06_THEORY`.
+
+The hard-safety semantics use the contract guaranteed floor for power, ramp and
+delay; measured SoC supplies the energy state. The online performance envelope
+is revocable and can affect allocation cost, never a hard future guarantee.
+For sustainable load-parameterized equilibria, Phase I certifies only local
+Plant-A robust positively invariant boxes under the registered linearization,
+disturbance bounds and admissibility constraints. For bridge cells, the claim
+is finite-horizon power-ramp-energy feasibility plus a slow-reserve handoff.
+Cells without sufficient energy/handoff receive no bridge guarantee. Native
+Plant B has empirical closed-loop validation but no rigorous DAE RPI theorem.
+The same-instant indistinguishability result rules out unconditional safety
+after an unannounced capability drop below contract without independent reserve.
+""")
+    write_text(FINAL_DOCS / "CLOSEST_WORK_AND_NOVELTY.md", """
+# Closest work and bounded novelty
+
+The 70-source registry and closest-work matrix are in
+`research_outputs_phase_i/02_LITERATURE`. No single registered source combines
+actual-POI disturbance observation, causal command-to-actual power/ramp/delay
+set estimation, contract-floor semantics, load-parameterized three-domain
+viability routing, full rolling constrained MPC, and native RMS/DAE validation.
+This intersection is the bounded novelty claim. The failed I6 method Gate means
+novelty does not establish deployment advantage and H5 remains unsupported.
+""")
+    write_text(FINAL_DOCS / "FAILURE_DIAGNOSIS.md", f"""
+# I6 failure diagnosis
+
+The registered diagnostic order was followed. One OS/native execution exit was
+repaired by fresh-process episode isolation without changing scientific inputs.
+The completed run then showed {i6['fallback_calls']} fallback and
+{i6['unresolved_math_infeasibility']} unresolved mathematical-infeasibility
+cycles, concentrated in Plant-A delay-increase scenarios. Native Plant B and
+normal1h had no fallback, yet native Plant-B frequency direction remained
+negative. No second code/numerical defect was demonstrated. Changing weights,
+horizon or thresholds after validation would be prohibited tuning, so the
+diagnosis stops at METHOD and the negative Gate is retained.
 """)
     print(json.dumps(status, indent=2, ensure_ascii=False))
 

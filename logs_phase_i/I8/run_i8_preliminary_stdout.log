@@ -1,0 +1,104 @@
+{
+  "schema": "direction5.phase_i.final_status.v1",
+  "project": "direction5",
+  "project_upper": "DIRECTION5",
+  "method": "DCSV-MPC",
+  "final_research_status": "DIRECTION5_TERMINATED_WITH_DECISIVE_NEGATIVE_EVIDENCE",
+  "phase_h_h7_method_evidence_withdrawn": true,
+  "gates": {
+    "I0": "PASS",
+    "I1": "PASS",
+    "I2": "PASS",
+    "I3": "PASS",
+    "I4": "PASS",
+    "I5": "PASS",
+    "I6": "FAIL",
+    "I7": "NOT_EVALUATED",
+    "I8": "PENDING_PACKAGE_VERIFICATION"
+  },
+  "hypotheses_h1_h6": {
+    "H1": "SUPPORTED",
+    "H2": "SUPPORTED",
+    "H3": "SUPPORTED_WITH_FINITE_SAMPLE_SCOPE",
+    "H4": "SUPPORTED_FOR_HARD_SAFETY_SEMANTICS",
+    "H5": "NOT_SUPPORTED",
+    "H6": "SUPPORTED_WITH_CONDITIONAL_SCOPE"
+  },
+  "selected_observer": "ACTUAL_POI_AUGMENTED_SLOW_LOAD_STATE",
+  "selected_capability_estimator": "CAUSAL_SET_MEMBERSHIP_MHE_P_R_DELAY",
+  "best_deployable_baseline": "fixed_allocation_pi",
+  "plant_a_status": "FULL_NONLINEAR_FULL_EVENT_VALIDATION_COMPLETE",
+  "plant_b_status": "NATIVE_ANDES_FULL_EVENT_VALIDATION_COMPLETE",
+  "plant_b_native_method_rows": 48,
+  "plant_b_algebraic_balance_p99_max_pu": 1.9730635928416607e-08,
+  "validation_known_ood": [
+    {
+      "condition": "OOD",
+      "method": "dcsv_mpc",
+      "episodes": 58,
+      "physical_success_rate": 0.8275862068965517,
+      "frequency_peak_mean_hz": 0.5965548225058656,
+      "ace_iae_mean_pu_s": 20.919651216382327,
+      "tie_rms_mean_pu": 0.03436411659851291
+    },
+    {
+      "condition": "OOD",
+      "method": "fixed_allocation_pi",
+      "episodes": 58,
+      "physical_success_rate": 0.7241379310344828,
+      "frequency_peak_mean_hz": 0.6259932949597772,
+      "ace_iae_mean_pu_s": 24.986213444979185,
+      "tie_rms_mean_pu": 0.03968683886514208
+    },
+    {
+      "condition": "known",
+      "method": "dcsv_mpc",
+      "episodes": 62,
+      "physical_success_rate": 0.7741935483870968,
+      "frequency_peak_mean_hz": 0.7364687722182006,
+      "ace_iae_mean_pu_s": 36.12753469628097,
+      "tie_rms_mean_pu": 0.0626475920547138
+    },
+    {
+      "condition": "known",
+      "method": "fixed_allocation_pi",
+      "episodes": 62,
+      "physical_success_rate": 0.7741935483870968,
+      "frequency_peak_mean_hz": 0.7084539706046927,
+      "ace_iae_mean_pu_s": 34.575160019365335,
+      "tie_rms_mean_pu": 0.0599271925961142
+    }
+  ],
+  "final_known_result": "NOT_EVALUATED",
+  "final_ood_result": "NOT_EVALUATED",
+  "normal1h_method_rows": 12,
+  "normal1h_real_full_duration": true,
+  "normal1h_hard_violations": 0,
+  "solver_calls": 14157,
+  "restoration_calls": 112,
+  "fallback_calls": 712,
+  "unresolved_math_infeasibility": 712,
+  "p99_solve_time_s": 0.21859052202315066,
+  "domain_statistics": {
+    "SUSTAINABLE": 60,
+    "BRIDGE": 36,
+    "PHYSICALLY_INFEASIBLE": 24
+  },
+  "certificate_status": "CONDITIONAL_LOCAL_RPI_PLUS_FINITE_HORIZON_BRIDGE",
+  "recursive_feasibility_claim": "PLANT_A_LOCAL_ONLY_UNDER_EXPLICIT_ASSUMPTIONS",
+  "native_plant_b_theory": "EMPIRICAL_VALIDATION_ONLY",
+  "validation_repair_rounds_used": 1,
+  "final_seeds_consumed": false,
+  "i6_failed_gates": [
+    "two_of_three_metrics_improve_8pct_positive_ci",
+    "unresolved_math_infeasibility_at_most_0p1pct",
+    "fallback_at_most_1pct",
+    "plant_a_b_direction_consistent_positive"
+  ],
+  "most_severe_failure": "I6_REGISTERED_METHOD_GATE_FAILED: two_of_three_metrics_improve_8pct_positive_ci, unresolved_math_infeasibility_at_most_0p1pct, fallback_at_most_1pct, plant_a_b_direction_consistent_positive",
+  "most_severe_limitation": "NO_RIGOROUS_NATIVE_PLANT_B_RECURSIVE_FEASIBILITY_CERTIFICATE",
+  "scientific_evidence_commit": "11731039a797c0a2868554e28f629cfefc1e581b",
+  "branch": "direction5-phase-i-final-convergence",
+  "package_fresh_extract_verified": false,
+  "package_verification": null
+}
