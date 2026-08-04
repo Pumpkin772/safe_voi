@@ -39,6 +39,12 @@ def test_i7_final_firewall_is_explicit_and_not_imputed() -> None:
     assert register.status.eq("NOT_EVALUATED").all()
     assert not register.counted_as_success.any()
     assert not register.counted_as_failure.any()
+    firewall = pd.read_csv(REPO / "results_phase_i/I7/FINAL_SEED_FIREWALL_MANIFEST.csv")
+    assert firewall.seed.tolist() == list(range(100, 160))
+    assert firewall.status.eq("NOT_EVALUATED").all()
+    assert not firewall.episode_run.any()
+    assert not firewall.counted_as_success.any()
+    assert not firewall.counted_as_failure.any()
 
 
 def test_final_claims_do_not_overreach_theory_or_method_evidence() -> None:
@@ -64,6 +70,17 @@ def test_paper_figures_have_vector_pdf_and_600dpi_raster_variants() -> None:
         with Image.open(root / f"{stem}.png") as image:
             dpi = image.info.get("dpi", (0.0, 0.0))
             assert min(dpi) >= 599.0
+
+
+def test_every_episode_method_row_has_indexed_cycle_evidence() -> None:
+    trace = pd.read_csv(FINAL / "TRACE_EVIDENCE_INDEX.csv")
+    assert len(trace) == 300
+    assert trace.groupby(["scenario_id", "method"]).size().eq(1).all()
+    assert trace.stored_cycle_rows.gt(0).all()
+    assert trace.representative_trace.any()
+    assert trace.controller_failure_detail.any()
+    assert trace.physical_certificate_detail.any()
+    assert trace.trace_storage_path.eq("results_phase_i/I6/VALIDATION_CYCLES.parquet").all()
 
 
 def test_final_review_sections_and_builder_names_are_locked() -> None:

@@ -219,6 +219,17 @@ def main() -> None:
         }])
         path = RESULTS / "I7/NOT_EVALUATED_REGISTER.csv"; path.parent.mkdir(parents=True, exist_ok=True)
         not_evaluated.to_csv(path, index=False)
+        final_firewall = pd.DataFrame({
+            "seed": np.arange(100, 160, dtype=int),
+            "split": "final",
+            "status": "NOT_EVALUATED",
+            "reason": "REGISTERED_I6_METHOD_GATE_STOP",
+            "scenario_generated": False,
+            "episode_run": False,
+            "counted_as_success": False,
+            "counted_as_failure": False,
+        })
+        final_firewall.to_csv(RESULTS / "I7/FINAL_SEED_FIREWALL_MANIFEST.csv", index=False)
         outcome = "DIRECTION5_TERMINATED_WITH_DECISIVE_NEGATIVE_EVIDENCE"
     assert outcome in ALLOWED_OUTCOMES
 
@@ -239,6 +250,30 @@ def main() -> None:
         controller_calls=("controller_calls", "sum"),
     ).reset_index()
     normal_summary.to_csv(FINAL_RESULTS / "NORMAL1H_SUMMARY.csv", index=False)
+
+    cycles = pd.read_parquet(RESULTS / "I6/VALIDATION_CYCLES.parquet")
+    cycle_counts = cycles.groupby(["scenario_id", "method"]).size().rename("stored_cycle_rows")
+    validation_index = episodes.copy()
+    normal_index = normals.copy()
+    trace_index = pd.concat((validation_index, normal_index), ignore_index=True, sort=False)
+    trace_index = trace_index.merge(cycle_counts.reset_index(), on=["scenario_id", "method"], how="left")
+    trace_index["stored_cycle_rows"] = trace_index.stored_cycle_rows.fillna(0).astype(int)
+    trace_index["controller_failure_detail"] = (
+        trace_index.evaluation_status.eq("EVALUATED")
+        & (~trace_index.physical_success | trace_index.hard_violation | trace_index.fallback_calls.gt(0))
+    )
+    trace_index["physical_certificate_detail"] = trace_index.evaluation_status.eq("PHYSICALLY_INFEASIBLE_CERTIFIED")
+    trace_index["representative_trace"] = False
+    representative_rows = trace_index.groupby(["plant", "condition", "method"], dropna=False).head(1).index
+    trace_index.loc[representative_rows, "representative_trace"] = True
+    trace_index["trace_storage_path"] = "results_phase_i/I6/VALIDATION_CYCLES.parquet"
+    trace_columns = [
+        "scenario_id", "method", "plant", "condition", "domain", "evaluation_status",
+        "physical_success", "hard_violation", "fallback_calls", "stored_cycle_rows",
+        "representative_trace", "controller_failure_detail", "physical_certificate_detail",
+        "trace_storage_path",
+    ]
+    trace_index[trace_columns].to_csv(FINAL_RESULTS / "TRACE_EVIDENCE_INDEX.csv", index=False)
 
     claims = pd.DataFrame([
         ("Phase H H7 method evidence", "WITHDRAWN", "I0 reproduced confounding, artificial normal rows, held tail and reduced Plant B"),
