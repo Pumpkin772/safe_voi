@@ -1,0 +1,37 @@
+schema: direction5.phase_i.i6.lock.v1
+locked_before_validation: true
+split: validation
+seeds: [30, 31, 32, 33, 34, 35, 36, 37, 38, 39]
+methods: [dcsv_mpc, fixed_allocation_pi]
+best_deployable_baseline: fixed_allocation_pi
+dcsv:
+  horizon_steps: 3
+  hard_safety_source: contract_floor
+  online_envelope_use: performance_only
+simulation:
+  plant_a_dt_s: 0.02
+  duration_s: 300.0
+  periods_s: [2.0, 4.0]
+  nominal_warmup_min_s: 60.0
+  controller_updates_entire_horizon: true
+plant_a_cells:
+  mechanisms: [power_drop, ramp_drop, delay_increase]
+  sg_tensions: [low, high]
+  paired_seeds_per_cell: 10
+plant_b:
+  native_case: kundur/kundur_vsc.xlsx
+  paired_scenarios_per_mechanism: 8
+normal1h:
+  profiles_per_method: 6
+  duration_s: 3600.0
+  period_s: 4.0
+gates:
+  success_allowed_drop: 0.02
+  core_improvement_min: 0.08
+  core_metrics_required: 2
+  hard_violations_max: 0
+  unresolved_mathematical_infeasibility_max: 0.001
+  fallback_fraction_max: 0.01
+  p99_solve_fraction_of_period_max: 0.50
+  bootstrap_resamples: 2000
+final_seeds_consumed: false

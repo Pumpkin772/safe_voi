@@ -13,7 +13,7 @@ from direction5freq.controllers.domain_supervisor import DomainDecision
 from direction5freq.controllers.feasibility_restoration import RestorationPolicy, SolverDiagnostics
 from direction5freq.estimation.deliverability_set_mhe import DeliverabilitySetSnapshot
 from direction5freq.models.capability_contract import CapabilityContract
-from direction5freq.models.plant_a_full import PlantAFull, PublicObservation
+from direction5freq.models.plant_a_full import PlantAFull, PlantAParameters, PublicObservation
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,12 +55,13 @@ class DisturbanceCapabilitySeparatedViabilityMPC:
         horizon_steps: int = 8,
         use_online_performance: bool = True,
         name: str = "dcsv_mpc",
+        plant_parameters: PlantAParameters | None = None,
     ) -> None:
         self.period_s = float(period_s)
         self.horizon_steps = int(horizon_steps)
         self.use_online_performance = bool(use_online_performance)
         self.name = name
-        self.plant = PlantAFull(dt_s=0.02)
+        self.plant = PlantAFull(parameters=plant_parameters, dt_s=0.02)
         self.contract: CapabilityContract = self.plant.parameters.bess.contract
         self.restoration = RestorationPolicy()
         self._last_committed_action = np.zeros(4)
@@ -337,10 +338,14 @@ class DisturbanceCapabilitySeparatedViabilityMPC:
 
 
 class RollingContractMPC(DisturbanceCapabilitySeparatedViabilityMPC):
-    def __init__(self, period_s: float, horizon_steps: int = 8) -> None:
+    def __init__(
+        self, period_s: float, horizon_steps: int = 8,
+        plant_parameters: PlantAParameters | None = None,
+    ) -> None:
         super().__init__(
             period_s=period_s,
             horizon_steps=horizon_steps,
             use_online_performance=False,
             name="rolling_contract_mpc",
+            plant_parameters=plant_parameters,
         )
