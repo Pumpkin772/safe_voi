@@ -1,0 +1,44 @@
+# 最终确认与论文化审查包
+
+文件名：
+
+```text
+DIRECTION5_CLOSURE_CONFIRMATION_AND_MANUSCRIPT_SINGLE_REVIEW_PACKAGE.zip
+```
+
+大小：<512MB。
+
+目录：
+
+```text
+00_README/
+01_AUDIT/
+02_SCIENCE/
+03_LITERATURE/
+04_MODEL_METHOD/
+05_VALIDATION/
+06_CONFIRMATORY/
+07_MECHANISM_ANALYSIS/
+08_THEORY/
+09_SOURCE_ENV/
+10_TESTS/
+11_RAW_RESULTS/
+12_SUMMARY_TABLES/
+13_FIGURES/
+14_FAILURES/
+15_PAPER_DRAFT/
+16_REPRODUCIBILITY/
+17_GIT_MANIFEST/
+18_FINAL_STATUS/
+```
+
+必须包含：
+- 当前包独立复算；
+- validation和confirmatory分开；
+-所有基线和失败；
+-信息价值/估计器/约束绑定分析；
+-论文草稿；
+-支持/不支持声明；
+-完整源码和环境；
+-fresh-extract minimal replay；
+-唯一终态。

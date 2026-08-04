@@ -1,0 +1,45 @@
+{
+  "schema": "direction5.closure.progress.v1",
+  "stage": "C0",
+  "status": "PASS",
+  "gate": "A0_INDEPENDENT_AUDIT_CONSISTENCY",
+  "deterministic_bug_found": false,
+  "method_or_threshold_changed": false,
+  "final_seeds_consumed": false,
+  "next_stage": "C1",
+  "zip_sha256": "8452088ebabf0c0a4735860423c0c1da1444414ff604e084eacea26261f21344",
+  "sidecar_sha256": "8452088ebabf0c0a4735860423c0c1da1444414ff604e084eacea26261f21344",
+  "zip_sha_matches": true,
+  "manifest_verified": true,
+  "manifest_files": 752,
+  "fresh_extract_minimal_replay": {
+    "passed": true,
+    "runs": [
+      {
+        "script": "15_REPRODUCIBILITY/verify_manifest.py",
+        "returncode": 0,
+        "stdout_sha256": "7bdb44d84512188ed40b7e8573231dab77f59ff17ee2ac435a83b0e5186d63af",
+        "stderr": ""
+      },
+      {
+        "script": "15_REPRODUCIBILITY/reproduce_minimal.py",
+        "returncode": 0,
+        "stdout_sha256": "9a3f1bca0bd2f0e2e788208fa8978fccd3477333da8b6fd3cead8a2e1823b61b",
+        "stderr": ""
+      }
+    ]
+  },
+  "code_semantics_checks_passed": 8,
+  "code_semantics_checks_total": 8,
+  "statistics_comparisons": 262,
+  "statistics_within_tolerance": 262,
+  "gates_match": true,
+  "final_seeds_unused": true,
+  "success_drop_pp": 2.7272727272727226,
+  "terminal_recovery_drop_pp": 3.6363636363636376,
+  "core_metrics_passing": 0,
+  "optimization_decisions": 20271,
+  "raw_solver_invocations": 21293,
+  "fallback_calls": 1021,
+  "material_cells": 4
+}
