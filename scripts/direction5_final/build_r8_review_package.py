@@ -10,6 +10,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tempfile
 import zipfile
 
 
@@ -279,31 +280,39 @@ def make_zip(staging: Path, output: Path) -> None:
 
 
 def fresh_extract_and_run(output: Path, artifacts: Path, *, reproduce: bool) -> dict:
-    extract_root = artifacts / "fresh_extract_verification"
-    if extract_root.exists():
+    del artifacts  # Kept in the signature to make the call site self-documenting.
+    # The repository can live below a long non-ASCII Windows path. Use the
+    # system temp root so extraction itself does not add the repository prefix.
+    extract_root = Path(tempfile.mkdtemp(prefix="d5r8_verify_"))
+    temp_root = Path(tempfile.gettempdir()).resolve()
+    try:
+        with zipfile.ZipFile(output) as archive:
+            archive.extractall(extract_root)
+        package_root = extract_root / PACKAGE_NAME
+        commands = [[sys.executable, "15_REPRODUCIBILITY/verify_manifest.py"]]
+        if reproduce:
+            commands.append([sys.executable, "15_REPRODUCIBILITY/reproduce_minimal.py"])
+        runs = []
+        for command in commands:
+            completed = subprocess.run(command, cwd=package_root, text=True, capture_output=True)
+            runs.append({
+                "command": " ".join(command[1:]),
+                "returncode": completed.returncode,
+                "stdout": completed.stdout,
+                "stderr": completed.stderr,
+            })
+            if completed.returncode:
+                raise RuntimeError(f"fresh-extract command failed: {runs[-1]}")
+        return {
+            "fresh_extract_location": "SYSTEM_TEMP_SHORT_PATH_REMOVED_AFTER_VERIFICATION",
+            "runs": runs,
+            "passed": True,
+        }
+    finally:
         resolved = extract_root.resolve()
-        if resolved.parent != artifacts.resolve() or resolved.name != "fresh_extract_verification":
-            raise RuntimeError(f"refusing to remove unexpected path: {resolved}")
-        shutil.rmtree(extract_root)
-    extract_root.mkdir(parents=True)
-    with zipfile.ZipFile(output) as archive:
-        archive.extractall(extract_root)
-    package_root = extract_root / PACKAGE_NAME
-    commands = [[sys.executable, "15_REPRODUCIBILITY/verify_manifest.py"]]
-    if reproduce:
-        commands.append([sys.executable, "15_REPRODUCIBILITY/reproduce_minimal.py"])
-    runs = []
-    for command in commands:
-        completed = subprocess.run(command, cwd=package_root, text=True, capture_output=True)
-        runs.append({
-            "command": " ".join(command[1:]),
-            "returncode": completed.returncode,
-            "stdout": completed.stdout,
-            "stderr": completed.stderr,
-        })
-        if completed.returncode:
-            raise RuntimeError(f"fresh-extract command failed: {runs[-1]}")
-    return {"fresh_extract_root": str(package_root.resolve()), "runs": runs, "passed": True}
+        if resolved.parent != temp_root or not resolved.name.startswith("d5r8_verify_"):
+            raise RuntimeError(f"refusing to remove unexpected temp path: {resolved}")
+        shutil.rmtree(resolved)
 
 
 def mark_r8_pass(staging: Path) -> None:
