@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass, replace
+import gc
 import hashlib
 import json
+import os
 from pathlib import Path
+import shutil
+import subprocess
 import sys
 import time
 from typing import Any
@@ -35,6 +40,8 @@ RESULTS = REPO / "results_phase_i/I6"
 DOCS = REPO / "research_outputs_phase_i/07_VALIDATION"
 PROGRESS = REPO / "progress_phase_i"
 LOCK_PATH = REPO / "configs/phase_i/i6_validation_lock.yaml"
+NATIVE_PARTS = RESULTS / "native_episode_parts"
+NORMAL_PARTS = RESULTS / "normal1h_episode_parts"
 
 
 def sha256(path: Path) -> str:
@@ -500,7 +507,83 @@ def contract_violation_experiments() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def main() -> None:
+def _part_paths(root: Path, scenario_id: str, method: str) -> tuple[Path, Path]:
+    stem = f"{scenario_id}__{method}"
+    return root / f"{stem}__summary.parquet", root / f"{stem}__cycles.parquet"
+
+
+def _write_episode_part(
+    root: Path,
+    scenario_id: str,
+    method: str,
+    summary: dict[str, Any],
+    cycles: pd.DataFrame,
+) -> None:
+    root.mkdir(parents=True, exist_ok=True)
+    summary_path, cycles_path = _part_paths(root, scenario_id, method)
+    pd.DataFrame([summary]).to_parquet(summary_path, index=False)
+    cycles.to_parquet(cycles_path, index=False)
+
+
+def _run_native_worker(index: int, method: str) -> None:
+    """Run exactly one locked native episode in a fresh process.
+
+    ANDES retains process-global numerical state across system constructions.
+    Process isolation makes every paired episode start from the same clean
+    numerical state and prevents a native-library process exit from destroying
+    already completed evidence.  It changes no registered scientific factor.
+    """
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    manifest = build_plant_b_manifest()
+    if method not in ("dcsv_mpc", "fixed_allocation_pi"):
+        raise ValueError(f"unregistered method: {method}")
+    scenario = manifest.iloc[int(index)]
+    summary, cycles = simulate_plant_b(scenario.to_dict(), method)
+    _write_episode_part(NATIVE_PARTS, str(scenario.scenario_id), method, summary, cycles)
+
+
+def _run_normal_worker(index: int, method: str) -> None:
+    """Run one genuine locked 3600 s nonlinear normal profile durably."""
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    manifest = normal_manifest()
+    if method not in ("dcsv_mpc", "fixed_allocation_pi"):
+        raise ValueError(f"unregistered method: {method}")
+    scenario = manifest.iloc[int(index)]
+    profile = normal_profile(int(scenario.seed))
+    summary, cycles = simulate_plant_a(scenario.to_dict(), method, normal_profile=profile)
+    summary["real_normal1h_provenance"] = "3600s_full_nonlinear_180000_physical_steps"
+    _write_episode_part(NORMAL_PARTS, str(scenario.scenario_id), method, summary, cycles)
+
+
+def _isolated_worker(flag: str, index: int, method: str) -> None:
+    child_environment = os.environ.copy()
+    # Prevent native BLAS thread multiplication while preserving the locked
+    # model, solver, tolerances, scenarios, seeds and controller parameters.
+    child_environment["OPENBLAS_NUM_THREADS"] = "1"
+    child_environment["OMP_NUM_THREADS"] = "1"
+    child_environment["MKL_NUM_THREADS"] = "1"
+    subprocess.run(
+        [sys.executable, str(Path(__file__).resolve()), flag, str(index), method],
+        cwd=REPO,
+        env=child_environment,
+        check=True,
+    )
+
+
+def _load_parts(root: Path, manifest: pd.DataFrame, methods: list[str]) -> tuple[list[dict[str, Any]], list[pd.DataFrame]]:
+    rows: list[dict[str, Any]] = []
+    cycles: list[pd.DataFrame] = []
+    for _, scenario in manifest.iterrows():
+        for method in methods:
+            summary_path, cycles_path = _part_paths(root, str(scenario.scenario_id), method)
+            if not summary_path.is_file() or not cycles_path.is_file():
+                raise RuntimeError(f"missing durable episode part: {scenario.scenario_id}/{method}")
+            rows.append(pd.read_parquet(summary_path).iloc[0].to_dict())
+            cycles.append(pd.read_parquet(cycles_path))
+    return rows, cycles
+
+
+def main(*, resume_after_execution_failure: bool = False) -> None:
     RESULTS.mkdir(parents=True, exist_ok=True); DOCS.mkdir(parents=True, exist_ok=True); PROGRESS.mkdir(parents=True, exist_ok=True)
     lock = yaml.safe_load(LOCK_PATH.read_text("utf-8"))
     if lock["final_seeds_consumed"] or lock["split"] != "validation":
@@ -508,27 +591,67 @@ def main() -> None:
     lock_hash = sha256(LOCK_PATH)
     started = time.perf_counter()
     plant_a_manifest = build_plant_a_manifest(); plant_b_manifest = build_plant_b_manifest(); normals = normal_manifest()
-    episode_rows = []; cycle_frames = []
-    for _, scenario in plant_a_manifest.iterrows():
-        for method in lock["methods"]:
-            summary, cycles = simulate_plant_a(scenario.to_dict(), method)
-            episode_rows.append(summary); cycle_frames.append(cycles)
-    pd.DataFrame(episode_rows).to_parquet(RESULTS / "PLANT_A_EPISODES_CHECKPOINT.parquet", index=False)
-    pd.concat(cycle_frames, ignore_index=True).to_parquet(RESULTS / "PLANT_A_CYCLES_CHECKPOINT.parquet", index=False)
+    episode_rows: list[dict[str, Any]] = []
+    cycle_frames: list[pd.DataFrame] = []
+    if resume_after_execution_failure:
+        episode_checkpoint = RESULTS / "PLANT_A_EPISODES_CHECKPOINT.parquet"
+        cycle_checkpoint = RESULTS / "PLANT_A_CYCLES_CHECKPOINT.parquet"
+        interrupted_checkpoint = RESULTS / "ALL_EPISODES_CHECKPOINT.parquet"
+        if not episode_checkpoint.is_file() or not cycle_checkpoint.is_file():
+            raise RuntimeError("execution repair requested without complete Plant-A checkpoints")
+        plant_a_rows = pd.read_parquet(episode_checkpoint)
+        expected_rows = len(plant_a_manifest) * len(lock["methods"])
+        if len(plant_a_rows) != expected_rows:
+            raise RuntimeError(f"Plant-A checkpoint has {len(plant_a_rows)} rows; expected {expected_rows}")
+        if interrupted_checkpoint.is_file():
+            preserved = RESULTS / "INTERRUPTED_RUN_1_ALL_EPISODES_CHECKPOINT.parquet"
+            if not preserved.exists():
+                shutil.copy2(interrupted_checkpoint, preserved)
+        episode_rows.extend(plant_a_rows.to_dict("records"))
+        cycle_frames.append(pd.read_parquet(cycle_checkpoint))
+        repair_record = {
+            "repair_round": 1,
+            "classification": "EXECUTION_INFRASTRUCTURE_NATIVE_PROCESS_EXIT",
+            "scientific_protocol_changed": False,
+            "algorithm_weights_thresholds_scenarios_seeds_changed": False,
+            "completed_plant_a_method_rows_reused": len(plant_a_rows),
+            "interrupted_native_method_rows_preserved": (
+                len(pd.read_parquet(RESULTS / "INTERRUPTED_RUN_1_ALL_EPISODES_CHECKPOINT.parquet")) - len(plant_a_rows)
+                if (RESULTS / "INTERRUPTED_RUN_1_ALL_EPISODES_CHECKPOINT.parquet").is_file() else 0
+            ),
+            "repair": "fresh_process_per_native_episode_plus_durable_episode_parts",
+        }
+        (RESULTS / "I6_EXECUTION_REPAIR_1.json").write_text(json.dumps(repair_record, indent=2) + "\n", encoding="utf-8")
+    else:
+        for _, scenario in plant_a_manifest.iterrows():
+            for method in lock["methods"]:
+                summary, cycles = simulate_plant_a(scenario.to_dict(), method)
+                episode_rows.append(summary); cycle_frames.append(cycles)
+        pd.DataFrame(episode_rows).to_parquet(RESULTS / "PLANT_A_EPISODES_CHECKPOINT.parquet", index=False)
+        pd.concat(cycle_frames, ignore_index=True).to_parquet(RESULTS / "PLANT_A_CYCLES_CHECKPOINT.parquet", index=False)
 
-    for _, scenario in plant_b_manifest.iterrows():
+    for scenario_index, scenario in plant_b_manifest.iterrows():
         for method in lock["methods"]:
-            summary, cycles = simulate_plant_b(scenario.to_dict(), method)
+            summary_path, cycles_path = _part_paths(NATIVE_PARTS, str(scenario.scenario_id), method)
+            if not summary_path.is_file() or not cycles_path.is_file():
+                _isolated_worker("--native-worker", int(scenario_index), method)
+            summary = pd.read_parquet(summary_path).iloc[0].to_dict()
+            cycles = pd.read_parquet(cycles_path)
             episode_rows.append(summary); cycle_frames.append(cycles)
             pd.DataFrame(episode_rows).to_parquet(RESULTS / "ALL_EPISODES_CHECKPOINT.parquet", index=False)
+            del summary, cycles
+            gc.collect()
 
-    normal_rows = []
-    for _, scenario in normals.iterrows():
-        profile = normal_profile(int(scenario.seed))
+    normal_rows: list[dict[str, Any]] = []
+    for scenario_index, scenario in normals.iterrows():
         for method in lock["methods"]:
-            summary, cycles = simulate_plant_a(scenario.to_dict(), method, normal_profile=profile)
-            summary["real_normal1h_provenance"] = "3600s_full_nonlinear_180000_physical_steps"
-            normal_rows.append(summary); cycle_frames.append(cycles)
+            summary_path, cycles_path = _part_paths(NORMAL_PARTS, str(scenario.scenario_id), method)
+            if not summary_path.is_file() or not cycles_path.is_file():
+                _isolated_worker("--normal-worker", int(scenario_index), method)
+            normal_rows.append(pd.read_parquet(summary_path).iloc[0].to_dict())
+            cycle_frames.append(pd.read_parquet(cycles_path))
+            pd.DataFrame(normal_rows).to_parquet(RESULTS / "NORMAL1H_EPISODES_CHECKPOINT.parquet", index=False)
+            gc.collect()
     episodes = pd.DataFrame(episode_rows)
     normal_episodes = pd.DataFrame(normal_rows)
     episodes.to_parquet(RESULTS / "VALIDATION_EPISODES.parquet", index=False)
@@ -599,7 +722,7 @@ def main() -> None:
         "p99_solve_time_s": float(np.quantile(dcsv.p99_solve_time_s, 0.99)),
         "gates": gates,
         "failed_gates": [name for name, passed in gates.items() if not passed],
-        "validation_repair_rounds_used": 0,
+        "validation_repair_rounds_used": 1 if resume_after_execution_failure else 0,
         "final_seeds_consumed": False,
         "next_stage": "I7" if method_gate else "I8_NEGATIVE_PACKAGE",
     }
@@ -626,4 +749,14 @@ diagnostics, domain counts and failures are retained beside this report.
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--resume-after-execution-failure", action="store_true")
+    parser.add_argument("--native-worker", nargs=2, metavar=("INDEX", "METHOD"))
+    parser.add_argument("--normal-worker", nargs=2, metavar=("INDEX", "METHOD"))
+    arguments = parser.parse_args()
+    if arguments.native_worker:
+        _run_native_worker(int(arguments.native_worker[0]), arguments.native_worker[1])
+    elif arguments.normal_worker:
+        _run_normal_worker(int(arguments.normal_worker[0]), arguments.normal_worker[1])
+    else:
+        main(resume_after_execution_failure=arguments.resume_after_execution_failure)
