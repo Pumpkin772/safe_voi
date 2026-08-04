@@ -1014,7 +1014,16 @@ validation or final seed was used for development tuning.
         cycles,
         lock,
     )
-    result["elapsed_s"] = time.perf_counter() - started
+    initial_snapshot = RESULTS / "R5_INITIAL_DENOMINATOR_DEFECT.json"
+    if initial_snapshot.is_file():
+        initial_elapsed = json.loads(initial_snapshot.read_text("utf-8")).get("elapsed_s")
+    else:
+        initial_elapsed = None
+    result["elapsed_s"] = (
+        float(initial_elapsed)
+        if initial_elapsed is not None
+        else time.perf_counter() - started
+    )
     (RESULTS / "R5_SUMMARY.json").write_text(
         json.dumps(result, indent=2) + "\n", encoding="utf-8"
     )
