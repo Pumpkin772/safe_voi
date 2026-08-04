@@ -1,0 +1,30 @@
+schema: direction5.phase_i.manifest.v1
+
+required_columns:
+  - scenario_id
+  - split
+  - seed
+  - plant
+  - control_period_s
+  - sg_tension
+  - capability_mechanism
+  - capability_change_time_s
+  - load_event_time_s
+  - load_area
+  - load_sign
+  - load_magnitude_pu
+  - load_duration_s
+  - initial_soc_area1
+  - initial_soc_area2
+  - measurement_noise_std
+  - communication_jitter_s
+  - dropout_probability
+  - slow_reserve_arrival_s
+  - domain
+  - known_ood
+
+rules:
+  factors_must_be_explicit: true
+  seed_must_not_define_multiple_factors_by_modulo: true
+  capability_change_after_nominal_warmup: true
+  final_split_locked_before_execution: true

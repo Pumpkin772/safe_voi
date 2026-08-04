@@ -1,0 +1,56 @@
+{
+  "defects_reproduced": 12,
+  "failures": [],
+  "final_seeds_consumed": false,
+  "gate": "I0_PHASE_H_FORENSIC_CORRECTION",
+  "gate_components": {
+    "all_registered_fatal_defects_reproduced": true,
+    "artificial_normal_rows_proven": true,
+    "at_least_20_h7_scenarios_exactly_replayed": true,
+    "h7_method_claims_retracted_without_overwrite": true,
+    "held_tail_difference_replayed": true,
+    "native_plant_b_contrast_present": true,
+    "nonlinear_plant_a_contrast_present": true,
+    "phase_h_manifest_and_minimal_replay_pass": true,
+    "phase_h_tag_frozen_at_expected_commit": true,
+    "phase_h_zip_hash_matches": true
+  },
+  "gate_passed": true,
+  "h7_scenarios_exactly_replayed": 20,
+  "inputs": {
+    "phase_h_commit": "0eb65c7e43a8aa5d21d759a1e8d5980d0aedfd83",
+    "phase_h_tag": "direction5-phase-h-reviewed",
+    "phase_h_zip_sha256": "2b9f30edf455d98bebe3c34001d0b16ce5f7c1528b8dcea97fc405b6bf5e3da1"
+  },
+  "next_stage": "I1",
+  "outputs": {
+    "research_outputs_phase_i/00_FORENSIC/PHASE_H_CORRECTION.md": "f0b5f826247278bd8d4320e2ec368c157d440e1a8ec7f4d19d305d080f7cdbb9",
+    "results_phase_i/I0/CLAIM_RETRACTION_TABLE.csv": "143beb6abb9a347896865141116c1fa61ed222729ea07f3fef0cb45bd3debbf4",
+    "results_phase_i/I0/H7_20_SCENARIO_HELD_VS_FULL_ROLLING.csv": "3ba9a4b659704b024e59690009c6218022a54566f8e153ea6d6eb0152a7e9be0",
+    "results_phase_i/I0/H7_SEMANTIC_DEFECT_REPRODUCTION.csv": "00c311656222b07b5940a69d6cdf14e83ce9a2229c9b5f08fed7167492d91231",
+    "results_phase_i/I0/NORMAL1H_PROVENANCE_AUDIT.csv": "0f0054c8d33ed0c762ff4279f27fd48b1c7757b6843202823634f5a75f96fbaa",
+    "results_phase_i/I0/PLANT_A_NONLINEAR_VS_H7_ZOH.csv": "350c4e065a1bb3a32c49179cbea68c07e5eb40e0343beb7726350bb1e2b85992",
+    "results_phase_i/I0/PLANT_B_NATIVE_FORENSIC_TRACE.parquet": "35202701e55b7f6d759c06d3627cb829ee6df72b2668ff7330aa6f1654f4cf83",
+    "results_phase_i/I0/PLANT_B_NATIVE_VS_H7_SURROGATE.csv": "fcbebf2b48a92f13d1e2f8dad0474c649730feba1ee7d8d9d4bf07c1cb26489a",
+    "results_phase_i/I0/SCIENTIFIC_VALIDITY_DEFECTS.csv": "b959ade28ff46360b3cdaa2dbabcb6d4f709920a4028d77d47360541b1137d03",
+    "results_phase_i/I0/SEED_FACTOR_CONFOUNDING_AUDIT.csv": "07ae5c7bc2bb6a2130af96f60a719839299164733c05b1cbe74a65197427b6c6"
+  },
+  "package_replay": [
+    {
+      "returncode": 0,
+      "script": "15_REPRODUCIBILITY/verify_manifest.py",
+      "stderr": "",
+      "stdout": "DIRECTION5_PHASE_H_MANIFEST_OK files=595"
+    },
+    {
+      "returncode": 0,
+      "script": "15_REPRODUCIBILITY/reproduce_minimal.py",
+      "stderr": "",
+      "stdout": "DIRECTION5_PHASE_H_MINIMAL_REPLAY_OK 40_tests final_seeds=false"
+    }
+  ],
+  "phase_h_h7_method_evidence_status": "RETRACTED_AS_METHOD_EVIDENCE",
+  "repairs": [],
+  "schema": "direction5.phase_i.progress.v1",
+  "stage": "I0"
+}

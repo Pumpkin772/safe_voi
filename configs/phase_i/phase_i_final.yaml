@@ -1,0 +1,32 @@
+schema: direction5.phase_i.final.v1
+
+splits:
+  development: [0, 29]
+  validation: [30, 59]
+  final: [100, 159]
+
+simulation:
+  physical_dt_s: 0.02
+  sfr_periods_s: [2.0, 4.0]
+  contingency_horizons_s: [300.0, 600.0]
+  normal_profile_horizon_s: 3600.0
+  nominal_warmup_min_s: 60.0
+  controller_updates_entire_horizon: true
+
+capability:
+  hidden_dimensions: [power, ramp, delay]
+  energy_from_measured_soc: true
+  availability_implicit_in_deliverability: true
+  safety_uses_contract_floor: true
+  online_surplus_for_performance_only: true
+
+gates:
+  success_allowed_drop: 0.02
+  core_improvement_min: 0.08
+  core_metrics_required: 2
+  false_optimism_max: 0.01
+  delay_coverage_min: 0.95
+  unresolved_math_infeasibility_max: 0.001
+  fallback_fraction_max: 0.01
+  p99_solve_fraction_of_period_max: 0.50
+  physical_hard_violations_max: 0
