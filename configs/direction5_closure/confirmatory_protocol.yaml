@@ -1,0 +1,42 @@
+project: DIRECTION5
+stage: C2_CLOSURE_CONFIRMATION
+method: dcsv_cr_mpc
+primary_baseline: contract_only_rolling_mpc
+primary_methods:
+  - dcsv_cr_mpc
+  - contract_only_rolling_mpc
+all_methods:
+  - sg_only_anti_windup_pi
+  - fixed_allocation_anti_windup_pi
+  - nominal_offset_free_mpc
+  - contract_only_rolling_mpc
+  - model_adaptive_mpc
+  - dcsv_cr_mpc
+  - true_capability_oracle_mpc
+final_seeds: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159]
+plant_a_scenarios: 120
+plant_a_seed_uses_per_seed: 2
+plant_a_scenarios_per_design_cell: 10
+plant_b_scenarios: 24
+normal_profile_seeds: [40, 41, 42, 43, 44, 45]
+normal_profile_provenance: SYNTHETIC_AR2_MULTI_SINE_REGISTERED_NOT_PUBLIC_MEASURED
+contract_violation_scenarios: 6
+duration_s: 300.0
+normal_duration_s: 3600.0
+bootstrap_resamples: 3000
+bootstrap_seed: 20260805
+workers: 4
+execution_permitted_once: true
+no_post_result_tuning: true
+gates:
+  success_drop_max_pp: 2.0
+  relative_improvement_min: 0.08
+  core_metrics_required: 2
+  bootstrap_relative_lower_min: 0.0
+  terminal_recovery_drop_max_pp: 2.0
+  hard_violations_max: 0
+  known_contract_backup_fraction_max: 0.01
+  numerical_failure_fraction_max: 0.001
+  p99_solve_fraction_of_period_max: 0.5
+  normal_frequency_peak_hz_max: 1.0
+  normal_frequency_rms_hz_max: 0.20
