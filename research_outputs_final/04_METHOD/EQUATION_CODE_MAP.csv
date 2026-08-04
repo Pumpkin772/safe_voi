@@ -1,0 +1,9 @@
+requirement,code
+command split,dcsv_cr_mpc.py: guaranteed + surplus
+shared stage 0,dcsv_cr_mpc.py: sg/reserve_request equality
+surplus-loss branch,recourse_tree.py: delivery fraction 0
+delay pipeline,dcsv_cr_mpc.py: _pipeline_expression
+actual SoC energy,dcsv_cr_mpc.py: energy0 from measured_soc
+worst epigraph,dcsv_cr_mpc.py: branch_cost <= worst_cost
+contract breach routing,contract_violation_supervisor.py
+actual action commit,dcsv_cr_mpc.py: commit
