@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
+import subprocess
+import sys
 
 import yaml
 
@@ -53,3 +55,11 @@ def test_other_confirmatory_manifests_have_registered_scale() -> None:
 
 def test_final_seed_marker_does_not_exist_before_lock() -> None:
     assert not MARKER.exists()
+
+
+def test_confirmatory_entrypoint_imports_from_direct_execution() -> None:
+    completed = subprocess.run(
+        [sys.executable, "scripts/direction5_closure/run_c2_confirmatory.py", "--help"],
+        cwd=REPO, text=True, capture_output=True,
+    )
+    assert completed.returncode == 0, completed.stderr
