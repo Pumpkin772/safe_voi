@@ -119,12 +119,14 @@ class PlantBAndesFull:
         policy: PublicPolicy,
         capability_profile: Callable[[float], CapabilityRealization] | None = None,
         slow_reserve_profile: Callable[[float, PublicObservation], np.ndarray] | None = None,
+        control_jitter_profile: Callable[[float], float] | None = None,
         initial_soc: tuple[float, float] = (0.5, 0.5),
     ) -> NativeClosedLoopTrace:
         if control_period_s <= 0.0:
             raise ValueError("control period must be positive")
         truth_profile = capability_profile or (lambda _time: CapabilityRealization())
         reserve_policy = slow_reserve_profile or (lambda _time, _observation: np.zeros(2))
+        jitter_profile = control_jitter_profile or (lambda _time: 0.0)
         system = self._base_system()
         system.TDS.config.tf = float(duration_s)
         bess_parameters = BESSParameters()
@@ -189,7 +191,10 @@ class PlantBAndesFull:
                 command = new_command
                 control_times.append(time_s)
                 while next_control_time <= time_s + 1e-9:
-                    next_control_time += control_period_s
+                    jitter_s = float(jitter_profile(time_s))
+                    next_control_time += max(
+                        control_period_s + jitter_s, 0.5 * control_period_s
+                    )
 
             reserve_request = np.asarray(reserve_policy(time_s, observation), dtype=float)
             reserve_state, _ = step_slow_reserve(reserve_state, reserve_request, reserve_parameters, self.dt_s)

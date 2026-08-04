@@ -25,22 +25,30 @@ class DomainSupervisor:
         self.parameters = PlantAParameters() if parameters is None else parameters
 
     def classify(self, load_estimate_pu: np.ndarray, measured_soc: np.ndarray) -> DomainDecision:
-        load = np.maximum(np.asarray(load_estimate_pu, dtype=float), 0.0)
+        load = np.asarray(load_estimate_pu, dtype=float)
+        if load.shape != (2,):
+            raise ValueError("domain classification requires a signed two-area load")
         sg = np.asarray(self.parameters.sg_power_upper_pu)
+        sg_lower = np.asarray(self.parameters.sg_power_lower_pu)
         reserve = np.asarray(self.parameters.slow_reserve.upper_pu)
         total = sg + reserve
-        physical_margin = total - load
-        if np.any(load > total + 1e-12):
+        upper_margin = total - load
+        lower_margin = load - sg_lower
+        physical_margin = np.minimum(upper_margin, lower_margin)
+        if np.any((load > total + 1e-12) | (load < sg_lower - 1e-12)):
             return DomainDecision(
                 domain="PHYSICALLY_INFEASIBLE",
-                equilibrium_sg_power_pu=np.minimum(load, sg),
+                equilibrium_sg_power_pu=np.clip(load, sg_lower, sg),
                 equilibrium_slow_reserve_pu=np.minimum(np.maximum(load - sg, 0.0), reserve),
                 bridge_remaining_s=0.0,
                 bridge_energy_required_mwh=np.inf,
                 physical_margin_pu=physical_margin,
-                certificate_reason="steady load exceeds registered SG plus slow-reserve power",
+                certificate_reason=(
+                    "steady signed load is outside registered SG lower or SG plus "
+                    "upward slow-reserve power"
+                ),
             )
-        equilibrium_sg = np.minimum(load, sg)
+        equilibrium_sg = np.clip(load, sg_lower, sg)
         equilibrium_reserve = np.maximum(load - equilibrium_sg, 0.0)
         if np.all(equilibrium_reserve <= 1e-12):
             return DomainDecision(

@@ -73,6 +73,19 @@ def test_terminal_bridge_and_infeasibility_claims_remain_distinct() -> None:
     assert infeasible.certified_infeasible
 
 
+def test_signed_negative_load_uses_load_parameterized_equilibrium() -> None:
+    plant = PlantAFull()
+    decision = DomainSupervisor(plant.parameters).classify(
+        np.array((-0.06, -0.04)), np.array((0.5, 0.5))
+    )
+    assert decision.domain == "SUSTAINABLE"
+    assert np.allclose(decision.equilibrium_sg_power_pu, (-0.06, -0.04))
+    outside = DomainSupervisor(plant.parameters).classify(
+        np.array((-0.14, -0.04)), np.array((0.5, 0.5))
+    )
+    assert outside.domain == "PHYSICALLY_INFEASIBLE"
+
+
 def test_r4_outputs_pass_and_withhold_native_plant_b_theorem() -> None:
     progress = json.loads((REPO / "progress_final/R4.json").read_text("utf-8"))
     assert progress["status"] == "PASS"
