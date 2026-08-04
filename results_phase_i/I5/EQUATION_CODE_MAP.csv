@@ -1,0 +1,6 @@
+equation_or_object,code,evidence
+load equilibrium,terminal_set.compute_local_rpi_certificate,equilibrium_state/equilibrium_input
+box RPI z=|Acl|z+w,terminal_set.compute_local_rpi_certificate,invariance_residual
+bridge power-ramp-energy,bridge_certificate.compute_bridge_certificate,BRIDGE_CERTIFICATES.csv
+steady/bridge infeasibility,infeasibility_certificate.compute_infeasibility_certificate,INFEASIBILITY_CERTIFICATES.csv
+delay-affine robust prediction,dcsv_mpc_final._delayed_bess_expression,DENSE_DELAY_VALIDATION.csv
