@@ -1,0 +1,38 @@
+{
+  "schema": "direction5.final_repair.progress.v1",
+  "stage": "R2",
+  "status": "PASS",
+  "gate": "ESTIMATORS_CONTRACT_AND_BASELINES",
+  "repair_rounds_used": 1,
+  "selected_observer": "constrained_mhe_actual_poi",
+  "selected_capability_estimator": "causal_grid_outer_set_membership_ab_delay",
+  "validation_observer_actual_poi_rmse": 0.0008166207952432344,
+  "validation_command_comparator_rmse": 0.005858014962904221,
+  "coverage": {
+    "power_coverage": 1.0,
+    "ramp_coverage": 1.0,
+    "delay_coverage": 1.0,
+    "false_optimism": 0.0
+  },
+  "best_deployable_baseline": "contract_only_rolling_mpc",
+  "final_seeds_consumed": false,
+  "gates": {
+    "actual_poi_selected_observer_beats_command_model": true,
+    "selected_observer_fixed_before_validation": true,
+    "observer_truth_future_free": true,
+    "delay_coverage_at_least_95pct": true,
+    "power_coverage_at_least_95pct": true,
+    "ramp_coverage_at_least_95pct": true,
+    "false_optimism_at_most_1pct": true,
+    "no_excitation_no_false_shrink": true,
+    "abrupt_drop_resets_present": true,
+    "feasible_parameter_sets_nonempty": true,
+    "anti_windup_pi_stable": true,
+    "all_named_mpc_true_rolling": true,
+    "all_named_mpc_prediction_sequences": true,
+    "all_named_mpc_dynamics_constraints": true,
+    "contract_and_online_semantics_separate": true
+  },
+  "failures": [],
+  "next_stage": "R3"
+}
