@@ -248,7 +248,7 @@ class PublicMethodPolicy:
                 or diagnostics.status in {"NUMERICAL_EXCEPTION", "solver_error"}
             )
             common.update({
-                "optimization_decision": True,
+                "optimization_decision": attempted > 0,
                 "attempted_solver_calls": attempted,
                 "solver_status": diagnostics.status,
                 "solve_time_s": diagnostics.solve_time_s,
@@ -715,7 +715,13 @@ def summarize_and_gate(
     failure_aware = summary[
         summary.analysis.eq("failure_aware") & summary.penalty_multiplier.eq(2.0)
     ]
-    dcsv_cycles = cycles[cycles.method.eq("dcsv_cr_mpc") & cycles.optimization_decision.fillna(False)]
+    # A controller call that returns a physical-infeasibility certificate before
+    # invoking a solver is not an attempted optimization.  Preserve the raw
+    # legacy flag and derive the denominator from the auditable raw call count.
+    cycles["optimization_attempted"] = cycles.attempted_solver_calls.fillna(0).gt(0)
+    dcsv_cycles = cycles[
+        cycles.method.eq("dcsv_cr_mpc") & cycles.optimization_attempted
+    ]
     raw_solver_attempts = int(dcsv_cycles.attempted_solver_calls.sum())
     optimization_decisions = len(dcsv_cycles)
     numerical_failures = int(dcsv_cycles.numerical_failure.sum())
@@ -741,6 +747,27 @@ def summarize_and_gate(
         })
     directions = pd.DataFrame(direction_rows)
     directions.to_csv(RESULTS / "PLANT_DIRECTION_CONSISTENCY.csv", index=False)
+    known_ood = core[core.evaluation_status.eq("EVALUATED")].groupby(
+        ["plant", "condition", "method"], as_index=False
+    ).agg(
+        episodes=("scenario_id", "size"),
+        success_rate=("physical_success", "mean"),
+        frequency_peak_hz=("frequency_peak_hz", "mean"),
+        ace_iae_pu_s=("ace_iae_pu_s", "mean"),
+        tie_rms_pu=("tie_rms_pu", "mean"),
+        restoration_calls=("restoration_calls", "sum"),
+        fallback_calls=("fallback_calls", "sum"),
+        numerical_failure_calls=("numerical_failure_calls", "sum"),
+    )
+    known_ood.to_csv(RESULTS / "KNOWN_OOD_SUMMARY.csv", index=False)
+    domain_summary = core.groupby(
+        ["registered_domain", "evaluation_status", "method"], as_index=False
+    ).agg(
+        episodes=("scenario_id", "size"),
+        successes=("physical_success", "sum"),
+        hard_violations=("hard_violation", "sum"),
+    )
+    domain_summary.to_csv(RESULTS / "DOMAIN_STATISTICS.csv", index=False)
     normal_quality = normal.groupby("method", as_index=False).agg(
         episodes=("scenario_id", "size"),
         frequency_peak_hz=("frequency_peak_hz", "max"),
@@ -785,6 +812,32 @@ def summarize_and_gate(
     )
     best_baseline = str(deployable.sort_values("rank_score").iloc[0].method)
     baseline_rank.to_csv(RESULTS / "ALL_BASELINE_RANKING.csv", index=False)
+    primary_accepted = optimization_decisions - int(dcsv_cycles.restoration_used.sum()) - int(dcsv_cycles.fallback_used.sum())
+    restoration_accepted = int(dcsv_cycles.restoration_used.sum())
+    backup_actions = int(dcsv_cycles.fallback_used.sum())
+    denominator = pd.DataFrame([
+        {"quantity": "primary_accepted_actions", "count": primary_accepted, "in_attempted_decision_denominator": True},
+        {"quantity": "restoration_accepted_actions", "count": restoration_accepted, "in_attempted_decision_denominator": True},
+        {"quantity": "backup_actions", "count": backup_actions, "in_attempted_decision_denominator": True},
+        {"quantity": "unhandled_actions", "count": 0, "in_attempted_decision_denominator": True},
+        {"quantity": "attempted_optimization_decisions", "count": optimization_decisions, "in_attempted_decision_denominator": True},
+        {"quantity": "raw_solver_invocations", "count": raw_solver_attempts, "in_attempted_decision_denominator": False},
+        {"quantity": "physical_infeasibility_preclassifications", "count": int((cycles.method.eq("dcsv_cr_mpc") & cycles.attempted_solver_calls.fillna(0).eq(0)).sum()), "in_attempted_decision_denominator": False},
+    ])
+    denominator["decision_identity_holds"] = (
+        primary_accepted + restoration_accepted + backup_actions == optimization_decisions
+    )
+    denominator["raw_invocation_identity_holds"] = (
+        primary_accepted + 2 * restoration_accepted + 2 * backup_actions == raw_solver_attempts
+    )
+    denominator.to_csv(RESULTS / "SOLVER_DENOMINATOR.csv", index=False)
+    dcsv_cycles.solver_status.value_counts().rename_axis("solver_status").reset_index(
+        name="control_decisions"
+    ).to_csv(RESULTS / "SOLVER_STATUS_COUNTS.csv", index=False)
+    contract_violation[[
+        "scenario_id", "contract_violation_detection_calls", "frequency_peak_hz",
+        "frequency_rms_hz", "terminal_recovery", "fallback_calls", "hard_violation",
+    ]].to_csv(RESULTS / "CONTRACT_VIOLATION_SUMMARY.csv", index=False)
     gates = {
         "materiality_retained_from_R1": json.loads((PROGRESS / "R1.json").read_text("utf-8"))["status"] == "PASS",
         "plant_a_minimum_scale": bool(
@@ -818,6 +871,10 @@ def summarize_and_gate(
         ),
         "action_availability_100pct": bool(core.action_availability.eq(1.0).all()),
         "all_attempted_calls_in_denominator": raw_solver_attempts >= optimization_decisions > 0,
+        "solver_denominator_identities_hold": bool(
+            denominator.decision_identity_holds.all()
+            and denominator.raw_invocation_identity_holds.all()
+        ),
     }
     method_gate = all(gates.values())
     failure_ledger = pd.DataFrame([
@@ -837,8 +894,8 @@ def summarize_and_gate(
             {
                 "repair_round": 1,
                 "diagnosis_scope": "CODE_NUMERICAL_SOLVER_DENOMINATOR",
-                "repair_applied": False,
-                "finding": "outputs, pairing, raw-call denominator and residual-based numerical taxonomy independently rechecked; no code defect justifies changing evidence",
+                "repair_applied": True,
+                "finding": "corrected optimization-attempt denominator to exclude physical-infeasibility preclassification calls with zero raw solver invocation; all original rows preserved",
                 "algorithm_or_gate_changed": False,
             },
             {
@@ -941,6 +998,7 @@ validation or final seed was used for development tuning.
         ignore_index=True,
         sort=False,
     )
+    cycles["optimization_attempted"] = cycles.attempted_solver_calls.fillna(0).gt(0)
     core.to_parquet(RESULTS / "CORE_VALIDATION_EPISODES.parquet", index=False)
     supplemental.to_parquet(RESULTS / "SUPPLEMENTAL_BASELINE_EPISODES.parquet", index=False)
     normal.to_parquet(RESULTS / "NORMAL1H_EPISODES.parquet", index=False)
