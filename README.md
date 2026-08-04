@@ -1,37 +1,65 @@
-# DIRECTION1: CRCS-TMPC for black-box IBR capability changes
+# Direction5 Phase I: final scientific convergence
 
-This repository is the Direction1 research implementation for control-relevant capability-set adaptive tube MPC (CRCS-TMPC) in multi-area frequency regulation. The governing contract is `research/direction1_phase_d_crcs_tube_mpc/CODEX_GOAL.md`.
+This repository's current project is **Direction5 / DIRECTION5 / direction5**.
+The sole active method is **DCSV-MPC** (Disturbance--Capability-Separated
+Viability MPC), governed by
+`research/direction5_phase_i_final_convergence/CODEX_GOAL.md`.
 
-The former D5/SD-BMPC and Phase C code under `src/d5freq` is retained only as historical evidence. It is not the active method namespace and its passive-identifiable or method-performance conclusions are invalidated for paper evidence. New Direction1 implementation lives under `src/direction1freq`.
-
-## Binding Phase D result
-
-Phase D stopped at its preregistered H2 Gate. Natural closed-loop public I/O did not maintain the required joint capability-set coverage or causal update timing after the initial estimator and two allowed development repairs. The research status is:
+## Binding outcome
 
 ```text
-PASSIVE_CAPABILITY_SET_NOT_SUPPORTED
+DIRECTION5_TERMINATED_WITH_DECISIVE_NEGATIVE_EVIDENCE
 ```
 
-Per the Goal, no Direction1 Oracle, CRCS-TMPC, active-identification substitute, or other controller was implemented after this fatal Gate. H1, H3, H4, the best baseline, and known/OOD controller outcomes are `not_evaluated`, not failures.
+I0--I5 passed. Corrected full validation at I6 failed four registered Gates:
+none of the three core metrics achieved at least 8% improvement with a positive
+cluster-bootstrap lower bound; unresolved mathematical infeasibility exceeded
+0.1%; fallback exceeded 1%; and Plant A/B did not show a positive performance
+direction. I7 final seeds were therefore not evaluated, and no success/failure
+was imputed to them. I8 sealed and independently replayed the negative result.
 
-## Environment
+The result is bounded rather than category-level: Phase I retains the
+actual-POI load observer, causal power/ramp/delay deliverability estimator,
+contract-floor semantics, conditional local Plant-A RPI sets, finite-horizon
+bridge certificates, and physical-infeasibility certificates. It does not
+support DCSV-MPC deployment advantage, global recursive feasibility, or a
+rigorous native Plant-B RPI claim.
 
-Use the existing Python 3.11 Conda environment `topo_sfr`:
+## Active source and evidence
+
+- Active source: `src/direction5freq/`
+- Phase scripts: `scripts/phase_i/`
+- Tests: `tests/phase_i/`
+- Locked validation: `configs/phase_i/i6_validation_lock.yaml`
+- Final status: `results_phase_i/final/FINAL_STATUS.json`
+- Final reports: `research_outputs_phase_i/08_FINAL/`
+- Final figures: `figures_phase_i/I8/`
+
+Older Direction1, `direction5_freq`, and `d5freq` materials remain immutable
+historical evidence. They are not the active method or current claim authority.
+
+## Environment and verification
+
+Use the repository-owned Python 3.11 environment:
 
 ```powershell
-conda env update --name topo_sfr --file environment.yml
+conda env update --name topo_sfr --file environment.yml --prune
 conda activate topo_sfr
-python -m pip install -e ".[dev,notebook,solvers]"
+python -m pip install -e . --no-deps
+python -m pytest tests/phase_i -q
 ```
 
-The completed negative path uses ANDES 2.0.0 for native Kundur Plant B validation and does not require commercial solver licenses. License files must never be committed or packaged.
+The reviewed delivery is:
 
-## Reproduction
+```text
+DIRECTION5_PHASE_I_FINAL_CONVERGENCE_SINGLE_REVIEW_PACKAGE.zip
+```
+
+After extraction, run from the package root:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/phase_d/reproduce_minimal.ps1
+python 15_REPRODUCIBILITY/verify_manifest.py
+python 15_REPRODUCIBILITY/reproduce_minimal.py
 ```
 
-The full D2–D3 reproduction, figure regeneration, raw evidence, failure ledger, and Gate decisions are documented under `research_outputs_phase_d/`, `results_phase_d/`, `figures_phase_d/`, `logs_phase_d/`, and `progress_phase_d/`.
-
-All failed episodes are retained. Planned post-H2 experiments are explicitly stored as `not_evaluated`; they are never counted as method failures.
+No commercial solver license is included or required by the Phase-I replay.

@@ -1,5 +1,41 @@
 # Repository instructions for coding agents
 
+## Current binding authority: Direction5 Phase I
+
+The project name is **Direction5 / DIRECTION5 / direction5**. The completed
+governing Goal is `research/direction5_phase_i_final_convergence/CODEX_GOAL.md`;
+its method is **DCSV-MPC** (Disturbance--Capability-Separated Viability MPC).
+Read the following before changing current scientific code or claims:
+
+1. `research/direction5_phase_i_final_convergence/CODEX_GOAL.md`
+2. `research/direction5_phase_i_final_convergence/01_MASTER_EXECUTION_PLAN.md`
+3. `research/direction5_phase_i_final_convergence/07_GATES_FAILURE_AUTO_REPAIR.md`
+4. `research/direction5_phase_i_final_convergence/09_FINAL_REVIEW_PACKAGE_SPEC.md`
+5. `results_phase_i/final/FINAL_STATUS.json`
+6. `results_phase_i/final/ALL_GATES.csv`
+7. `results_phase_i/final/FAILURE_LEDGER.csv`
+
+Binding research status:
+
+```text
+DIRECTION5_TERMINATED_WITH_DECISIVE_NEGATIVE_EVIDENCE
+```
+
+Gate state is I0--I5 `PASS`, I6 `FAIL`, I7 `NOT_EVALUATED`, and I8 `PASS`.
+Phase H H7 is withdrawn as method evidence. I6 used 120 full nonlinear Plant-A
+paired scenarios, 24 native ANDES Plant-B paired scenarios, and 12 genuine
+3600 s normal-profile method runs. It failed the registered performance,
+unresolved mathematical-infeasibility, fallback, and positive cross-plant
+direction Gates. H5 is `NOT_SUPPORTED`; H1--H4 and H6 retain their explicitly
+bounded statuses. Final seeds 100--159 were not consumed.
+
+The active implementation is `src/direction5freq/`, `scripts/phase_i/`, and
+`tests/phase_i/`. Namespaces `src/direction5_freq/` and `src/direction1freq/`
+are retained solely to replay historical I0 evidence. Do not tune from I6,
+run I7 final seeds, create Phase J/K, replace DCSV-MPC, or turn the negative
+result into an affirmative performance claim. The only reviewed delivery name
+is `DIRECTION5_PHASE_I_FINAL_CONVERGENCE_SINGLE_REVIEW_PACKAGE.zip`.
+
 ## Scope and path portability
 
 This file applies to the entire repository.
@@ -33,10 +69,11 @@ If Windows path-length errors occur, move the repository under a shorter parent
 directory. `git config --local core.longpaths true` may be used if needed; do
 not rename scientific files or flatten the repository tree.
 
-## Current authoritative project state
+## Historical Phase-F state (superseded by the authority above)
 
-The project name is **Direction1 / DIRECTION1**. The latest completed scientific
-phase is Phase F, whose only method is:
+The following records the older Direction1 Phase-F state and is retained as
+historical evidence. It is not current runtime or claim authority. Its method
+was:
 
 ```text
 CDSR-MPC
