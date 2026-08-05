@@ -59,6 +59,11 @@ def main() -> None:
         files = [base] if base.is_file() else sorted(path for path in base.rglob("*") if path.is_file())
         for path in files:
             rel = path.relative_to(ROOT).as_posix()
+            # The inventory is evidence about package inputs; excluding its own
+            # outputs avoids an impossible self-hash and keeps repeated audits
+            # semantically stable.
+            if path == PROGRESS or path == OUT or OUT in path.parents:
+                continue
             if rel in seen or any(part in excluded_parts for part in path.parts):
                 continue
             if path.suffix in {".pyc", ".pyo"} or path.name.endswith(".lic"):

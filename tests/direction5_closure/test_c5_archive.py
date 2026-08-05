@@ -22,6 +22,8 @@ def test_c5_archive_inputs_are_complete_and_credential_free() -> None:
     assert any(path.startswith("results_final/R5/") for path in paths)
     assert any(path.startswith("results_closure/C2/") for path in paths)
     assert not any(path.endswith(".lic") or "__pycache__" in path for path in paths)
+    assert "progress_closure/C5.json" not in paths
+    assert not any(path.startswith("research_outputs_closure/05_ARCHIVE/") for path in paths)
 
 
 def test_c5_reproducibility_documents_exist() -> None:
