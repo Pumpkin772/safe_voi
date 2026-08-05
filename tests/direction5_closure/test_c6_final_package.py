@@ -44,6 +44,11 @@ def test_builder_uses_short_temporary_staging_for_windows_paths() -> None:
     assert 'root = target / "p"' in builder
 
 
+def test_builder_top_level_snapshot_inputs_exist() -> None:
+    for name in ("AGENTS.md", "README.md", "environment.yml", "pyproject.toml"):
+        assert (ROOT / name).is_file()
+
+
 def test_manuscript_has_no_prediction_placeholders() -> None:
     for path in (ROOT / "research_outputs_closure/03_PAPER").glob("*.md"):
         assert "[" + "PREDICTED" + "]" not in path.read_text(encoding="utf-8")

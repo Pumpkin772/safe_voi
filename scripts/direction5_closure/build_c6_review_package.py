@@ -168,7 +168,7 @@ The registered positive Gate failed in validation and confirmation. This is a bo
         "configs/direction5_closure", "research/DIRECTION5_CLOSURE_CONFIRMATION_AND_MANUSCRIPT_CODEX_PACKAGE",
     ):
         copy_tree(ROOT / tree, repository / tree)
-    for name in ("AGENTS.md", "README.md", "environment.yml", "pyproject.toml", "scripts/__init__.py"):
+    for name in ("AGENTS.md", "README.md", "environment.yml", "pyproject.toml"):
         copy_file(ROOT / name, repository / name)
     copy_tree(ROOT / "research_outputs_closure/05_ARCHIVE", STAGING / "09_SOURCE_ENV/ARCHIVE_DOCUMENTATION")
 
