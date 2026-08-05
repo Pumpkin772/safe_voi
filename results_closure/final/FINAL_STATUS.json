@@ -1,0 +1,64 @@
+{
+  "schema": "direction5.closure.final_status.v1",
+  "project": "DIRECTION5",
+  "method": "DCSV-CR-MPC",
+  "final_status": "DIRECTION5_NEGATIVE_RESULT_CONFIRMED_AND_ARCHIVED",
+  "validation_positive_gate": false,
+  "confirmatory_positive_gate": false,
+  "joint_validation_confirmatory_positive": false,
+  "paper_route": "NEGATIVE_RESULT_BOUNDARY_PAPER",
+  "selected_observer": "constrained_mhe_actual_poi",
+  "selected_capability_estimator": "causal_grid_outer_set_membership_ab_delay",
+  "best_primary_deployable_baseline": "contract_only_rolling_mpc",
+  "best_validation_deployable_baseline_by_ranking": "model_adaptive_mpc",
+  "deterministic_bug_repairs": [
+    {
+      "scope": "C2_DIRECT_ENTRY_EXECUTION_ONLY",
+      "repair": "insert repository root and src on sys.path before imports",
+      "scientific_method_changed": false,
+      "weights_thresholds_scenarios_changed": false,
+      "repaired_before_final_lock": true
+    }
+  ],
+  "validation": {
+    "plant_a_scenarios": 120,
+    "plant_b_scenarios": 24,
+    "success_drop_pp": 2.7272727272727226,
+    "core_metrics_passing": 0,
+    "optimization_decisions": 20271,
+    "raw_solver_invocations": 21293,
+    "restoration_calls": 1,
+    "fallback_calls": 1021,
+    "normal1h_quality": false
+  },
+  "confirmatory": {
+    "plant_a_scenarios": 120,
+    "plant_b_scenarios": 24,
+    "success_drop_pp": 7.476635514018692,
+    "core_metrics_passing": 0,
+    "optimization_decisions": 20227,
+    "raw_solver_invocations": 21400,
+    "restoration_calls": 2,
+    "fallback_calls": 1171,
+    "numerical_failures": 0,
+    "normal1h_quality": false,
+    "final_seeds_consumed_once": true,
+    "post_result_tuning_permitted": false
+  },
+  "mechanism": {
+    "fallback_explained_fraction": 1.0,
+    "performance_rows_explained_fraction": 1.0,
+    "surplus_active_calls": 2,
+    "surplus_total_calls": 22392,
+    "registered_excitation_performance_above_contract_fraction": 0.0
+  },
+  "theory_certificate": "CONDITIONAL_LOCAL_AND_FINITE_HORIZON_ONLY; NO_GLOBAL_RECURSIVE_FEASIBILITY_CLAIM",
+  "most_severe_limitation": "The causal lower capability envelope almost never certified exploitable surplus, while Plant-A robust predictions produced substantial mathematical-infeasibility fallback and all methods failed the registered synthetic normal1h quality Gate.",
+  "no_new_phase_or_method": true,
+  "package_verification": {
+    "passed": false,
+    "report": null
+  },
+  "prepared_from_git_head": "2dd38df08f1cd050b9944cb2c6dbe3795bc538ea",
+  "generated_utc": "2026-08-05T04:21:43.306039+00:00"
+}
