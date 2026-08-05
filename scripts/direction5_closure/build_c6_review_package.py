@@ -19,8 +19,12 @@ ROOT = Path(__file__).resolve().parents[2]
 PACKAGE_NAME = "DIRECTION5_CLOSURE_CONFIRMATION_AND_MANUSCRIPT_SINGLE_REVIEW_PACKAGE"
 ZIP_PATH = ROOT / f"{PACKAGE_NAME}.zip"
 ARTIFACTS = ROOT / "artifacts_closure"
-STAGING_PARENT = ARTIFACTS / "review_package_staging"
-STAGING = STAGING_PARENT / PACKAGE_NAME
+# The repository can itself live below a long non-ASCII path.  A short system
+# temporary staging root prevents MAX_PATH failures without changing any ZIP
+# member name or flattening the scientific archive structure.
+STAGING_NAME = "d5c6_stage"
+STAGING_PARENT = Path(tempfile.gettempdir())
+STAGING = STAGING_PARENT / STAGING_NAME
 FINAL_STATE = "DIRECTION5_NEGATIVE_RESULT_CONFIRMED_AND_ARCHIVED"
 DIRECTORIES = (
     "00_README", "01_AUDIT", "02_SCIENCE", "03_LITERATURE", "04_MODEL_METHOD",
@@ -42,7 +46,7 @@ def sha256(path: Path) -> str:
 
 def safe_reset(path: Path, permitted_parent: Path) -> None:
     resolved = path.resolve()
-    if resolved.parent != permitted_parent.resolve() or resolved.name != PACKAGE_NAME:
+    if resolved.parent != permitted_parent.resolve() or resolved.name != STAGING_NAME:
         raise RuntimeError(f"unsafe staging target: {resolved}")
     if path.exists():
         shutil.rmtree(path)
@@ -270,11 +274,19 @@ def build_zip() -> None:
 
 
 def fresh_extract_replay() -> tuple[dict, dict]:
-    with tempfile.TemporaryDirectory(prefix="direction5_closure_verify_") as temp:
+    with tempfile.TemporaryDirectory(prefix="d5v_") as temp:
         target = Path(temp)
         with zipfile.ZipFile(ZIP_PATH) as archive:
-            archive.extractall(target)
-        root = target / PACKAGE_NAME
+            root = target / "p"
+            root.mkdir()
+            for info in archive.infolist():
+                parts = Path(info.filename).parts
+                if not parts or parts[0] != PACKAGE_NAME or info.is_dir():
+                    continue
+                destination = root.joinpath(*parts[1:])
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                with archive.open(info) as source, destination.open("wb") as output:
+                    shutil.copyfileobj(source, output)
         outputs = []
         for script in ("verify_manifest.py", "reproduce_minimal.py"):
             run = subprocess.run([sys.executable, f"16_REPRODUCIBILITY/{script}"], cwd=root, text=True, encoding="utf-8", errors="replace", capture_output=True)

@@ -37,6 +37,13 @@ def test_package_scripts_are_standard_library_only_at_runtime() -> None:
     assert not any(word in replay for word in forbidden)
 
 
+def test_builder_uses_short_temporary_staging_for_windows_paths() -> None:
+    builder = (ROOT / "scripts/direction5_closure/build_c6_review_package.py").read_text(encoding="utf-8")
+    assert 'STAGING_NAME = "d5c6_stage"' in builder
+    assert "Path(tempfile.gettempdir())" in builder
+    assert 'root = target / "p"' in builder
+
+
 def test_manuscript_has_no_prediction_placeholders() -> None:
     for path in (ROOT / "research_outputs_closure/03_PAPER").glob("*.md"):
         assert "[" + "PREDICTED" + "]" not in path.read_text(encoding="utf-8")
