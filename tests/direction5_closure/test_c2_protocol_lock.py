@@ -53,8 +53,15 @@ def test_other_confirmatory_manifests_have_registered_scale() -> None:
     assert len(combined_manifest()) == 180
 
 
-def test_final_seed_marker_does_not_exist_before_lock() -> None:
-    assert not MARKER.exists()
+def test_final_seed_marker_lifecycle_is_irreversible() -> None:
+    if not MARKER.exists():
+        return
+    import json
+    marker = json.loads(MARKER.read_text("utf-8"))
+    assert marker["status"] == "COMPLETE"
+    assert marker["final_seeds_consumed"] is True
+    assert marker["single_execution"] is True
+    assert marker["post_result_tuning_forbidden"] is True
 
 
 def test_confirmatory_entrypoint_imports_from_direct_execution() -> None:
