@@ -1,0 +1,8 @@
+# Contributions and evidential status
+
+1. **Auditable distinction between three capability notions.** We separate a guaranteed contractual floor, a causal online performance envelope, and evaluation-only perfect capability. The distinction is enforced in code and ordinary controllers do not read true capability, true load, hidden parameters, or future events.
+2. **A frozen, falsifiable controller comparison.** DCSV-CR-MPC and the primary contract-only comparator both execute genuine rolling finite-horizon optimization with state/input sequences, dynamics, power/ramp/delay/SoC constraints, domain routing, restoration, diagnostics, and committed applied actions.
+3. **Balanced validation and untouched-seed confirmation.** Both stages use scenario-balanced aggregate means, paired absolute differences, and seed/design-cell hierarchical bootstrap. Mean episode-relative ratios are diagnostic only.
+4. **Full denominator accounting.** Confirmation records 20,227 attempted optimization decisions and 21,400 raw solver invocations, including 2 restoration calls and 1,171 fallbacks. Numerical failures were 0.
+5. **Mechanism evidence, not just a leaderboard.** Perfect information exhibited value, whereas causal online capability did not; surplus was activated in only 2/22,392 calls, and mathematical infeasibility explained every fallback in validation.
+6. **A registered negative result.** The method passed 0/3 core metric Gates in both validation and confirmation, lost 7.48 percentage points of success in confirmation, and had inconsistent positive direction across Plants A and B. We do not claim controller superiority.
