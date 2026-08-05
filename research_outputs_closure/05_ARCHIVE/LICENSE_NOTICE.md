@@ -1,0 +1,3 @@
+# License and credential notice
+
+The archive contains research source, generated evidence, and the repository environment specification. It contains no Gurobi or MOSEK license file, license key, access token, user credential, Conda environment, wheel cache, or Python bytecode cache. Third-party packages remain governed by their own licenses and are named/pinned by `environment.yml` and `pyproject.toml`. ANDES model execution uses the recorded third-party package; the package does not relicense ANDES. Reviewers must provision any separately licensed solver themselves, although the frozen closure paths use the recorded open solver stack for the audited runs.
