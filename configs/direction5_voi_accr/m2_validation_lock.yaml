@@ -1,0 +1,86 @@
+project: DIRECTION5
+method: VOI-ACCR-MPC
+milestone: M2_INDEPENDENT_VALIDATION
+registered_before_execution: true
+validation_attempt: 2
+previous_attempt: M2_V1_INVALIDATED_BASELINE_CLASS_MISMATCH
+allowed_change_from_v1: FAIR_CONTRACT_BASELINE_CLASS_CODE_FIX_ONLY
+m1_commit: b41b2ec889f0d9852a3366a3684a4f1a56955f12
+validation_seed_range: [5300, 5399]
+final_seed_range: [6200, 6299]
+final_seeds_consumed: false
+plants: [A_full_nonlinear, B_native_ANDES_Kundur]
+periods_s: [2.0, 4.0]
+mechanisms: [power_drop, ramp_drop, delay_drop]
+sg_tensions: [low, high]
+conditions: [known, OOD]
+timing_relations: [before, simultaneous, after]
+durations_s: [300.0, 600.0]
+value_regions: [HIGH_VALUE_CANDIDATE, LOW_VALUE_CONTROL]
+nominal_warmup_s: 60.0
+physical_dt_s: 0.05
+horizon_steps: 3
+primary_methods:
+  - contract_only_recourse_mpc
+  - voi_accr_mpc
+  - perfect_capability_recourse_oracle
+voi_controller:
+  horizon_steps: 3
+  delivered_branch_weight: 0.20
+  ace_weight: 30.0
+  tie_weight: 0.0
+  frequency_weight: 12.0
+  bess_effort_weight: 0.085
+  sg_effort_weight: 0.05
+  action_relevance_norm: 0.001
+  minimum_oracle_gap: 0.01
+  voi_margin: 0.0
+  minimum_ace_for_probe: 0.0
+voi_probe:
+  id: biphasic_2
+  amplitude_pu: 0.0025
+  normalized_sequence: [1.0, -1.0]
+  around_current_contract_mpc_allocation: true
+  fixed_bess_base: null
+  certificate_validity_s: 4.0
+  certificate_confirmation_s: 0.0
+  cooldown_s: 60.0
+  trigger_time_s: 60.0
+  passive_renewal: true
+  latch_abstention: false
+  one_probe_per_change_epoch: true
+voi_estimator:
+  type: causal_set_membership_plus_interval_mhe
+  actual_bess_poi_power_is_known_input: true
+  window_s: 24.0
+  active_residual_bound_pu: 0.002
+statistics:
+  bootstrap_resamples: 2000
+  confidence_level: 0.95
+  minimum_oracle_value_fraction: 0.005
+gates:
+  success_drop_pp_max: 1.0
+  frequency_peak_delta_hz_max: 0.020
+  hard_violations_max: 0
+  fallback_difference_pp_max: 1.0
+  p99_solve_fraction_max: 0.50
+  worthwhile_ace_or_tie_improvement_min: 0.04
+  worthwhile_improvement_ci_lower_min: 0.0
+  oracle_value_recovery_min: 0.30
+  oracle_value_recovery_ci_lower_min: 0.0
+  sg_mileage_relative_worsening_max: 0.0
+  candidate_diameter_reduction_min: 0.50
+  probe_incremental_frequency_hz_max: 0.020
+  false_optimism_max: 0.01
+  not_worthwhile_probe_rate_max: 0.05
+  not_worthwhile_metric_change_max: 0.01
+  normal1h_frequency_peak_hz_max: 0.20
+resource_guard:
+  preflight_max_system_commit_fraction: 0.64
+  max_system_commit_fraction: 0.70
+  max_system_commit_growth_gib: 10.0
+  min_available_physical_gib: 8.0
+  max_process_tree_private_gib: 4.0
+  max_descendant_processes: 3
+  poll_interval_s: 0.10
+  timeout_s: 28800.0

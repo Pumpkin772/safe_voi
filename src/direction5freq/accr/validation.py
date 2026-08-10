@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import asdict, replace
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import numpy as np
@@ -17,10 +18,17 @@ from direction5freq.controllers.anti_windup_pi import (
 from direction5freq.controllers.dcsv_cr_mpc import DCSVContractRecourseMPC
 from direction5freq.controllers.dcsv_mpc_final import DCSVInput
 from direction5freq.controllers.domain_supervisor import DomainSupervisor
+from direction5freq.controllers.voi_accr_mpc import (
+    VOIActiveCapabilityCertificationRecourseMPC,
+    weighted_contract_mpc_class,
+)
 from direction5freq.estimation.deliverability_set_membership import DeliverabilitySetMembership
 from direction5freq.estimation.grid_load_mhe import ConstrainedGridLoadMHE
 from direction5freq.estimation.grid_load_observer import LoadObserverInput
-from direction5freq.models.capability_contract import CapabilityRealization
+from direction5freq.models.capability_contract import (
+    CapabilityContract,
+    CapabilityRealization,
+)
 from direction5freq.models.plant_a_full import PlantAFull, PlantAParameters, PublicObservation
 
 
@@ -31,6 +39,7 @@ MPC_METHODS = (
     "fixed_periodic_probe_mpc",
     "unsafe_no_gate_probe_mpc",
     "accr_mpc",
+    "voi_accr_mpc",
     "perfect_capability_recourse_oracle",
 )
 
@@ -41,7 +50,82 @@ MPC_METHODS = (
 A1_MATERIALITY_CAPABILITY = {
     "power_drop": {"power_pu": 0.065, "ramp_pu_per_s": 0.025, "delay_s": 1.50},
     "ramp_drop": {"power_pu": 0.045, "ramp_pu_per_s": 0.055, "delay_s": 1.50},
+    "delay_drop": {"power_pu": 0.065, "ramp_pu_per_s": 0.055, "delay_s": 1.50},
 }
+
+
+class VOIContractOnlyRollingAdapter:
+    """The exact M1 rolling core used for the fair contract and Oracle arms."""
+
+    def __init__(
+        self,
+        period_s: float,
+        horizon_steps: int,
+        parameters: PlantAParameters,
+        controller_lock: dict[str, Any],
+    ) -> None:
+        weighted = weighted_contract_mpc_class(
+            ace_weight=float(controller_lock["ace_weight"]),
+            tie_weight=float(controller_lock["tie_weight"]),
+            frequency_weight=float(controller_lock["frequency_weight"]),
+            bess_effort_weight=float(controller_lock["bess_effort_weight"]),
+            sg_effort_weight=float(controller_lock["sg_effort_weight"]),
+        )
+        self.core = weighted(period_s, horizon_steps, parameters)
+        self.registered_contract = parameters.bess.contract
+
+    def propose(self, inputs: DCSVInput):
+        power = np.maximum(
+            np.asarray(inputs.deliverability_set.performance_power_pu, dtype=float),
+            np.asarray(self.registered_contract.upper_power_pu, dtype=float),
+        )
+        ramp = np.maximum(
+            np.asarray(inputs.deliverability_set.performance_ramp_pu_per_s, dtype=float),
+            np.asarray(self.registered_contract.ramp_up_pu_per_s, dtype=float),
+        )
+        is_contract = bool(
+            np.allclose(power, self.registered_contract.upper_power_pu)
+            and np.allclose(ramp, self.registered_contract.ramp_up_pu_per_s)
+        )
+        delay = (
+            np.asarray(self.registered_contract.maximum_delay_s, dtype=float)
+            if is_contract
+            else np.asarray(inputs.deliverability_set.delay_interval_s[:, 1], dtype=float)
+        )
+        self.core.contract = CapabilityContract(
+            lower_power_pu=tuple(-float(value) for value in power),
+            upper_power_pu=tuple(float(value) for value in power),
+            ramp_down_pu_per_s=tuple(float(value) for value in ramp),
+            ramp_up_pu_per_s=tuple(float(value) for value in ramp),
+            maximum_delay_s=tuple(float(value) for value in delay),
+        )
+        raw = self.core.propose(inputs)
+        diagnostic_values = asdict(raw.diagnostics)
+        diagnostic_values["attempted_optimization_calls"] = 2 if (
+            raw.diagnostics.restoration_used or raw.diagnostics.fallback_used
+        ) else 1
+        raw = replace(raw, diagnostics=SimpleNamespace(**diagnostic_values))
+        guaranteed = np.clip(
+            raw.proposed_action_pu[[1, 3]],
+            np.asarray(self.registered_contract.lower_power_pu),
+            np.asarray(self.registered_contract.upper_power_pu),
+        )
+        fields = {name: getattr(raw, name) for name in raw.__dataclass_fields__}
+        return SimpleNamespace(
+            **fields,
+            guaranteed_bess_command_pu=guaranteed,
+            surplus_bess_command_pu=raw.proposed_action_pu[[1, 3]] - guaranteed,
+            shared_current_action_verified=True,
+            surplus_loss_branch_verified=False,
+        )
+
+    def commit(
+        self,
+        action: np.ndarray,
+        actual: np.ndarray,
+        guaranteed: np.ndarray | None = None,
+    ) -> None:
+        self.core.commit(action, actual)
 
 
 def plant_parameters(tension: str, nominal_frequency_hz: float = 50.0) -> PlantAParameters:
@@ -86,6 +170,16 @@ def capability_for(row: pd.Series, time_s: float) -> CapabilityRealization:
         power = float(registered["power_pu"])
         ramp = float(registered["ramp_pu_per_s"]) if known else 0.032
         delay = float(registered["delay_s"])
+        return CapabilityRealization(
+            lower_power_pu=(-power, -power), upper_power_pu=(power, power),
+            ramp_down_pu_per_s=(ramp, ramp), ramp_up_pu_per_s=(ramp, ramp),
+            delay_s=(delay, delay),
+        )
+    if row.mechanism == "delay_drop":
+        registered = A1_MATERIALITY_CAPABILITY["delay_drop"]
+        power = float(registered["power_pu"])
+        ramp = float(registered["ramp_pu_per_s"])
+        delay = float(registered["delay_s"]) if known else 1.10
         return CapabilityRealization(
             lower_power_pu=(-power, -power), upper_power_pu=(power, power),
             ramp_down_pu_per_s=(ramp, ramp), ramp_up_pu_per_s=(ramp, ramp),
@@ -167,6 +261,69 @@ class ValidationPolicy:
                 trigger_minimum_total_sfr_pu=float(probe["trigger_minimum_total_sfr_pu"]),
                 delivered_branch_weight=delivered_branch_weight,
             )
+        elif method == "voi_accr_mpc":
+            controller = lock["voi_controller"]
+            probe = lock["voi_probe"]
+            estimator = lock["voi_estimator"]
+            self.controller = VOIActiveCapabilityCertificationRecourseMPC(
+                period_s,
+                int(controller["horizon_steps"]),
+                parameters,
+                probe_id=str(probe["id"]),
+                probe_amplitude_pu=float(probe["amplitude_pu"]),
+                probe_sequence=tuple(probe["normalized_sequence"]),
+                certificate_validity_s=float(probe["certificate_validity_s"]),
+                cooldown_s=float(probe["cooldown_s"]),
+                voi_margin=float(controller["voi_margin"]),
+                action_relevance_norm=float(controller["action_relevance_norm"]),
+                minimum_oracle_gap=float(controller["minimum_oracle_gap"]),
+                minimum_ace_for_probe=float(controller["minimum_ace_for_probe"]),
+                estimator_window_s=float(estimator["window_s"]),
+                active_filter_residual_bound_pu=float(estimator["active_residual_bound_pu"]),
+                passive_renewal=bool(probe["passive_renewal"]),
+                physical_dt_s=float(observation_dt_s),
+                delivered_branch_weight=float(controller["delivered_branch_weight"]),
+                ace_weight=float(controller["ace_weight"]),
+                tie_weight=float(controller["tie_weight"]),
+                frequency_weight=float(controller["frequency_weight"]),
+                bess_effort_weight=float(controller["bess_effort_weight"]),
+                sg_effort_weight=float(controller["sg_effort_weight"]),
+                trigger_time_s=float(probe["trigger_time_s"]),
+                certificate_confirmation_s=(
+                    None
+                    if probe.get("certificate_confirmation_s") is None
+                    else float(probe["certificate_confirmation_s"])
+                ),
+                latch_abstention=bool(probe["latch_abstention"]),
+                require_detected_change_for_probe=bool(
+                    probe.get("require_detected_change_for_probe", False)
+                ),
+                minimum_partition_reduction=float(
+                    probe.get("minimum_partition_reduction", 0.25)
+                ),
+                certificate_power_guard_pu=float(
+                    probe.get("certificate_power_guard_pu", 0.0)
+                ),
+                certificate_ramp_guard_pu_per_s=float(
+                    probe.get("certificate_ramp_guard_pu_per_s", 0.0)
+                ),
+                certificate_delay_guard_s=float(
+                    probe.get("certificate_delay_guard_s", 0.0)
+                ),
+                probe_prediction_dt_s=float(
+                    probe.get("probe_prediction_dt_s", observation_dt_s)
+                ),
+            )
+        elif (
+            method in {"contract_only_recourse_mpc", "perfect_capability_recourse_oracle"}
+            and "voi_controller" in lock
+        ):
+            self.controller = VOIContractOnlyRollingAdapter(
+                period_s,
+                int(lock["voi_controller"]["horizon_steps"]),
+                parameters,
+                lock["voi_controller"],
+            )
         elif method in MPC_METHODS:
             self.controller = DCSVContractRecourseMPC(
                 period_s,
@@ -182,7 +339,7 @@ class ValidationPolicy:
         return self.method in MPC_METHODS
 
     def observe(self, observation: PublicObservation) -> None:
-        if self.method == "accr_mpc":
+        if self.method in {"accr_mpc", "voi_accr_mpc"}:
             self.controller.observe(observation)
 
     def _probe_overlay(self, action: np.ndarray, observation: PublicObservation, domain: str) -> tuple[np.ndarray, float]:
@@ -257,7 +414,7 @@ class ValidationPolicy:
             )
         self.latest_deliverability = snapshot
         inputs = DCSVInput(observation, estimate.load_pu, snapshot, domain)
-        if self.method == "accr_mpc":
+        if self.method in {"accr_mpc", "voi_accr_mpc"}:
             result = self.controller.propose(inputs)
             action = result.proposed_action_pu.copy()
             core = result.core_result
@@ -296,6 +453,7 @@ class ValidationPolicy:
         contract = getattr(result, "contract_component_pu", np.zeros(4))
         certified = getattr(result, "certified_component_pu", np.zeros(4))
         probe = getattr(result, "probe_component_pu", np.zeros(4))
+        decision = getattr(self.controller, "last_decision", None)
         return {
             "probe_active": bool(getattr(diagnostics, "probe_active", False)),
             "probe_triggered": bool(getattr(diagnostics, "probe_triggered", False)),
@@ -318,12 +476,19 @@ class ValidationPolicy:
             "contract_component_l1_pu": float(np.sum(np.abs(contract))),
             "certified_component_l1_pu": float(np.sum(np.abs(certified))),
             "probe_component_l1_pu": float(np.sum(np.abs(probe))),
+            "voi_worthwhile": bool(getattr(decision, "worthwhile", False)),
+            "voi_decision_relevance_pu": float(getattr(decision, "decision_relevance_pu", 0.0)),
+            "voi_oracle_gap_proxy": float(getattr(decision, "oracle_gap_proxy", 0.0)),
+            "voi_gross_value": float(getattr(decision, "gross_value", 0.0)),
+            "voi_predicted_probe_cost": float(getattr(decision, "predicted_probe_cost", 0.0)),
+            "voi_net_value": float(getattr(decision, "net_value", 0.0)),
+            "voi_reason": str(getattr(decision, "reason", "NOT_APPLICABLE")),
         }
 
     def commit(self, actual_bess_pu: np.ndarray) -> None:
         if self.last_result is None or not self.is_mpc:
             return
-        if self.method == "accr_mpc":
+        if self.method in {"accr_mpc", "voi_accr_mpc"}:
             self.controller.commit(self.last_result, actual_bess_pu)
         else:
             guaranteed = np.clip(
@@ -337,6 +502,7 @@ class ValidationPolicy:
     def diagnostics(self) -> dict[str, Any]:
         certificate_issues = int(getattr(self.controller, "certificate_issues", 0))
         certificate_revocations = int(getattr(self.controller, "certificate_revocations", 0))
+        reductions = list(getattr(self.controller, "candidate_diameter_reductions", []))
         return {
             "controller_calls": self.control_calls,
             "attempted_optimization_calls": self.attempted_calls,
@@ -352,6 +518,17 @@ class ValidationPolicy:
             "certified_surplus_l1_pu_s": self.certified_surplus_l1_pu_s,
             "ordinary_controller_truth_read": False,
             "evaluation_only_truth_read": self.method == "perfect_capability_recourse_oracle",
+            "voi_decision_calls": int(getattr(self.controller, "decision_calls", 0)),
+            "voi_worthwhile_calls": int(getattr(self.controller, "worthwhile_calls", 0)),
+            "voi_abstention_calls": int(getattr(self.controller, "abstention_calls", 0)),
+            "voi_probe_triggers": int(getattr(self.controller, "probe_triggers", 0)),
+            "candidate_diameter_reduction_mean": float(np.mean(reductions)) if reductions else 0.0,
+            "candidate_diameter_reduction_max": float(np.max(reductions)) if reductions else 0.0,
+            "passive_certificate_renewals": int(getattr(self.controller, "passive_renewals", 0)),
+            "maximum_unmetered_responsibility_jump_pu": float(
+                getattr(self.controller, "maximum_unmetered_responsibility_jump_pu", 0.0)
+            ),
+            "probe_aborts_on_change": int(getattr(self.controller, "probe_aborts_on_change", 0)),
         }
 
 

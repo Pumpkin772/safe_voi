@@ -1,0 +1,56 @@
+project: DIRECTION5
+method: VOI-ACCR-MPC
+milestone: M1_R2_POST_M2_DEVELOPMENT
+split: development
+development_seed_range: [5600, 5615]
+validation_seeds_forbidden: [5200, 5399]
+final_seeds_forbidden: [6200, 6299]
+physical_dt_s: 0.05
+duration_s: 300.0
+mechanisms: [power_drop, ramp_drop]
+sg_tensions: [low, high]
+periods_s: [2.0, 4.0]
+value_regions: [HIGH_VALUE_CANDIDATE, LOW_VALUE_CONTROL]
+candidate_order_rule: FIRST_FULL_M1_PASS_FROM_CONFIRMATION_SAFE_ORDER
+fixed_repairs:
+  require_detected_change_for_probe: false
+  certificate_confirmation_s: null
+  certificate_power_guard_pu: 0.015
+  certificate_ramp_guard_pu_per_s: 0.015
+  certificate_delay_guard_s: 0.70
+  minimum_partition_reduction: 0.25
+  probe_prediction_dt_s: 0.05
+search_candidates:
+  - {id: R2-C00, certificate_validity_s: 20.0, voi_margin: 0.003}
+  - {id: R2-C01, certificate_validity_s: 20.0, voi_margin: 0.006}
+  - {id: R2-C02, certificate_validity_s: 40.0, voi_margin: 0.006}
+  - {id: R2-C03, certificate_validity_s: 40.0, voi_margin: 0.010}
+locked_m1_parameters:
+  horizon_steps: 3
+  delivered_branch_weight: 0.20
+  ace_weight: 30.0
+  tie_weight: 0.0
+  frequency_weight: 12.0
+  bess_effort_weight: 0.085
+  sg_effort_weight: 0.05
+  action_relevance_norm: 0.001
+  minimum_oracle_gap: 0.01
+  minimum_ace_for_probe: 0.0
+  probe_id: biphasic_2
+  probe_amplitude_pu: 0.0025
+  probe_sequence: [1.0, -1.0]
+  cooldown_s: 60.0
+  trigger_time_s: 60.0
+  estimator_window_s: 24.0
+  active_residual_bound_pu: 0.002
+  passive_renewal: true
+  latch_abstention: false
+gates:
+  hard_violations_max: 0
+  frequency_peak_delta_hz_max: 0.020
+  worthwhile_scenarios_min: 4
+  worthwhile_ace_or_tie_improvement_min: 0.03
+  candidate_diameter_reduction_min: 0.50
+  false_optimism_max: 0.01
+  not_worthwhile_probe_rate_max: 0.0
+  not_worthwhile_metric_change_max: 0.01

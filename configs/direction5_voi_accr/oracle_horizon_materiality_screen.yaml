@@ -1,0 +1,19 @@
+project: DIRECTION5
+method: VOI-ACCR-MPC
+purpose: FINAL_DEVELOPMENT_ORACLE_HORIZON_MATERIALITY_SCREEN
+development_seed_range: [5700, 5715]
+validation_seeds_forbidden: [5200, 5399]
+final_seeds_forbidden: [6200, 6299]
+horizon_steps: [3, 4, 6]
+periods_s: [2.0, 4.0]
+mechanisms: [power_drop, ramp_drop]
+sg_tensions: [low, high]
+value_regions: [HIGH_VALUE_CANDIDATE, LOW_VALUE_CONTROL]
+duration_s: 300.0
+oracle_materiality_gate: 0.04
+weights:
+  ace_weight: 30.0
+  tie_weight: 0.0
+  frequency_weight: 12.0
+  bess_effort_weight: 0.085
+  sg_effort_weight: 0.05

@@ -108,6 +108,12 @@ class VOIActiveCapabilityCertificationRecourseMPC(
         trigger_time_s: float = 60.0,
         certificate_confirmation_s: float | None = None,
         latch_abstention: bool = False,
+        require_detected_change_for_probe: bool = False,
+        minimum_partition_reduction: float = 0.25,
+        certificate_power_guard_pu: float = 0.0,
+        certificate_ramp_guard_pu_per_s: float = 0.0,
+        certificate_delay_guard_s: float = 0.0,
+        probe_prediction_dt_s: float | None = None,
     ) -> None:
         super().__init__(
             period_s,
@@ -179,6 +185,22 @@ class VOIActiveCapabilityCertificationRecourseMPC(
         self._demand_active_since_s: float | None = None
         self._abstain_until_demand_clears = False
         self.latch_abstention = bool(latch_abstention)
+        self.require_detected_change_for_probe = bool(
+            require_detected_change_for_probe
+        )
+        self.minimum_partition_reduction = float(minimum_partition_reduction)
+        self.certificate_power_guard_pu = max(0.0, float(certificate_power_guard_pu))
+        self.certificate_ramp_guard_pu_per_s = max(
+            0.0, float(certificate_ramp_guard_pu_per_s)
+        )
+        self.certificate_delay_guard_s = max(
+            0.0, float(certificate_delay_guard_s)
+        )
+        self.probe_prediction_dt_s = (
+            self.physical_dt_s
+            if probe_prediction_dt_s is None
+            else max(1e-4, float(probe_prediction_dt_s))
+        )
         self._last_voi_solver_attempts = 0
         self._last_voi_solve_time_s = 0.0
         self.maximum_unmetered_responsibility_jump_pu = 0.0
@@ -205,6 +227,36 @@ class VOIActiveCapabilityCertificationRecourseMPC(
                 np.zeros(2), np.asarray(contract.maximum_delay_s, dtype=float)
             ],
         )
+
+    def _certificate_from_models(
+        self,
+        retained: list[CapabilityHypothesis],
+        now_s: float,
+        source: str,
+    ):
+        """Install a grid-cell outer certificate, never a point-grid bound."""
+        certificate = super()._certificate_from_models(retained, now_s, source)
+        if certificate is None:
+            return None
+        contract = self.parameters.bess.contract
+        guarded = replace(
+            certificate,
+            power_lower_pu=np.maximum(
+                np.asarray(contract.upper_power_pu, dtype=float),
+                certificate.power_lower_pu - self.certificate_power_guard_pu,
+            ),
+            ramp_lower_pu_per_s=np.maximum(
+                np.asarray(contract.ramp_up_pu_per_s, dtype=float),
+                certificate.ramp_lower_pu_per_s
+                - self.certificate_ramp_guard_pu_per_s,
+            ),
+            maximum_delay_s=np.minimum(
+                self.parameters.bess.maximum_physical_delay_s,
+                certificate.maximum_delay_s + self.certificate_delay_guard_s,
+            ),
+        )
+        self.certificate = guarded
+        return guarded
 
     def _effective_interval(self, observation):
         interval = self._contract_interval()
@@ -237,7 +289,8 @@ class VOIActiveCapabilityCertificationRecourseMPC(
         """Conservative output-cluster reduction before a probe is issued."""
         probe = self.probe
         duration = len(probe.sequence_pu) * self.period_s + 1.75
-        sample_time = np.arange(0.0, duration + self.physical_dt_s / 2, self.physical_dt_s)
+        prediction_dt_s = self.probe_prediction_dt_s
+        sample_time = np.arange(0.0, duration + prediction_dt_s / 2, prediction_dt_s)
         signatures = []
         for model in self.retained_models:
             power = float(base_power_pu)
@@ -258,7 +311,7 @@ class VOIActiveCapabilityCertificationRecourseMPC(
                         model.ramp_pu_per_s,
                     )
                 )
-                power += self.physical_dt_s * rate
+                power += prediction_dt_s * rate
                 trace.append(power)
             signatures.append(np.asarray(trace))
         if not signatures:
@@ -324,12 +377,37 @@ class VOIActiveCapabilityCertificationRecourseMPC(
             self._last_voi_solver_attempts = 0
             self._last_voi_solve_time_s = 0.0
             return 0.0
-        powers = [min(model.power_pu for model in self.retained_models),
-                  max(model.power_pu for model in self.retained_models)]
-        ramps = [min(model.ramp_pu_per_s for model in self.retained_models),
-                 max(model.ramp_pu_per_s for model in self.retained_models)]
+        contract = self.parameters.bess.contract
+        powers = [
+            max(
+                float(contract.upper_power_pu[0]),
+                min(model.power_pu for model in self.retained_models)
+                - self.certificate_power_guard_pu,
+            ),
+            max(
+                float(contract.upper_power_pu[0]),
+                max(model.power_pu for model in self.retained_models)
+                - self.certificate_power_guard_pu,
+            ),
+        ]
+        ramps = [
+            max(
+                float(contract.ramp_up_pu_per_s[0]),
+                min(model.ramp_pu_per_s for model in self.retained_models)
+                - self.certificate_ramp_guard_pu_per_s,
+            ),
+            max(
+                float(contract.ramp_up_pu_per_s[0]),
+                max(model.ramp_pu_per_s for model in self.retained_models)
+                - self.certificate_ramp_guard_pu_per_s,
+            ),
+        ]
         delays = [min(model.delay_s for model in self.retained_models),
-                  max(model.delay_s for model in self.retained_models)]
+                  min(
+                      self.parameters.bess.maximum_physical_delay_s,
+                      max(model.delay_s for model in self.retained_models)
+                      + self.certificate_delay_guard_s,
+                  )]
         representatives = (
             (powers[0], ramps[0], delays[1]),
             (powers[1], ramps[0], delays[0]),
@@ -386,6 +464,8 @@ class VOIActiveCapabilityCertificationRecourseMPC(
             inactive_reason = "CERTIFICATE_VALID"
         elif self.probed_epoch >= self.change_epoch:
             inactive_reason = "ALREADY_PROBED_THIS_CHANGE_EPOCH"
+        elif self.require_detected_change_for_probe and self.change_epoch <= 0:
+            inactive_reason = "WAITING_FOR_DETECTED_CAPABILITY_CHANGE"
         elif observation.time_s < self.trigger_time_s:
             inactive_reason = "OBSERVER_WARMUP"
         elif inputs.domain.domain != "SUSTAINABLE":
@@ -454,7 +534,7 @@ class VOIActiveCapabilityCertificationRecourseMPC(
             reason = "NOT_DECISION_RELEVANT"
         elif oracle_gap_proxy < self.minimum_oracle_gap:
             reason = "ORACLE_GAP_PROXY_TOO_SMALL"
-        elif partition_reduction < 0.25:
+        elif partition_reduction < self.minimum_partition_reduction:
             reason = "CANDIDATES_NOT_DISTINGUISHABLE"
         elif ace_level < self.minimum_ace_for_probe:
             reason = "INSUFFICIENT_CONTROL_BURDEN"

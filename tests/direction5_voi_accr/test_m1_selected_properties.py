@@ -8,6 +8,7 @@ from direction5freq.controllers.voi_accr_mpc import (
     VOIActiveCapabilityCertificationRecourseMPC,
 )
 from direction5freq.accr.probing import CapabilityHypothesis
+from direction5freq.accr.validation import plant_parameters
 
 
 def test_registered_a3_diameter_weights_delay_at_one_half() -> None:
@@ -35,3 +36,21 @@ def test_selected_probe_has_no_fixed_bess_base() -> None:
     source = inspect.getsource(VOIActiveCapabilityCertificationRecourseMPC)
     assert "probe_base_bess_pu=None" in source
     assert "0.05 pu BESS" not in source
+
+
+def test_grid_cell_guard_produces_outer_certificate() -> None:
+    controller = VOIActiveCapabilityCertificationRecourseMPC(
+        2.0,
+        3,
+        plant_parameters("low"),
+        certificate_power_guard_pu=0.015,
+        certificate_ramp_guard_pu_per_s=0.015,
+        certificate_delay_guard_s=0.70,
+    )
+    certificate = controller._certificate_from_models(
+        [CapabilityHypothesis(0.065, 0.055, 0.80)], 10.0, "TEST"
+    )
+    assert certificate is not None
+    assert certificate.power_lower_pu == pytest.approx((0.050, 0.050))
+    assert certificate.ramp_lower_pu_per_s == pytest.approx((0.040, 0.040))
+    assert certificate.maximum_delay_s == pytest.approx((1.50, 1.50))
