@@ -91,6 +91,7 @@ class BESSDiagnostics:
     pfr_target_pu: np.ndarray
     sfr_target_pu: np.ndarray
     requested_total_pu: np.ndarray
+    delayed_sfr_request_pu: np.ndarray
     delayed_request_pu: np.ndarray
     feasible_target_pu: np.ndarray
     actual_ramp_pu_per_s: np.ndarray
@@ -134,8 +135,13 @@ def step_bess(
 
     pfr = -parameters.pfr_gain_pu_power_per_pu_frequency * omega
     requested = pfr + sfr
-    samples = np.vstack((state.delay_pipeline.samples[1:], requested))
-    delayed = _delayed_sample(samples, delay, dt_s)
+    # Hidden communications/dispatch delay belongs to the remote SFR command.
+    # PFR is generated locally from the contemporaneous frequency measurement;
+    # delaying it in the same pipeline creates a non-physical delayed-feedback
+    # loop and can destabilize otherwise nominal one-hour operation.
+    samples = np.vstack((state.delay_pipeline.samples[1:], sfr))
+    delayed_sfr = _delayed_sample(samples, delay, dt_s)
+    delayed = pfr + delayed_sfr
 
     lower = np.maximum(np.asarray(realization.lower_power_pu), -parameters.rating_pu)
     upper = np.minimum(np.asarray(realization.upper_power_pu), parameters.rating_pu)
@@ -178,6 +184,7 @@ def step_bess(
         pfr_target_pu=pfr,
         sfr_target_pu=sfr,
         requested_total_pu=requested,
+        delayed_sfr_request_pu=delayed_sfr,
         delayed_request_pu=delayed,
         feasible_target_pu=feasible,
         actual_ramp_pu_per_s=rate,

@@ -1,0 +1,50 @@
+schema: direction5.accr.final.v1
+
+seeds:
+  development: [200, 249]
+  validation: [250, 299]
+  final: [400, 459]
+
+simulation:
+  physical_dt_s: 0.02
+  sfr_periods_s: [2.0, 4.0]
+  contingency_horizons_s: [300.0, 600.0]
+  normal_horizon_s: 3600.0
+  nominal_warmup_min_s: 60.0
+
+identification:
+  model:
+    a_grid: [0.0, 1.0, 41]
+    b_grid: [0.0, 1.5, 51]
+    delay_grid_s: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.4, 1.8, 2.0]
+    power_levels_pu: [0.02, 0.03, 0.04, 0.05, 0.06, 0.08]
+    ramp_levels_pu_per_s: [0.008, 0.012, 0.02, 0.04, 0.06, 0.10]
+  window_samples: [16, 24, 32, 48]
+  certificate_validity_s: [20.0, 40.0, 60.0]
+  false_optimism_max: 0.01
+  containment_min: 0.95
+
+probe:
+  amplitude_candidates_pu: [0.0025, 0.005, 0.0075, 0.010, 0.015]
+  library_file: reference/probe_library.csv
+  max_incremental_frequency_hz: 0.02
+  max_incremental_ace_fraction: 0.05
+  minimum_information_gain: 0.1
+  eligible_set_reduction_target: 0.40
+  eligible_certification_fraction_target: 0.50
+
+control:
+  horizons_by_period: {"2.0": [6, 8, 10], "4.0": [4, 6, 8]}
+  primary_solver: OSQP
+  secondary_solver: CLARABEL
+  hard_constraint_tolerance: 1.0e-7
+  frequency_noninferiority_hz: 0.02
+
+gates:
+  success_drop_max: 0.01
+  hard_violations_max: 0
+  fallback_excess_max: 0.01
+  ace_or_tie_improvement_min: 0.04
+  value_recovery_min: 0.40
+  p99_solve_fraction_max: 0.50
+  development_validation_repair_rounds_max: 3

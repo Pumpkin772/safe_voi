@@ -1,0 +1,43 @@
+project: DIRECTION5
+stage: A0
+method: ACCR-MPC
+registered_before_execution: true
+historical_closure_commit: 011fab97ef8f46dfc2eb0438cd7595ba46e3e0b7
+historical_closure_tag: direction5-closure-negative-frozen
+historical_status: DIRECTION5_NEGATIVE_RESULT_CONFIRMED_AND_ARCHIVED
+development_seed_range: [200, 249]
+validation_seed_range: [250, 299]
+final_seed_range: [400, 459]
+normal_profile_seeds: [200, 201, 202, 203, 204, 205]
+normal_duration_s: 3600.0
+normal_control_period_s: 4.0
+normal_nominal_warmup_s: 60.0
+normal_profile_provenance: SYNTHETIC_STATIONARY_ZERO_MEAN_AR1_MULTISINE_NOT_PUBLIC_MEASURED
+plant_a_dt_s: 0.05
+plant_a_convergence_dt_s: 0.025
+native_plant_b_dt_s: 0.02
+execution_workers: 1
+andes_execution: ISOLATED_SINGLE_PROCESS
+andes_automatic_codegen: FORBIDDEN_FAIL_CLOSED
+resource_guard:
+  max_system_commit_fraction: 0.65
+  max_system_commit_growth_gib: 4.0
+  min_available_physical_gib: 8.0
+  max_process_tree_private_gib: 4.0
+  max_descendant_processes: 1
+  poll_interval_s: 0.10
+  timeout_s: 7200.0
+normal_methods:
+  - fixed_allocation_anti_windup_pi
+  - contract_only_rolling_mpc
+  - nominal_offset_free_mpc
+gates:
+  frequency_peak_hz_max: 0.20
+  frequency_rms_hz_max: 0.05
+  terminal_frequency_hz_max: 0.05
+  terminal_ace_pu_max: 0.03
+  hard_violations_max: 0
+  plant_a_dt_peak_difference_hz_max: 0.01
+  native_plant_b_frequency_peak_hz_max: 0.50
+  solver_p99_fraction_of_period_max: 0.50
+final_seeds_consumed: false

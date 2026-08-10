@@ -8,6 +8,9 @@ initialization diagnostics enabled and auditable.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
+from pathlib import Path
+import re
 from typing import Callable, Protocol
 
 import numpy as np
@@ -63,9 +66,60 @@ class PlantBAndesFull:
         return self.external_system_base_mva / self.andes_system_base_mva
 
     def _base_system(self):
+        if os.environ.get("DIRECTION5_RESOURCE_GUARDED") != "1":
+            raise RuntimeError(
+                "Native ANDES execution is refused outside the Direction5 resource guard."
+            )
         import andes
+        from andes.system.codegen import CodegenManager
+        from andes.utils.paths import get_pycode_path
 
-        system = andes.load(andes.get_case(self.native_case), setup=False, no_output=True)
+        pycode_path = Path(get_pycode_path(None, mkdir=False))
+        initializer = pycode_path / "__init__.py"
+        if not initializer.is_file():
+            raise RuntimeError(
+                "ANDES generated-code cache is missing. Automatic code generation "
+                "is forbidden during a Direction5 simulation; prepare it separately "
+                "with one process under the resource guard."
+            )
+        declared_models = re.findall(
+            r"^from \. import ([A-Za-z0-9_]+)",
+            initializer.read_text(encoding="utf-8"),
+            flags=re.MULTILINE,
+        )
+        missing = [name for name in declared_models if not (pycode_path / f"{name}.py").is_file()]
+        if len(declared_models) < 80 or missing:
+            raise RuntimeError(
+                "ANDES generated-code cache is incomplete; automatic parallel "
+                f"generation is forbidden (declared={len(declared_models)}, missing={missing[:8]})."
+            )
+
+        # ANDES normally regenerates stale/missing code using one worker per
+        # logical CPU. A cache failure must be explicit here, never an
+        # unbounded process-spawn fallback. ``autogen_stale=False`` is the
+        # documented multiprocessing-safe load mode; the temporary method
+        # guard also refuses generation if importing the cache fails.
+        original_prepare = CodegenManager.prepare
+
+        def refuse_automatic_codegen(*_args, **_kwargs):
+            raise RuntimeError(
+                "ANDES attempted automatic code generation inside a Direction5 "
+                "simulation. The run was stopped before child processes were created."
+            )
+
+        CodegenManager.prepare = refuse_automatic_codegen
+        try:
+            system = andes.load(
+                andes.get_case(self.native_case),
+                setup=False,
+                no_output=True,
+                autogen_stale=False,
+            )
+        finally:
+            CodegenManager.prepare = original_prepare
+
+        if system is None:
+            raise RuntimeError("ANDES failed to load the native Kundur case")
         for idx, bus in zip(self.bess_device_ids, self.bess_bus_ids, strict=True):
             system.add("Shunt", idx=idx, name=idx, bus=bus, Vn=230.0, Sn=100.0, g=0.0, b=0.0)
         system.setup()

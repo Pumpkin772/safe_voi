@@ -1,0 +1,32 @@
+schema: direction5.accr.manifest.v1
+
+required_columns:
+  - scenario_id
+  - split
+  - seed
+  - design_cell
+  - plant
+  - control_period_s
+  - sg_tension
+  - capability_mechanism
+  - capability_change_time_s
+  - load_event_time_s
+  - load_area
+  - load_sign
+  - load_magnitude_pu
+  - initial_soc_area1
+  - initial_soc_area2
+  - noise_std_hz
+  - jitter_s
+  - dropout_probability
+  - probe_eligible
+  - known_ood
+  - contract_status
+  - materiality_positive
+
+rules:
+  every_factor_explicit: true
+  seed_does_not_encode_multiple_factors: true
+  methods_are_paired: true
+  capability_change_after_warmup: true
+  final_manifest_hashed_before_execution: true
