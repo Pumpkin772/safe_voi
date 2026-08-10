@@ -1,0 +1,30 @@
+project: DIRECTION5
+stage: A4
+method: ACCR-MPC
+registered_before_execution: true
+depends_on_a3_status: PASS
+period_s: 2.0
+horizon_steps: 3
+physical_dt_s: 0.05
+focused_duration_s: 120.0
+nominal_warmup_s: 60.0
+probe_trigger_minimum_bess_pu: 0.0
+probe:
+  probe_id: staircase_5
+  amplitude_pu: 0.0025
+  normalized_sequence: [0.5, 1.0, 0.0, -1.0, -0.5]
+  certificate_validity_s: 40.0
+  active_filter_residual_bound_pu: 0.0015
+gates:
+  hard_violations_max: 0
+  action_availability_min: 1.0
+  p99_solve_fraction_max: 0.50
+resource_guard:
+  max_system_commit_fraction: 0.65
+  max_system_commit_growth_gib: 6.0
+  min_available_physical_gib: 8.0
+  max_process_tree_private_gib: 4.0
+  max_descendant_processes: 2
+  poll_interval_s: 0.10
+  timeout_s: 3600.0
+
