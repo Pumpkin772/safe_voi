@@ -48,4 +48,7 @@ def test_a6_starts_with_buffer_and_keeps_conservative_runtime_caps() -> None:
     assert limits["max_system_commit_fraction"] - limits["preflight_max_system_commit_fraction"] >= 0.059
     assert limits["min_available_physical_gib"] >= 8.0
     assert limits["max_process_tree_private_gib"] <= 4.0
-    assert limits["max_descendant_processes"] <= 2
+    # The guarded validation root, its isolated native-Plant-B worker and two
+    # short-lived Windows/ANDES helpers produce an observed peak of three
+    # descendants. Any fourth descendant still fails closed.
+    assert limits["max_descendant_processes"] == 3

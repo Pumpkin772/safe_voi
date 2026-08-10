@@ -56,7 +56,7 @@ gates:
 resource_guard:
   # Start only with a six-percentage-point run buffer. During execution, 70%
   # still leaves at least 30% of the Windows commit limit unused; the separate
-  # 8-GiB available-RAM, 4-GiB task-tree and two-descendant caps remain hard.
+  # 8-GiB available-RAM, 4-GiB task-tree and three-descendant caps remain hard.
   preflight_max_system_commit_fraction: 0.64
   max_system_commit_fraction: 0.70
   # Two unrelated guarded research jobs can coexist on this workstation.
@@ -65,6 +65,10 @@ resource_guard:
   max_system_commit_growth_gib: 10.0
   min_available_physical_gib: 8.0
   max_process_tree_private_gib: 4.0
-  max_descendant_processes: 2
+  # A6 validation is the guarded root. Native Plant B adds one isolated worker
+  # and Windows/ANDES adds two short-lived helper descendants. The observed
+  # legitimate peak is three; this remains far below the historical 18-process
+  # spawn defect and is enforced by the same fail-closed Job Object.
+  max_descendant_processes: 3
   poll_interval_s: 0.10
   timeout_s: 14400.0
