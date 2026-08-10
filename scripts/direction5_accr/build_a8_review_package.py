@@ -36,7 +36,7 @@ def copy_path(source: Path, target: Path) -> None:
             source, target, dirs_exist_ok=True,
             ignore=shutil.ignore_patterns(
                 "__pycache__", "*.pyc", ".pytest_cache", "*.egg-info",
-                "*CHECKPOINT*",
+                "*CHECKPOINT*", "*.lic",
             ),
         )
     else:
@@ -138,6 +138,35 @@ print('MINIMAL_REPLAY_OK')
 """, encoding="utf-8")
 
 
+def validate_staging() -> None:
+    required = [f"{index:02d}_{name}" for index, name in enumerate((
+        "README", "AUDIT", "SCIENCE", "LITERATURE", "MODEL",
+        "IDENTIFICATION", "PROBE_DESIGN", "METHOD", "THEORY",
+        "SOURCE_ENV", "TESTS", "EXPERIMENT_DESIGN", "RAW_RESULTS",
+        "SUMMARY_TABLES", "FIGURES", "FAILURES", "PAPER_DRAFT",
+        "REPRODUCIBILITY", "GIT_MANIFEST", "FINAL_STATUS",
+    ))]
+    missing = [name for name in required if not (STAGING / name).is_dir()]
+    if missing:
+        raise RuntimeError(f"missing required review-package directories: {missing}")
+    manuscript = STAGING / "16_PAPER_DRAFT/MANUSCRIPT.md"
+    text = manuscript.read_text("utf-8")
+    if "[PREDICTED]" in text or "TO BE FILLED" in text:
+        raise RuntimeError("paper still contains predicted-result placeholders")
+    if not (STAGING / "11_EXPERIMENT_DESIGN/A7_FINAL_MANIFEST.csv").is_file():
+        raise RuntimeError("final seed manifest is missing")
+    raw = STAGING / "12_RAW_RESULTS/results_accr/A6"
+    development_rows = sum(1 for _ in (raw / "development/A6_DEVELOPMENT_EPISODES.csv").open("r", encoding="utf-8")) - 1
+    validation_rows = sum(1 for _ in (raw / "validation/A6_ALL_EPISODES.csv").open("r", encoding="utf-8")) - 1
+    normal_rows = sum(1 for _ in (raw / "validation/A6_NORMAL1H_EPISODES.csv").open("r", encoding="utf-8")) - 1
+    development_cycles = len(list((raw / "development/cycle_parts").glob("*.parquet")))
+    validation_cycles = len(list((raw / "validation/cycle_parts").glob("*.parquet")))
+    if development_cycles != development_rows:
+        raise RuntimeError("A6 development cycle count does not match episode rows")
+    if validation_cycles != validation_rows + normal_rows:
+        raise RuntimeError("A6 validation cycle count does not match episode plus normal rows")
+
+
 def manifest() -> None:
     target = STAGING / "18_GIT_MANIFEST/MANIFEST.csv"
     rows = []
@@ -179,6 +208,7 @@ def fresh_replay() -> None:
 
 def main() -> None:
     populate()
+    validate_staging()
     manifest()
     build_zip()
     fresh_replay()
