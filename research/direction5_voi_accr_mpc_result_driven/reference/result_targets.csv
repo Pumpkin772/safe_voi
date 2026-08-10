@@ -1,0 +1,13 @@
+scope,metric,target,role
+all_scenarios,physical_hard_violations,0,safety
+all_scenarios,success_rate_drop_pp,<=1,safety
+all_scenarios,frequency_peak_delta_hz,<=0.02,noninferiority
+all_scenarios,fallback_excess_pp,<=1,reliability
+all_scenarios,p99_solve_fraction,<0.5,realtime
+probe_worthwhile,candidate_diameter_reduction,>=0.50,information
+probe_worthwhile,false_optimism,<=0.01,information
+probe_worthwhile,ace_or_tie_improvement,>=0.04 with CI lower >0,performance
+probe_worthwhile,oracle_value_recovery,>=0.30 with CI lower >0,performance
+probe_worthwhile,sg_mileage_relative_change,<=0,resource
+probe_not_worthwhile,probe_rate,<=0.05,abstention
+probe_not_worthwhile,core_metric_absolute_change,<=0.01,abstention

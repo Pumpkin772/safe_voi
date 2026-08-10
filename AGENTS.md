@@ -1,6 +1,31 @@
 # Repository instructions for coding agents
 
-## Current binding authority: Direction5 Phase I
+## Current binding authority: Direction5 VOI-ACCR-MPC result-driven study
+
+The project name is **Direction5 / DIRECTION5 / direction5**.  The current
+governing Goal is
+`research/direction5_voi_accr_mpc_result_driven/CODEX_GOAL.md`; its only method
+is **VOI-ACCR-MPC** (Value-of-Information Active Capability Certification and
+Recourse MPC).  The full files in that research directory are the authority for
+the current M1 -> M2 -> Final execution.
+
+M1 has passed using the locked prototype in
+`configs/direction5_voi_accr/m1_selected_lock.yaml`.  The selected development
+result is documented in
+`research/direction5_voi_accr_mpc_result_driven/M1_SELECTED_PROTOTYPE.md`.
+It is not independent validation and does not authorize a paper claim.  The
+next work is independent M2 validation with the frozen M1 configuration,
+followed only on the registered path by Final, normal1h, manuscript, and the
+single review package.  Preserve every unsuccessful development run.
+
+The controller must probe around the current contract-MPC allocation only when
+causal decision relevance and net-VoI Gates are positive; absence of a
+certificate is not a trigger.  It must reduce to contract MPC in abstention
+regions.  Ordinary controllers cannot read true capability, true load, future
+events, or future modes.  Run one guarded simulation at a time with the
+registered system-commit, private-memory, and descendant-process limits.
+
+## Historical authority: Direction5 Phase I (superseded by the current Goal)
 
 The project name is **Direction5 / DIRECTION5 / direction5**. The completed
 governing Goal is `research/direction5_phase_i_final_convergence/CODEX_GOAL.md`;

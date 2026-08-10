@@ -1,0 +1,62 @@
+project: DIRECTION5
+method: VOI-ACCR-MPC
+milestone: M1_INTEGRATED_POSITIVE_PROTOTYPE
+locked_after_run: VOI_V12_C13_M1_VALUE_REGIONS
+controller:
+  control_period_s: 2.0
+  horizon_steps: 3
+  ace_weight: 30.0
+  tie_weight: 0.0
+  frequency_weight: 12.0
+  bess_effort_weight: 0.085
+  sg_effort_weight: 0.05
+  action_relevance_norm: 0.001
+  minimum_oracle_gap: 0.01
+  voi_margin: 0.0
+  minimum_ace_for_probe: 0.0
+probe:
+  id: biphasic_2
+  amplitude_pu: 0.0025
+  normalized_sequence: [1.0, -1.0]
+  around_current_contract_mpc_allocation: true
+  fixed_bess_base: null
+  certificate_validity_s: 4.0
+  certificate_confirmation_s: 0.0
+  cooldown_s: 60.0
+  one_probe_per_change_epoch: true
+estimator:
+  type: causal_set_membership_plus_interval_mhe
+  actual_bess_poi_power_is_known_input: true
+  window_s: 24.0
+  active_residual_bound_pu: 0.002
+candidate_set:
+  power_pu: [0.045, 0.050, 0.065, 0.080]
+  ramp_pu_per_s: [0.025, 0.040, 0.055, 0.060]
+  delay_s: [0.20, 0.80, 1.50]
+  diameter_weights: {power: 0.30, ramp: 0.20, delay: 0.50}
+m1_manifest:
+  scenarios: 8
+  duration_s: 300.0
+  mechanisms: [power_drop, ramp_drop]
+  sg_tensions: [low, high]
+  value_regions: [HIGH_VALUE_CANDIDATE, LOW_VALUE_CONTROL]
+  high_load_pu: {low: 0.0744, high: 0.0558}
+  low_load_pu: 0.020
+  load_before_capability_s: 14.0
+  load_area_balanced: true
+gates:
+  hard_violations_max: 0
+  frequency_peak_delta_hz_max: 0.02
+  worthwhile_scenarios_min: 4
+  worthwhile_ace_or_tie_mean_improvement_min: 0.03
+  candidate_diameter_reduction_min: 0.50
+  false_optimism_max: 0.01
+  not_worthwhile_probe_rate_max: 0.0
+  not_worthwhile_metric_change_max: 0.01
+  unmetered_responsibility_jump_pu_max: 1.0e-12
+resource_guard:
+  preflight_system_commit_fraction_max: 0.64
+  runtime_system_commit_fraction_max: 0.70
+  available_physical_gib_min: 8.0
+  task_tree_private_gib_max: 4.0
+  descendant_processes_max: 2

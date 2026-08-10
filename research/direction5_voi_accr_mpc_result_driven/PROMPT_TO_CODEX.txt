@@ -1,0 +1,63 @@
+项目统一命名为：方向5 / DIRECTION5 / direction5。
+
+请完整阅读：
+
+research/direction5_voi_accr_mpc_result_driven/
+
+下的全部文件，并将 CODEX_GOAL.md 作为唯一总Goal执行。
+
+不要在中间频繁询问，也不要把任务拆成许多需要我再次发送指令的小阶段。
+请围绕以下唯一论文目标自主开展研究：
+
+“建立VOI-ACCR-MPC，使控制器只在能力不确定性具有正净控制价值时，
+执行安全的SG–IBR分配探测；在探测值得场景中回收部分Oracle的ACE或
+联络线价值，在其他场景主动放弃探测并退化为合同MPC，同时保持频率
+安全和物理约束非劣。”
+
+必须首先修复当前ACCR的集成问题：
+
+1. 删除固定±0.05 pu BESS探测基准；
+2. 探测围绕当前合同MPC最优分配；
+3. 删除“无证书就自动探测”；
+4. 建立decision relevance和value-of-information门；
+5. 不值得探测时必须严格等价或近似等价于合同MPC；
+6. 防止证书过期后盲目重复探测；
+7. 完整闭环评价探测累计代价；
+8. Plant A和原生Plant B都要测试；
+9. 普通控制器不得读取true capability、true load和future event；
+10. normal1h必须是真实仿真。
+
+在development中，你可以自主搜索probe、幅值、VoI阈值、cooldown、
+certificate validity、estimator window、MPC horizon和weights。
+不要在一个配置失败后停止；继续诊断并在预注册范围内探索，直到：
+
+- 达到M1集成正收益原型；
+- 达到M2独立validation；
+- 完成Final和论文；
+
+或者穷尽物理合理设计空间并形成决定性负结果。
+
+在M1达到之前：
+
+禁止git add
+禁止git commit
+禁止git tag
+禁止push
+
+仅用scratch_direction5、research_outputs_working和progress_working.json
+保存中间工作。
+
+论文目标和Gate严格按：
+
+03_RESULT_DRIVEN_RESEARCH_PLAN.md
+
+执行。预测结果不是事实，不得通过删除结果或降低标准强行匹配。
+
+最终生成小于512MB的：
+
+DIRECTION5_VOI_ACCR_MPC_SINGLE_REVIEW_PACKAGE.zip
+
+并报告：
+ZIP路径、大小、SHA256、Git状态、M1/M2/Final结果、选定probe策略、
+VoI触发率、候选集合收缩、probe cost、Oracle价值回收、Plant A/B、
+known/OOD、normal1h、solver/fallback、失败案例和最终研究状态。

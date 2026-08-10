@@ -1,0 +1,41 @@
+schema: direction5.voi_accr.design.v1
+
+probe_library:
+  sequences:
+    biphasic_2: [1.0, -1.0]
+    biphasic_4: [1.0, 1.0, -1.0, -1.0]
+    staircase_5: [0.5, 1.0, 0.0, -1.0, -0.5]
+    alternating_4: [1.0, -1.0, 1.0, -1.0]
+    prbs_6: [1.0, -1.0, -1.0, 1.0, -1.0, 1.0]
+  amplitude_pu: [0.00125, 0.0025, 0.00375, 0.005, 0.0075]
+
+voi:
+  trigger_margin: [0.0, 0.0025, 0.005, 0.01]
+  action_relevance_norm: [0.001, 0.0025, 0.005]
+  minimum_oracle_gap: [0.0, 0.01, 0.02, 0.04]
+
+certificate:
+  validity_s: [20.0, 40.0, 60.0, 90.0]
+  cooldown_s: [40.0, 60.0, 90.0, 120.0]
+  passive_renewal: [true, false]
+
+estimator:
+  window_s: [16.0, 24.0, 32.0, 48.0]
+  residual_bound_pu: [0.0010, 0.0015, 0.0020, 0.0025]
+
+mpc:
+  horizons_by_period:
+    "2.0": [3, 4, 6, 8]
+    "4.0": [3, 4, 6]
+  ace_weight: [20.0, 35.0, 50.0]
+  tie_weight: [5.0, 10.0, 20.0]
+  frequency_weight: [10.0, 15.0, 25.0]
+  bess_effort_weight: [0.001, 0.01, 0.04]
+  sg_effort_weight: [0.03, 0.06, 0.1]
+
+immutable:
+  physical_parameters: true
+  validation_manifest: true
+  final_manifest: true
+  gate_thresholds: true
+  statistical_protocol: true
