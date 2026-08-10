@@ -64,7 +64,7 @@ known/OOD：
 - B_native_ANDES_Kundur/OOD: n=2, success=1.000, frequency=0.050072 Hz, ACE=2.192543, tie=0.977965.
 - B_native_ANDES_Kundur/known: n=2, success=1.000, frequency=0.050497 Hz, ACE=0.658305, tie=0.242997.
 
-normal1h 实际运行 2 个方法行；Gate 为 PASS。全部 8626 次 attempted optimization calls 构成 solver failure 分母，solver failures=44、restoration=0、fallback=0。合同以下能力审计明确标为保证域外，不计入普通控制器失败，也不声称同瞬间保证。
+normal1h 实际运行 2 个方法行；Gate 为 PASS。全部 10428 次 attempted optimization calls 构成 solver failure 分母，solver failures=44、restoration=0、fallback=0。合同以下能力审计明确标为保证域外，不计入普通控制器失败，也不声称同瞬间保证。
 
 ## 8. 失败与限制
 

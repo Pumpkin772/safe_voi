@@ -435,6 +435,15 @@ def gate_decision(
         )
     )
     all_mpc = episodes[episodes.method.isin(lock["primary_methods"] + lock["additional_baselines"]) & ~episodes.method.isin(("sg_only_anti_windup_pi", "fixed_allocation_anti_windup_pi"))]
+    # The two genuine 3600 s profiles also execute rolling MPC at every control
+    # update. They belong in every attempted-call, rolling and real-time
+    # denominator even though they are kept outside the event-performance
+    # bootstrap.
+    normal_mpc = normal[
+        normal.method.isin(lock["primary_methods"] + lock["additional_baselines"])
+        & ~normal.method.isin(("sg_only_anti_windup_pi", "fixed_allocation_anti_windup_pi"))
+    ]
+    audited_mpc = pd.concat((all_mpc, normal_mpc), ignore_index=True)
     gates = {
         "success_drop_at_most_1pp": bool(success_drop_pp <= float(lock["gates"]["success_drop_pp_max"])),
         "frequency_peak_noninferior": bool(frequency_delta <= frequency_margin),
@@ -452,10 +461,10 @@ def gate_decision(
             len(normal) == 2 and normal.physical_success.all()
             and normal.frequency_peak_hz.max() <= float(lock["gates"]["normal1h_frequency_peak_hz_max"])
         ),
-        "all_mpc_true_rolling": bool(all_mpc.full_rolling.all()),
-        "p99_real_time": bool((all_mpc.p99_solve_time_s < float(lock["gates"]["p99_solve_fraction_max"]) * all_mpc.period_s).all()),
+        "all_mpc_true_rolling": bool(audited_mpc.full_rolling.all()),
+        "p99_real_time": bool((audited_mpc.p99_solve_time_s < float(lock["gates"]["p99_solve_fraction_max"]) * audited_mpc.period_s).all()),
         "solver_denominator_all_attempted_calls": bool(
-            int(all_mpc.attempted_optimization_calls.sum()) >= int(all_mpc.controller_calls.sum())
+            int(audited_mpc.attempted_optimization_calls.sum()) >= int(audited_mpc.controller_calls.sum())
         ),
         "plant_b_native_andes": bool(
             episodes.loc[episodes.plant.eq("B_native_ANDES_Kundur"), "native_network"].fillna(False).all()
@@ -474,11 +483,11 @@ def gate_decision(
         "frequency_noninferiority_margin_hz": frequency_margin,
         "contract_fallback_rate": contract_fallback,
         "accr_fallback_rate": accr_fallback,
-        "attempted_optimization_calls": int(all_mpc.attempted_optimization_calls.sum()),
-        "solver_failure_calls": int(all_mpc.solver_failure_calls.sum()),
-        "solver_failure_rate": float(all_mpc.solver_failure_calls.sum() / max(all_mpc.attempted_optimization_calls.sum(), 1)),
-        "restoration_calls": int(all_mpc.restoration_calls.sum()),
-        "fallback_calls": int(all_mpc.fallback_calls.sum()),
+        "attempted_optimization_calls": int(audited_mpc.attempted_optimization_calls.sum()),
+        "solver_failure_calls": int(audited_mpc.solver_failure_calls.sum()),
+        "solver_failure_rate": float(audited_mpc.solver_failure_calls.sum() / max(audited_mpc.attempted_optimization_calls.sum(), 1)),
+        "restoration_calls": int(audited_mpc.restoration_calls.sum()),
+        "fallback_calls": int(audited_mpc.fallback_calls.sum()),
         "accr_certificate_issues": int(accr.certificate_issues.sum()),
         "accr_nonzero_certified_surplus_episodes": int((accr.certified_surplus_l1_pu_s > 1e-9).sum()),
         "plant_a_scenarios": int(episodes.loc[episodes.plant.eq("A_full_nonlinear"), "scenario_id"].nunique()),
