@@ -1,0 +1,43 @@
+project: DIRECTION5
+stage: A3
+method: ACCR-MPC
+registered_before_execution: true
+depends_on_a2_status: PASS
+development_seeds: [230, 249]
+validation_seeds: [250, 269]
+period_s: 2.0
+physical_dt_s: 0.05
+probe_start_s: 60.0
+episode_duration_s: 82.0
+base_load_pu: [0.080, 0.020]
+base_action_pu: [0.035, 0.045, 0.020, 0.000]
+amplitude_candidates_pu: [0.0025, 0.005, 0.0075, 0.010, 0.015]
+power_candidates_pu: [0.045, 0.050, 0.065, 0.080]
+ramp_candidates_pu_per_s: [0.025, 0.040, 0.060]
+delay_candidates_s: [0.20, 0.80, 1.50]
+identification_dt_s: 0.05
+measurement_noise_bound_pu: 0.00020
+model_residual_bound_pu: 0.00035
+certificate_validity_s: 40.0
+diameter_weights:
+  power: 0.30
+  ramp: 0.20
+  delay: 0.50
+gates:
+  hard_violations_max: 0
+  incremental_frequency_hz_max: 0.020
+  incremental_ace_fraction_max: 0.05
+  incremental_tie_fraction_max: 0.05
+  eligible_reduction_target: 0.40
+  eligible_fraction_target: 0.50
+  false_optimism_max: 0.01
+resource_guard:
+  max_system_commit_fraction: 0.65
+  max_system_commit_growth_gib: 6.0
+  min_available_physical_gib: 8.0
+  max_process_tree_private_gib: 4.0
+  # Windows may add conhost plus one short-lived numerical-runtime helper.
+  # Root + two descendants still fail-closes far below the historical spawn(18).
+  max_descendant_processes: 2
+  poll_interval_s: 0.10
+  timeout_s: 3600.0
