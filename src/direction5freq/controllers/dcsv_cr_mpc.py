@@ -75,9 +75,12 @@ class DCSVContractRecourseMPC:
         period_s: float,
         horizon_steps: int = 6,
         plant_parameters: PlantAParameters | None = None,
+        *,
+        delivered_branch_weight: float = 0.05,
     ) -> None:
         self.period_s = float(period_s)
         self.horizon_steps = int(horizon_steps)
+        self.delivered_branch_weight = float(delivered_branch_weight)
         if self.period_s <= 0.0 or self.horizon_steps < 2:
             raise ValueError("DCSV-CR requires a positive period and horizon >= 2")
         self.plant = PlantAFull(parameters=plant_parameters, dt_s=0.02)
@@ -368,7 +371,7 @@ class DCSVContractRecourseMPC:
         # A small secondary delivered-branch term allocates verified surplus
         # when it does not worsen the loss-branch epigraph. Its coefficient is
         # deliberately subordinate to the unit-weight worst-branch risk.
-        expected_delivered_performance = 0.05 * branch_costs[0]
+        expected_delivered_performance = self.delivered_branch_weight * branch_costs[0]
         slack_penalty = 0.0
         if restoration:
             slack_penalty = (

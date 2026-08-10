@@ -83,10 +83,17 @@ class ActiveCapabilityCertificationRecourseMPC:
         trigger_minimum_bess_pu: float = 0.0,
         active_filter_residual_bound_pu: float = 0.0015,
         physical_dt_s: float = 0.05,
+        probe_base_bess_pu: float | None = None,
+        probe_preload_s: float = 0.0,
+        trigger_minimum_total_sfr_pu: float | None = None,
+        delivered_branch_weight: float = 0.05,
     ) -> None:
         self.period_s = float(period_s)
         self.parameters = parameters
-        self.core = DCSVContractRecourseMPC(period_s, horizon_steps, parameters)
+        self.core = DCSVContractRecourseMPC(
+            period_s, horizon_steps, parameters,
+            delivered_branch_weight=delivered_branch_weight,
+        )
         self.physical_dt_s = float(physical_dt_s)
         self.identifier = PassiveCapabilityIdentifier(
             parameters.bess.contract, self.physical_dt_s
@@ -95,6 +102,14 @@ class ActiveCapabilityCertificationRecourseMPC:
         self.certificate_validity_s = float(certificate_validity_s)
         self.trigger_minimum_bess_pu = float(trigger_minimum_bess_pu)
         self.active_filter_residual_bound_pu = float(active_filter_residual_bound_pu)
+        self.probe_base_bess_pu = (
+            None if probe_base_bess_pu is None else float(probe_base_bess_pu)
+        )
+        self.probe_preload_s = float(probe_preload_s)
+        self.trigger_minimum_total_sfr_pu = (
+            None if trigger_minimum_total_sfr_pu is None
+            else float(trigger_minimum_total_sfr_pu)
+        )
         self.models = candidate_models({
             "power_candidates_pu": [0.045, 0.050, 0.065, 0.080],
             "ramp_candidates_pu_per_s": [0.025, 0.040, 0.060],
@@ -160,13 +175,14 @@ class ActiveCapabilityCertificationRecourseMPC:
         if self._session is None:
             return
         session = self._session
-        elapsed = observation.time_s - session["start_time_s"]
+        elapsed = observation.time_s - session["probe_start_time_s"]
+        if elapsed < -1e-10:
+            return
         area = session["area"]
         signed_sfr_actual = session["sign"] * (
             observation.bess_actual_power_pu[area] - pfr[area]
         )
-        if elapsed >= 0.0:
-            session["measured"].append(float(signed_sfr_actual))
+        session["measured"].append(float(signed_sfr_actual))
         end = len(self.probe.sequence_pu) * self.period_s + max(m.delay_s for m in self.models) + 0.5
         if elapsed + 1e-10 < end:
             return
@@ -216,6 +232,10 @@ class ActiveCapabilityCertificationRecourseMPC:
             * observation.frequency_deviation_hz
             / self.parameters.nominal_frequency_hz
         )
+        area_totals = np.array((
+            core.proposed_action_pu[0] + core.proposed_action_pu[1],
+            core.proposed_action_pu[2] + core.proposed_action_pu[3],
+        ))
 
         can_trigger = bool(
             self._session is None
@@ -223,29 +243,50 @@ class ActiveCapabilityCertificationRecourseMPC:
             and observation.time_s >= 60.0
             and inputs.domain.domain == "SUSTAINABLE"
             and not core.diagnostics.fallback_used
-            and np.max(np.abs(core.guaranteed_bess_command_pu)) >= self.trigger_minimum_bess_pu
+            and (
+                np.max(np.abs(area_totals))
+                if self.trigger_minimum_total_sfr_pu is not None
+                else np.max(np.abs(core.guaranteed_bess_command_pu))
+            ) >= (
+                self.trigger_minimum_total_sfr_pu
+                if self.trigger_minimum_total_sfr_pu is not None
+                else self.trigger_minimum_bess_pu
+            )
             and np.all((observation.measured_soc >= 0.25) & (observation.measured_soc <= 0.75))
         )
         if can_trigger:
-            area = int(np.argmax(np.abs(core.guaranteed_bess_command_pu)))
-            sign = 1.0 if core.guaranteed_bess_command_pu[area] >= 0.0 else -1.0
+            area = int(np.argmax(np.abs(area_totals)))
+            sign = 1.0 if area_totals[area] >= 0.0 else -1.0
+            base_bess = (
+                float(core.guaranteed_bess_command_pu[area])
+                if self.probe_base_bess_pu is None
+                else float(sign * self.probe_base_bess_pu)
+            )
+            contract_lower = float(self.parameters.bess.contract.lower_power_pu[area])
+            contract_upper = float(self.parameters.bess.contract.upper_power_pu[area])
+            base_guaranteed = float(np.clip(base_bess, contract_lower, contract_upper))
+            initial_measured = []
+            if self.probe_preload_s <= 0.0:
+                initial_measured = [float(sign * (
+                    observation.bess_actual_power_pu[area] - pfr[area]
+                ))]
             self._session = {
                 "start_time_s": observation.time_s, "area": area, "sign": sign,
-                "base_bess_pu": float(core.guaranteed_bess_command_pu[area]),
-                "base_guaranteed_bess_pu": float(core.guaranteed_bess_command_pu[area]),
-                "measured": [float(sign * (
-                    observation.bess_actual_power_pu[area] - pfr[area]
-                ))],
+                "probe_start_time_s": observation.time_s + self.probe_preload_s,
+                "base_bess_pu": base_bess,
+                "base_guaranteed_bess_pu": base_guaranteed,
+                "measured": initial_measured,
             }
             self.probe_triggers += 1; triggered = True
 
         if self._session is not None:
             session = self._session
-            elapsed = observation.time_s - session["start_time_s"]
-            index = int(max(elapsed, 0.0) // self.period_s)
+            elapsed = observation.time_s - session["probe_start_time_s"]
             q = 0.0
-            if 0 <= index < len(self.probe.sequence_pu):
-                q = float(session["sign"] * self.probe.sequence_pu[index])
+            if elapsed >= 0.0:
+                index = int(elapsed // self.period_s)
+                if 0 <= index < len(self.probe.sequence_pu):
+                    q = float(session["sign"] * self.probe.sequence_pu[index])
             area = int(session["area"])
             sg_column, bess_column = (0, 1) if area == 0 else (2, 3)
             total = float(action[sg_column] + action[bess_column])

@@ -1,0 +1,62 @@
+project: DIRECTION5
+stage: A6
+registered_before_execution: true
+development_seeds: [240, 243]
+validation_seeds: [270, 285]
+final_seeds: [400, 459]
+final_seeds_consumed: false
+plants: [A_full_nonlinear, B_native_ANDES_Kundur]
+periods_s: [2.0, 4.0]
+mechanisms: [power_drop, ramp_drop]
+sg_tensions: [low, high]
+conditions: [known, OOD]
+duration_s: 300.0
+nominal_warmup_s: 60.0
+physical_dt_s: 0.05
+horizon_steps: 3
+primary_methods:
+  - contract_only_recourse_mpc
+  - accr_mpc
+  - perfect_capability_recourse_oracle
+additional_baselines:
+  - sg_only_anti_windup_pi
+  - fixed_allocation_anti_windup_pi
+  - passive_set_adaptive_mpc
+  - safe_persistent_excitation_mpc
+  - fixed_periodic_probe_mpc
+  - unsafe_no_gate_probe_mpc
+probe:
+  probe_id: staircase_5
+  amplitude_pu: 0.0025
+  normalized_sequence: [0.5, 1.0, 0.0, -1.0, -0.5]
+  base_bess_pu: 0.050
+  preload_s: 4.0
+  trigger_minimum_total_sfr_pu: 0.035
+  certificate_validity_s: 40.0
+  residual_bound_pu: 0.0015
+development_candidates:
+  delivered_branch_weights: [0.05, 0.20, 0.50]
+  maximum_repairs: 3
+statistics:
+  bootstrap_resamples: 2000
+  confidence_level: 0.95
+  materiality_positive_mechanism: power_drop
+gates:
+  success_drop_pp_max: 1.0
+  frequency_noninferiority_absolute_hz: 0.020
+  frequency_noninferiority_relative: 0.02
+  hard_violations_max: 0
+  fallback_difference_pp_max: 1.0
+  materiality_metric_improvement_min: 0.04
+  value_recovery_min: 0.40
+  sg_mileage_relative_worsening_max: 0.0
+  p99_solve_fraction_max: 0.50
+  normal1h_frequency_peak_hz_max: 0.20
+resource_guard:
+  max_system_commit_fraction: 0.65
+  max_system_commit_growth_gib: 6.0
+  min_available_physical_gib: 8.0
+  max_process_tree_private_gib: 4.0
+  max_descendant_processes: 2
+  poll_interval_s: 0.10
+  timeout_s: 14400.0
