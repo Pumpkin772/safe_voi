@@ -52,6 +52,15 @@ def plant_parameters(tension: str, nominal_frequency_hz: float = 50.0) -> PlantA
 def capability_for(row: pd.Series, time_s: float) -> CapabilityRealization:
     if time_s < float(row.capability_change_time_s):
         return CapabilityRealization()
+    if bool(row.get("contract_violation", False)):
+        power = float(row.get("true_power_override_pu", 0.020))
+        ramp = float(row.get("true_ramp_override_pu_per_s", 0.010))
+        delay = float(row.get("true_delay_override_s", 2.0))
+        return CapabilityRealization(
+            lower_power_pu=(-power, -power), upper_power_pu=(power, power),
+            ramp_down_pu_per_s=(ramp, ramp), ramp_up_pu_per_s=(ramp, ramp),
+            delay_s=(delay, delay),
+        )
     known = str(row.condition) == "known"
     if row.mechanism == "power_drop":
         power = 0.065 if known else 0.055

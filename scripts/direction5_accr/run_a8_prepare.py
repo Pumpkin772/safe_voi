@@ -85,7 +85,7 @@ def _figures(episodes: pd.DataFrame, statistics: pd.DataFrame) -> None:
     means = primary.groupby("method")[["ace_iae_pu_s", "tie_iae_pu_s"]].mean()
     axis = means.plot(kind="bar", figsize=(8, 4.5), rot=15)
     axis.set_ylabel("scenario mean")
-    axis.set_title("A6 primary outcomes (actual validation data)")
+    axis.set_title("Locked primary outcomes (actual decision data)")
     axis.figure.tight_layout()
     axis.figure.savefig(FIGURES / "A6_PRIMARY_OUTCOMES.png", dpi=180)
     plt.close(axis.figure)
@@ -118,23 +118,41 @@ def main() -> None:
     lock = yaml.safe_load((REPO / "configs/direction5_accr/a6_validation_lock.yaml").read_text("utf-8"))
     a7_path = RESULTS / "A7/A7_SUMMARY.json"
     if a6["status"] == "PASS":
-        if not a7_path.is_file() or read_json(a7_path)["status"] != "PASS":
+        if not a7_path.is_file():
             raise RuntimeError("positive A6 requires the one-shot A7 final before A8")
         a7 = read_json(a7_path)
-        final_status = "PAPER_READY_WITH_BOUNDED_CLAIMS"
-        a7_gate = "PASS"
+        a7_gate = a7["status"]
+        final_status = (
+            "PAPER_READY_WITH_BOUNDED_CLAIMS"
+            if a7_gate == "PASS"
+            else "DIRECTION5_TERMINATED_WITH_DECISIVE_NEGATIVE_EVIDENCE"
+        )
         final_seeds_consumed = bool(a7["final_seeds_consumed"])
+        decision = a7
+        evidence_dir = RESULTS / "A7"
+        episode_name = "A7_ALL_CORE_EPISODES.csv"
+        normal_name = "A7_NORMAL1H_EPISODES.csv"
+        statistics_name = "A7_STATISTICAL_ENDPOINTS.csv"
+        gates_name = "A7_ALL_GATES.csv"
+        evidence_stage = "A7 one-shot final"
     else:
         final_status = "DIRECTION5_TERMINATED_WITH_DECISIVE_NEGATIVE_EVIDENCE"
         a7_gate = "NOT_EVALUATED_BY_A6_STOP"
         final_seeds_consumed = False
+        decision = a6
+        evidence_dir = RESULTS / "A6/validation"
+        episode_name = "A6_ALL_EPISODES.csv"
+        normal_name = "A6_NORMAL1H_EPISODES.csv"
+        statistics_name = "A6_STATISTICAL_ENDPOINTS.csv"
+        gates_name = "A6_ALL_GATES.csv"
+        evidence_stage = "A6 locked validation"
         FINAL_MANIFEST.parent.mkdir(parents=True, exist_ok=True)
         _planned_final_manifest(lock).to_csv(FINAL_MANIFEST, index=False)
 
-    episodes = pd.read_csv(RESULTS / "A6/validation/A6_ALL_EPISODES.csv")
-    normal = pd.read_csv(RESULTS / "A6/validation/A6_NORMAL1H_EPISODES.csv")
-    statistics = pd.read_csv(RESULTS / "A6/validation/A6_STATISTICAL_ENDPOINTS.csv")
-    gates = pd.read_csv(RESULTS / "A6/validation/A6_ALL_GATES.csv")
+    episodes = pd.read_csv(evidence_dir / episode_name)
+    normal = pd.read_csv(evidence_dir / normal_name)
+    statistics = pd.read_csv(evidence_dir / statistics_name)
+    gates = pd.read_csv(evidence_dir / gates_name)
     selection = read_json(RESULTS / "A6/development/A6_FROZEN_SELECTION.json")
     FINAL.mkdir(parents=True, exist_ok=True)
     accr = episodes[episodes.method.eq("accr_mpc")]
@@ -184,11 +202,11 @@ def main() -> None:
     }])
     certificate_probe.to_csv(FINAL / "CERTIFICATE_PROBE_SUMMARY.csv", index=False)
     pd.DataFrame([{
-        "attempted_optimization_calls": a6["attempted_optimization_calls"],
-        "solver_failure_calls": a6["solver_failure_calls"],
-        "solver_failure_rate_all_attempts": a6["solver_failure_rate"],
-        "restoration_calls": a6["restoration_calls"],
-        "fallback_calls": a6["fallback_calls"],
+        "attempted_optimization_calls": decision["attempted_optimization_calls"],
+        "solver_failure_calls": decision["solver_failure_calls"],
+        "solver_failure_rate_all_attempts": decision["solver_failure_rate"],
+        "restoration_calls": decision["restoration_calls"],
+        "fallback_calls": decision["fallback_calls"],
         "denominator_rule": "ALL_ATTEMPTED_OPTIMIZATION_CALLS",
     }]).to_csv(FINAL / "SOLVER_FALLBACK_SUMMARY.csv", index=False)
     _figures(episodes, statistics)
@@ -205,9 +223,9 @@ def main() -> None:
         {"hypothesis": "H1", "status": "SUPPORTED_MATERIALITY"},
         {"hypothesis": "H2", "status": "SUPPORTED_REGISTERED_CAUSAL_SET"},
         {"hypothesis": "H3", "status": "SUPPORTED_FINITE_HORIZON_SAFE_PROBE"},
-        {"hypothesis": "H4", "status": "SUPPORTED" if a6["status"] == "PASS" else "NOT_SUPPORTED_BY_A6"},
+        {"hypothesis": "H4", "status": "SUPPORTED" if final_status == "PAPER_READY_WITH_BOUNDED_CLAIMS" else "NOT_SUPPORTED_BY_LOCKED_EVIDENCE"},
         {"hypothesis": "H5", "status": "CONDITIONAL_FINITE_HORIZON"},
-        {"hypothesis": "H6", "status": "SUPPORTED" if a6["gates"].get("cross_plant_direction_consistent_positive") else "NOT_SUPPORTED"},
+        {"hypothesis": "H6", "status": "SUPPORTED" if decision["gates"].get("cross_plant_direction_consistent_positive") else "NOT_SUPPORTED"},
     ]
     pd.DataFrame(stage_rows).to_csv(FINAL / "ALL_GATES.csv", index=False)
     pd.DataFrame(h_status).to_csv(FINAL / "HYPOTHESES_H1_H6.csv", index=False)
@@ -222,15 +240,16 @@ def main() -> None:
         "selected_delivered_branch_weight": selection["selected_delivered_branch_weight"],
         "best_deployable_baseline": best_baseline,
         "a6_failed_gates": failed_gates,
-        "plant_a_scenarios": a6["plant_a_scenarios"],
-        "plant_b_scenarios": a6["plant_b_scenarios"],
-        "normal1h_method_rows": a6["normal1h_method_rows"],
+        "decision_evidence_stage": evidence_stage,
+        "plant_a_scenarios": decision["plant_a_scenarios"],
+        "plant_b_scenarios": decision["plant_b_scenarios"],
+        "normal1h_method_rows": decision["normal1h_method_rows"],
         "certificate_episode_coverage": certificate_coverage,
         "probe_command_l1_pu_s": probe_cost,
-        "attempted_optimization_calls": a6["attempted_optimization_calls"],
-        "solver_failure_calls": a6["solver_failure_calls"],
-        "restoration_calls": a6["restoration_calls"],
-        "fallback_calls": a6["fallback_calls"],
+        "attempted_optimization_calls": decision["attempted_optimization_calls"],
+        "solver_failure_calls": decision["solver_failure_calls"],
+        "restoration_calls": decision["restoration_calls"],
+        "fallback_calls": decision["fallback_calls"],
         "certificate_status": a5["claim_level"],
         "global_recursive_safety_claimed": False,
         "final_seeds_consumed": final_seeds_consumed,
@@ -251,6 +270,8 @@ def main() -> None:
     ace = endpoint("ace_iae_pu_s")
     tie = endpoint("tie_iae_pu_s")
     frequency = endpoint("frequency_peak_hz")
+    hard_rows = int(episodes.hard_violation.sum() + episodes.command_violation.sum())
+    hard_rows += int(normal.hard_violation.sum() + normal.command_violation.sum())
     known_ood_lines = "\n".join(
         f"- {row.plant}/{row.condition}: n={row.episodes}, success={row.success:.3f}, "
         f"frequency={row.frequency_peak_hz:.6f} Hz, ACE={row.ace_iae_pu_s:.6f}, tie={row.tie_iae_pu_s:.6f}."
@@ -261,15 +282,15 @@ def main() -> None:
 | Active-set mean diameter reduction | {100*active.diameter_reduction.mean():.3f}% | A3 {'PASS' if a3['gates']['at_least_half_eligible_reduce_diameter_40_percent'] else 'FAIL'} |
 | Probe incremental frequency | {a3['worst_incremental_frequency_hz']:.6f} Hz | A3 {'PASS' if a3['gates']['incremental_frequency_within_limit'] else 'FAIL'} |
 | Active false optimism | {100*active.false_optimism.mean():.3f}% | A3 {'PASS' if a3['gates']['false_optimism_at_most_1_percent'] else 'FAIL'} |
-| A6 certificate episode coverage | {100*certificate_coverage:.3f}% | descriptive |
+| Decision-split certificate episode coverage | {100*certificate_coverage:.3f}% | descriptive |
 | ACE improvement | {100*ace.scenario_balanced_relative_improvement:.3f}% | multiplicity-adjusted CI [{100*ace.ci_lower:.3f}%, {100*ace.ci_upper:.3f}%] |
 | ACE value recovery | {ace.scenario_balanced_value_recovery:.4g} | CI [{ace.value_recovery_ci_lower:.4g}, {ace.value_recovery_ci_upper:.4g}] |
 | Tie improvement | {100*tie.scenario_balanced_relative_improvement:.3f}% | multiplicity-adjusted CI [{100*tie.ci_lower:.3f}%, {100*tie.ci_upper:.3f}%] |
 | Tie value recovery | {tie.scenario_balanced_value_recovery:.4g} | CI [{tie.value_recovery_ci_lower:.4g}, {tie.value_recovery_ci_upper:.4g}] |
-| Frequency change, ACCR minus contract | {a6['frequency_peak_difference_hz_accr_minus_contract']:.6f} Hz | A6 {'PASS' if a6['gates']['frequency_peak_noninferior'] else 'FAIL'} |
-| Success drop | {a6['success_drop_pp']:.3f} pp | A6 {'PASS' if a6['gates']['success_drop_at_most_1pp'] else 'FAIL'} |
-| Hard violations | {int(not a6['gates']['hard_violations_zero'])} Gate failure(s) | A6 {'PASS' if a6['gates']['hard_violations_zero'] else 'FAIL'} |
-| Fallback calls | {a6['fallback_calls']} | all attempted-call evidence retained |
+| Frequency change, ACCR minus contract | {decision['frequency_peak_difference_hz_accr_minus_contract']:.6f} Hz | {'PASS' if decision['gates']['frequency_peak_noninferior'] else 'FAIL'} |
+| Success drop | {decision['success_drop_pp']:.3f} pp | {'PASS' if decision['gates']['success_drop_at_most_1pp'] else 'FAIL'} |
+| Hard-violation rows | {hard_rows} | {'PASS' if decision['gates']['hard_violations_zero'] else 'FAIL'} |
+| Fallback calls | {decision['fallback_calls']} | all attempted-call evidence retained |
 """
     conclusion = (
         "ACCR-MPC is supported only for the registered finite-horizon claim confirmed in both validation and the one-shot final split."
@@ -308,7 +329,7 @@ P1–P7 均通过，其声明等级仅为 `{a5['claim_level']}`。证书覆盖�
 
 ## 6. 实验与统计
 
-主要比较为 ACCR-MPC 与 contract-only rolling recourse MPC；Oracle 只量化信息价值。额外基线包括 SG-only anti-windup PI、fixed-allocation PI、passive set-adaptive MPC、safe PE、fixed periodic probe 与 unsafe/no-gate probe 消融。A6 使用 {a6['plant_a_scenarios']} 个完整非线性 Plant A 场景和 {a6['plant_b_scenarios']} 个原生 ANDES Plant B 场景；每个核心 episode 含至少 60 s warm-up、独立随机能力变化与负荷事件，并滚动至 300 s。统计采用 paired absolute differences、scenario-balanced means、seed/design-cell hierarchical bootstrap，并对 ACE/tie 联合选择使用 Bonferroni 区间。
+主要比较为 ACCR-MPC 与 contract-only rolling recourse MPC；Oracle 只量化信息价值。额外基线包括 SG-only anti-windup PI、fixed-allocation PI、passive set-adaptive MPC、safe PE、fixed periodic probe 与 unsafe/no-gate probe 消融。决策证据来自 {evidence_stage}，包含 {decision['plant_a_scenarios']} 个完整非线性 Plant A 场景和 {decision['plant_b_scenarios']} 个原生 ANDES Plant B 场景；每个核心 episode 含至少 60 s warm-up、独立随机能力变化与负荷事件，并滚动至 300 s。统计采用 paired absolute differences、scenario-balanced means、seed/design-cell hierarchical bootstrap，并对 ACE/tie 联合选择使用 Bonferroni 区间。
 
 ## 7. 实际结果
 
@@ -322,7 +343,7 @@ known/OOD：
 
 {known_ood_lines}
 
-normal1h 实际运行 {a6['normal1h_method_rows']} 个方法行；Gate 为 {'PASS' if a6['gates']['normal1h_pass'] else 'FAIL'}。全部 {a6['attempted_optimization_calls']} 次 attempted optimization calls 构成 solver failure 分母，solver failures={a6['solver_failure_calls']}、restoration={a6['restoration_calls']}、fallback={a6['fallback_calls']}。合同以下能力审计明确标为保证域外，不计入普通控制器失败，也不声称同瞬间保证。
+normal1h 实际运行 {decision['normal1h_method_rows']} 个方法行；Gate 为 {'PASS' if decision['gates']['normal1h_pass'] else 'FAIL'}。全部 {decision['attempted_optimization_calls']} 次 attempted optimization calls 构成 solver failure 分母，solver failures={decision['solver_failure_calls']}、restoration={decision['restoration_calls']}、fallback={decision['fallback_calls']}。合同以下能力审计明确标为保证域外，不计入普通控制器失败，也不声称同瞬间保证。
 
 ## 8. 失败与限制
 
@@ -335,7 +356,7 @@ normal1h 实际运行 {a6['normal1h_method_rows']} 个方法行；Gate 为 {'PAS
     FAILURES.mkdir(parents=True, exist_ok=True)
     FAILURES.joinpath("MOST_SEVERE_FAILURES.md").write_text(
         "# Most severe failures and limitations\n\n"
-        + "\n".join(f"- A6 Gate `{name}` failed." for name in failed_gates)
+        + "\n".join(f"- {evidence_stage} Gate `{name}` failed." for name in failed_gates)
         + "\n- Certificates are conditional and finite-horizon; no global recursive or native-DAE theorem is claimed.\n"
         + "- Only 38.57% of registered candidate pairs met the sufficient output-separation condition at the registered noise diameter.\n",
         encoding="utf-8",

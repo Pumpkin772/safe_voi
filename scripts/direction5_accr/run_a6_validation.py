@@ -210,7 +210,14 @@ class NativePolicy:
         return action
 
 
-def simulate_native(row_dict: dict[str, Any], method: str, lock: dict, weight: float) -> dict[str, Any]:
+def simulate_native(
+    row_dict: dict[str, Any],
+    method: str,
+    lock: dict,
+    weight: float,
+    *,
+    cycle_parts: Path = CYCLE_PARTS,
+) -> dict[str, Any]:
     row = pd.Series(row_dict)
     policy = NativePolicy(method, row, lock, weight)
     plant = PlantBAndesFull(dt_s=0.02)
@@ -264,9 +271,9 @@ def simulate_native(row_dict: dict[str, Any], method: str, lock: dict, weight: f
         "algebraic_power_balance_p99_pu": trace.algebraic_power_balance_p99_pu,
         **policy.policy.diagnostics(),
     })
-    CYCLE_PARTS.mkdir(parents=True, exist_ok=True)
+    cycle_parts.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(policy.cycle_rows).to_parquet(
-        CYCLE_PARTS / f"{row.scenario_id}__{method}.parquet",
+        cycle_parts / f"{row.scenario_id}__{method}.parquet",
         index=False, compression="zstd",
     )
     return summary
@@ -377,7 +384,14 @@ def primary_statistics(episodes: pd.DataFrame, lock: dict) -> tuple[pd.DataFrame
     return paired, {"rows": stats_rows, "material": material}
 
 
-def gate_decision(episodes: pd.DataFrame, normal: pd.DataFrame, lock: dict) -> tuple[pd.DataFrame, dict]:
+def gate_decision(
+    episodes: pd.DataFrame,
+    normal: pd.DataFrame,
+    lock: dict,
+    *,
+    output_dir: Path = RESULTS,
+    artifact_prefix: str = "A6",
+) -> tuple[pd.DataFrame, dict]:
     paired, statistical = primary_statistics(episodes, lock)
     statistics = pd.DataFrame(statistical["rows"])
     primary = episodes[episodes.method.isin(lock["primary_methods"])]
@@ -447,9 +461,10 @@ def gate_decision(episodes: pd.DataFrame, normal: pd.DataFrame, lock: dict) -> t
             episodes.loc[episodes.plant.eq("B_native_ANDES_Kundur"), "native_network"].fillna(False).all()
         ),
     }
-    statistics.to_csv(RESULTS / "A6_STATISTICAL_ENDPOINTS.csv", index=False)
-    paired.to_csv(RESULTS / "A6_PAIRED_ABSOLUTE_DIFFERENCES.csv", index=False)
-    directions.to_csv(RESULTS / "A6_CROSS_PLANT_DIRECTION.csv", index=False)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    statistics.to_csv(output_dir / f"{artifact_prefix}_STATISTICAL_ENDPOINTS.csv", index=False)
+    paired.to_csv(output_dir / f"{artifact_prefix}_PAIRED_ABSOLUTE_DIFFERENCES.csv", index=False)
+    directions.to_csv(output_dir / f"{artifact_prefix}_CROSS_PLANT_DIRECTION.csv", index=False)
     gate_frame = pd.DataFrame([{"gate": name, "status": "PASS" if passed else "FAIL"} for name, passed in gates.items()])
     summary = {
         "project": "DIRECTION5", "stage": "A6", "status": "PASS" if all(gates.values()) else "FAIL",
