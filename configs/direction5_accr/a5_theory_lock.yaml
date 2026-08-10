@@ -1,0 +1,20 @@
+project: DIRECTION5
+stage: A5
+registered_before_execution: true
+period_s: 2.0
+horizon_steps: 3
+dense_delay_points: 31
+terminal_loads_pu:
+  - [0.030, 0.024]
+  - [0.060, 0.048]
+certificate_validity_s: 40.0
+active_filter_residual_bound_pu: 0.0015
+claim_level: CONDITIONAL_REGISTERED_SET_FINITE_HORIZON
+resource_guard:
+  max_system_commit_fraction: 0.65
+  max_system_commit_growth_gib: 6.0
+  min_available_physical_gib: 8.0
+  max_process_tree_private_gib: 4.0
+  max_descendant_processes: 2
+  poll_interval_s: 0.10
+  timeout_s: 1800.0
