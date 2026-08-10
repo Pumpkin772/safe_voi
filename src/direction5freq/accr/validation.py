@@ -34,6 +34,15 @@ MPC_METHODS = (
     "perfect_capability_recourse_oracle",
 )
 
+# A6 must reuse the capability realizations that actually passed the A1
+# perfect-information materiality Gate. Keeping these values beside the shared
+# simulation policy avoids silently relabeling a non-material realization as
+# an A1-positive design cell.
+A1_MATERIALITY_CAPABILITY = {
+    "power_drop": {"power_pu": 0.065, "ramp_pu_per_s": 0.025, "delay_s": 1.50},
+    "ramp_drop": {"power_pu": 0.045, "ramp_pu_per_s": 0.055, "delay_s": 1.50},
+}
+
 
 def plant_parameters(tension: str, nominal_frequency_hz: float = 50.0) -> PlantAParameters:
     base = PlantAParameters(nominal_frequency_hz=nominal_frequency_hz)
@@ -63,18 +72,24 @@ def capability_for(row: pd.Series, time_s: float) -> CapabilityRealization:
         )
     known = str(row.condition) == "known"
     if row.mechanism == "power_drop":
-        power = 0.065 if known else 0.055
+        registered = A1_MATERIALITY_CAPABILITY["power_drop"]
+        power = float(registered["power_pu"]) if known else 0.055
+        ramp = float(registered["ramp_pu_per_s"])
+        delay = float(registered["delay_s"])
         return CapabilityRealization(
             lower_power_pu=(-power, -power), upper_power_pu=(power, power),
-            ramp_down_pu_per_s=(0.060, 0.060), ramp_up_pu_per_s=(0.060, 0.060),
-            delay_s=(0.20, 0.20),
+            ramp_down_pu_per_s=(ramp, ramp), ramp_up_pu_per_s=(ramp, ramp),
+            delay_s=(delay, delay),
         )
     if row.mechanism == "ramp_drop":
-        ramp = 0.040 if known else 0.032
+        registered = A1_MATERIALITY_CAPABILITY["ramp_drop"]
+        power = float(registered["power_pu"])
+        ramp = float(registered["ramp_pu_per_s"]) if known else 0.032
+        delay = float(registered["delay_s"])
         return CapabilityRealization(
-            lower_power_pu=(-0.080, -0.080), upper_power_pu=(0.080, 0.080),
+            lower_power_pu=(-power, -power), upper_power_pu=(power, power),
             ramp_down_pu_per_s=(ramp, ramp), ramp_up_pu_per_s=(ramp, ramp),
-            delay_s=(0.80, 0.80),
+            delay_s=(delay, delay),
         )
     raise ValueError(row.mechanism)
 
