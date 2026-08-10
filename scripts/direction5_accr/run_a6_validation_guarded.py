@@ -12,7 +12,9 @@ import yaml
 REPO = Path(__file__).resolve().parents[2]
 if str(REPO / "src") not in sys.path:
     sys.path.insert(0, str(REPO / "src"))
-from direction5freq.accr.resource_guard import GIB, ResourceLimits, run_guarded
+from direction5freq.accr.resource_guard import (
+    GIB, ResourceLimits, run_guarded, wait_for_memory_preflight,
+)
 
 
 def main() -> None:
@@ -25,6 +27,10 @@ def main() -> None:
     )
     environment = os.environ.copy()
     environment.update({"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"})
+    wait_for_memory_preflight(
+        limits,
+        log_path=REPO / "logs_accr/A6/validation/PRELAUNCH_MEMORY_WAIT.jsonl",
+    )
     code = run_guarded(
         [sys.executable, str(REPO / "scripts/direction5_accr/run_a6_validation.py")],
         cwd=REPO, environment=environment, limits=limits,

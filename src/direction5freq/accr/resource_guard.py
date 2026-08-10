@@ -389,4 +389,44 @@ def run_guarded(
         _close_windows_job(job)
 
 
-__all__ = ["GIB", "ResourceGuardError", "ResourceLimits", "run_guarded"]
+def wait_for_memory_preflight(
+    limits: ResourceLimits,
+    *,
+    log_path: Path,
+    timeout_s: float | None = None,
+    poll_interval_s: float = 5.0,
+) -> None:
+    """Wait without a simulation child until the registered start buffer exists."""
+    limit = (
+        limits.max_system_commit_fraction
+        if limits.preflight_max_system_commit_fraction is None
+        else limits.preflight_max_system_commit_fraction
+    )
+    timeout = limits.timeout_s if timeout_s is None else float(timeout_s)
+    started = time.monotonic()
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with log_path.open("w", encoding="utf-8") as stream:
+        while True:
+            commit, commit_limit, available = _windows_memory_status()
+            elapsed = time.monotonic() - started
+            record = {
+                "elapsed_s": elapsed,
+                "system_commit_bytes": commit,
+                "system_commit_limit_bytes": commit_limit,
+                "system_commit_fraction": commit / commit_limit,
+                "available_physical_bytes": available,
+                "preflight_limit": limit,
+            }
+            stream.write(json.dumps(record, sort_keys=True) + "\n")
+            stream.flush()
+            if record["system_commit_fraction"] <= limit and available >= limits.min_available_physical_bytes:
+                return
+            if elapsed >= timeout:
+                raise ResourceGuardError("timed out waiting for system memory preflight")
+            time.sleep(float(poll_interval_s))
+
+
+__all__ = [
+    "GIB", "ResourceGuardError", "ResourceLimits", "run_guarded",
+    "wait_for_memory_preflight",
+]
