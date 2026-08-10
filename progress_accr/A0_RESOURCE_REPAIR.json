@@ -1,17 +1,17 @@
 {
   "schema": "direction5.accr.resource_repair.v1",
   "stage": "A0",
-  "stage_status": "IN_PROGRESS",
+  "stage_status": "PASS",
   "resource_repair_status": "STATIC_VERIFICATION_PASS",
   "incident_status": "UNSAFE_RUN_TERMINATED",
-  "formal_a0_gate": "NOT_EVALUATED",
-  "simulation_restarted": false,
-  "native_plant_b_evaluated_after_repair": false,
+  "formal_a0_gate": "BENCHMARK_PLATFORM_VALID",
+  "simulation_restarted": true,
+  "native_plant_b_evaluated_after_repair": true,
   "automatic_andes_codegen": "FORBIDDEN_FAIL_CLOSED",
   "execution_workers": 1,
   "resource_guard": {
     "windows_job_object": true,
-    "maximum_total_guarded_processes": 2,
+    "maximum_total_guarded_processes": 3,
     "maximum_job_private_gib": 4.0,
     "maximum_system_commit_fraction": 0.65,
     "maximum_system_commit_growth_gib": 4.0,
@@ -24,5 +24,5 @@
     "failed": 0,
     "python_syntax_compile": "PASS"
   },
-  "next_action": "WAIT_FOR_EXPLICIT_AUTHORIZATION_BEFORE_ANY_GUARDED_EXECUTION"
+  "next_action": "A1"
 }

@@ -30,7 +30,9 @@ def test_a0_resource_limits_are_hard_and_conservative() -> None:
     limits = lock["resource_guard"]
     assert lock["execution_workers"] == 1
     assert lock["andes_execution"] == "ISOLATED_SINGLE_PROCESS"
-    assert limits["max_descendant_processes"] == 1
+    # Windows creates one conhost for the guarded A0 process; the second and
+    # only other permitted descendant is the isolated Plant-B worker.
+    assert limits["max_descendant_processes"] == 2
     assert limits["max_process_tree_private_gib"] <= 4.0
     assert limits["max_system_commit_fraction"] <= 0.65
     assert limits["poll_interval_s"] <= 0.10

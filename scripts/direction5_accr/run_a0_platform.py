@@ -33,7 +33,7 @@ from direction5freq.models.plant_b_andes_full import PlantBAndesFull
 
 
 LOCK_PATH = REPO / "configs/direction5_accr/a0_platform_lock.yaml"
-RESULTS = REPO / "results_accr/A0"
+RESULTS = REPO / "results_accr/A0/guarded"
 OUTPUTS = REPO / "research_outputs_accr/03_MODEL"
 PROGRESS = REPO / "progress_accr"
 
@@ -183,6 +183,8 @@ def plant_b_check(seed: int = 200) -> dict:
         "converged": trace.converged,
         "native_network": trace.native_network,
         "initialization_diagnostic_enabled": trace.initialization_diagnostic_enabled,
+        "initialization_test_passed": trace.initialization_test_passed,
+        "maximum_initialization_residual": trace.maximum_initialization_residual,
         "algebraic_power_balance_p99_pu": trace.algebraic_power_balance_p99_pu,
     }
 
@@ -191,6 +193,7 @@ def run_plant_b_isolated() -> dict:
     """Run native ANDES in a fresh process, never after a Python process pool."""
 
     output_path = RESULTS / "PLANT_B_WORKER_RESULT.json"
+    log_path = RESULTS / "PLANT_B_WORKER.log"
     environment = os.environ.copy()
     environment.update({
         "OMP_NUM_THREADS": "1",
@@ -200,18 +203,21 @@ def run_plant_b_isolated() -> dict:
         "VECLIB_MAXIMUM_THREADS": "1",
         "DIRECTION5_ANDES_AUTOGEN": "FORBIDDEN",
     })
-    completed = subprocess.run(
-        [
-            sys.executable,
-            str(Path(__file__).resolve()),
-            "--workers", "1",
-            "--plant-b-worker-output", str(output_path),
-        ],
-        cwd=REPO,
-        env=environment,
-        check=False,
-        timeout=1800.0,
-    )
+    with log_path.open("w", encoding="utf-8") as stream:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "--workers", "1",
+                "--plant-b-worker-output", str(output_path),
+            ],
+            cwd=REPO,
+            env=environment,
+            stdout=stream,
+            stderr=subprocess.STDOUT,
+            check=False,
+            timeout=1800.0,
+        )
     if completed.returncode != 0:
         raise RuntimeError(
             f"isolated native Plant-B worker failed with exit code {completed.returncode}"
@@ -231,6 +237,7 @@ def main() -> None:
         help="A0 is intentionally single-process; values above 1 are refused.",
     )
     parser.add_argument("--plant-b-worker-output", type=Path, default=None)
+    parser.add_argument("--resume-after-plant-a", action="store_true")
     args = parser.parse_args()
     if os.environ.get("DIRECTION5_RESOURCE_GUARDED") != "1":
         raise SystemExit(
@@ -254,15 +261,25 @@ def main() -> None:
         for seed in lock["normal_profile_seeds"]
         for method in lock["normal_methods"]
     ]
-    # Deliberately sequential. Native ANDES code generation uses the
-    # ``multiprocess`` package internally; combining it with a Python process
-    # pool on Windows caused nested spawn and catastrophic commit exhaustion.
-    rows = [simulate_normal(*task) for task in tasks]
-    normal = pd.DataFrame(rows).sort_values(["seed", "method"]).reset_index(drop=True)
-    normal.to_csv(RESULTS / "NORMAL1H_BASELINE_VALIDATION.csv", index=False)
-    normal.to_parquet(RESULTS / "NORMAL1H_BASELINE_VALIDATION.parquet", index=False)
-    dt_check = plant_a_dt_check()
-    dt_check.to_csv(RESULTS / "PLANT_A_DT_CONVERGENCE.csv", index=False)
+    normal_path = RESULTS / "NORMAL1H_BASELINE_VALIDATION.csv"
+    dt_path = RESULTS / "PLANT_A_DT_CONVERGENCE.csv"
+    if args.resume_after_plant_a:
+        normal = pd.read_csv(normal_path)
+        dt_check = pd.read_csv(dt_path)
+        expected_pairs = {(seed, method) for seed, method, _dt in tasks}
+        actual_pairs = set(zip(normal.seed.astype(int), normal.method, strict=True))
+        if len(normal) != len(tasks) or actual_pairs != expected_pairs or len(dt_check) != 2:
+            raise RuntimeError("guarded Plant-A checkpoint is incomplete; resume refused")
+    else:
+        # Deliberately sequential. Native ANDES code generation uses the
+        # ``multiprocess`` package internally; combining it with a Python
+        # process pool on Windows caused nested spawn and commit exhaustion.
+        rows = [simulate_normal(*task) for task in tasks]
+        normal = pd.DataFrame(rows).sort_values(["seed", "method"]).reset_index(drop=True)
+        normal.to_csv(normal_path, index=False)
+        normal.to_parquet(RESULTS / "NORMAL1H_BASELINE_VALIDATION.parquet", index=False)
+        dt_check = plant_a_dt_check()
+        dt_check.to_csv(dt_path, index=False)
     plant_b = run_plant_b_isolated()
     pd.DataFrame([plant_b]).to_csv(RESULTS / "PLANT_A_B_CROSSCHECK.csv", index=False)
     gates = {
@@ -274,7 +291,12 @@ def main() -> None:
         "hard_violations_zero": not bool(normal.hard_violation.any()),
         "profile_scale_and_zero_mean": bool(normal.profile_peak_pu.le(0.0120001).all() and normal.profile_mean_abs_pu.le(1e-12).all()),
         "plant_a_dt_converged": bool(dt_check.peak_difference_hz.max() <= lock["gates"]["plant_a_dt_peak_difference_hz_max"]),
-        "plant_b_native_converged": bool(plant_b["native_network"] and plant_b["converged"] and plant_b["initialization_diagnostic_enabled"]),
+        "plant_b_native_converged": bool(
+            plant_b["native_network"]
+            and plant_b["converged"]
+            and plant_b["initialization_diagnostic_enabled"]
+            and plant_b["initialization_test_passed"]
+        ),
         "plant_b_frequency_quality": bool(plant_b["frequency_peak_hz"] <= lock["gates"]["native_plant_b_frequency_peak_hz_max"]),
         "mpc_realtime": bool(normal.loc[normal.attempted_solver_calls.gt(0), "p99_solve_time_s"].le(0.5 * lock["normal_control_period_s"]).all()),
         "historical_result_frozen": lock["historical_closure_commit"] == "011fab97ef8f46dfc2eb0438cd7595ba46e3e0b7",

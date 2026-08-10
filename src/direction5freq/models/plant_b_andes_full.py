@@ -43,6 +43,8 @@ class NativeClosedLoopTrace:
     native_network: bool
     native_case: str
     initialization_diagnostic_enabled: bool
+    initialization_test_passed: bool
+    maximum_initialization_residual: float
 
 
 class PlantBAndesFull:
@@ -123,6 +125,11 @@ class PlantBAndesFull:
         for idx, bus in zip(self.bess_device_ids, self.bess_bus_ids, strict=True):
             system.add("Shunt", idx=idx, name=idx, bus=bus, Vn=230.0, Sn=100.0, g=0.0, b=0.0)
         system.setup()
+        # The default ANDES power-flow tolerance is 1e-6, looser than the
+        # registered TDS initialization tolerance (1e-7). Solve the native
+        # equilibrium more accurately instead of relaxing the TDS standard.
+        system.PFlow.config.tol = 1e-10
+        system.PFlow.config.max_iter = 50
         if not system.PFlow.run():
             raise RuntimeError("ANDES Kundur native power flow failed")
         system.TDS.config.tstep = self.dt_s
@@ -287,6 +294,17 @@ class PlantBAndesFull:
             ))
 
         system.TDS.callpert = callback
+        system.TDS.init()
+        initialization_test_passed = bool(system.TDS.test_ok)
+        maximum_initialization_residual = float(np.max(np.abs(system.dae.fg)))
+        if not initialization_test_passed:
+            bad = np.ravel(np.where(np.abs(system.dae.fg) >= system.TDS.config.tol))
+            names = [system.dae.xy_name[int(index)] for index in bad[:12]]
+            raise RuntimeError(
+                "ANDES native initialization test failed: "
+                f"max_residual={maximum_initialization_residual:.12g}, "
+                f"tol={float(system.TDS.config.tol):.12g}, bad_equations={names}"
+            )
         success = system.TDS.run(no_summary=True)
         if not success:
             raise RuntimeError(f"ANDES native closed-loop TDS failed: {system.TDS.err_msg}")
@@ -310,4 +328,6 @@ class PlantBAndesFull:
             native_network=True,
             native_case=self.native_case,
             initialization_diagnostic_enabled=bool(system.TDS.config.test_init),
+            initialization_test_passed=initialization_test_passed,
+            maximum_initialization_residual=maximum_initialization_residual,
         )

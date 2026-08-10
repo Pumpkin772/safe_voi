@@ -1,0 +1,51 @@
+{
+  "schema": "direction5.accr.progress.v1",
+  "stage": "A0",
+  "status": "PASS",
+  "gate": "BENCHMARK_PLATFORM_VALID",
+  "lock_sha256": "d4ca890672ce18eb599ca33d56a8dede0b3329da063e4ede4bec3e7ecae395d7",
+  "normal_rows": 18,
+  "normal_methods": [
+    "fixed_allocation_anti_windup_pi",
+    "contract_only_rolling_mpc",
+    "nominal_offset_free_mpc"
+  ],
+  "normal_seeds": [
+    200,
+    201,
+    202,
+    203,
+    204,
+    205
+  ],
+  "plant_b": {
+    "plant": "B_native_ANDES_Kundur",
+    "duration_s": 120.0,
+    "dt_s": 0.02,
+    "frequency_peak_hz": 0.010738072586420344,
+    "frequency_rms_hz": 0.001015322200508271,
+    "converged": true,
+    "native_network": true,
+    "initialization_diagnostic_enabled": true,
+    "algebraic_power_balance_p99_pu": 1.782487811241573e-08
+  },
+  "gates": {
+    "all_registered_normal_rows_present": true,
+    "frequency_peak": true,
+    "frequency_rms": true,
+    "terminal_frequency": true,
+    "terminal_ace": true,
+    "hard_violations_zero": true,
+    "profile_scale_and_zero_mean": true,
+    "plant_a_dt_converged": true,
+    "plant_b_native_converged": true,
+    "plant_b_frequency_quality": true,
+    "mpc_realtime": true,
+    "historical_result_frozen": true,
+    "fresh_final_seeds_unconsumed": true
+  },
+  "failed_gates": [],
+  "final_seeds_consumed": false,
+  "elapsed_s": 11.689577200000713,
+  "next_stage": "A1"
+}

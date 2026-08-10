@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import argparse
+from dataclasses import replace
 import json
 import os
 from pathlib import Path
@@ -18,6 +20,11 @@ from direction5freq.accr.resource_guard import GIB, ResourceLimits, run_guarded
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--resume-after-plant-a", action="store_true")
+    mode.add_argument("--prepare-andes", action="store_true")
+    args = parser.parse_args()
     lock = yaml.safe_load(
         (REPO / "configs/direction5_accr/a0_platform_lock.yaml").read_text("utf-8")
     )
@@ -42,17 +49,30 @@ def main() -> None:
         "VECLIB_MAXIMUM_THREADS": "1",
     })
     log_directory = REPO / "logs_accr/A0"
-    returncode = run_guarded(
-        [
+    if args.prepare_andes:
+        command = [
+            sys.executable,
+            str(REPO / "scripts/direction5_accr/prepare_andes_codegen.py"),
+        ]
+        # Only the worker and its automatic Windows conhost are allowed.
+        limits = replace(limits, max_descendant_processes=1)
+        monitor_name = "ANDES_PREP_MEMORY_MONITOR"
+    else:
+        command = [
             sys.executable,
             str(REPO / "scripts/direction5_accr/run_a0_platform.py"),
             "--workers", "1",
-        ],
+        ]
+        if args.resume_after_plant_a:
+            command.append("--resume-after-plant-a")
+        monitor_name = "MEMORY_MONITOR"
+    returncode = run_guarded(
+        command,
         cwd=REPO,
         environment=environment,
         limits=limits,
-        monitor_log=log_directory / "MEMORY_MONITOR.jsonl",
-        summary_path=log_directory / "MEMORY_MONITOR_SUMMARY.json",
+        monitor_log=log_directory / f"{monitor_name}.jsonl",
+        summary_path=log_directory / f"{monitor_name}_SUMMARY.json",
     )
     print(json.dumps({"guarded_returncode": returncode}, indent=2))
     raise SystemExit(returncode)

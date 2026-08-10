@@ -19,9 +19,10 @@ The run was terminated and must not be replayed with the unsafe launcher.
    create child processes.
 4. Direct unguarded A0 and native ANDES execution are refused.
 5. The supported launcher is `scripts/direction5_accr/run_a0_guarded.py`.
-6. On Windows, a Job Object limits the guarded tree to two total processes
-   (A0 plus at most one Plant-B worker), caps committed job memory at 4 GiB,
-   and kills the tree if the guard exits.
+6. On Windows, a Job Object limits the guarded tree to three total processes
+   (A0, its automatically attached `conhost.exe`, and at most one Plant-B
+   worker), caps committed job memory at 4 GiB, and kills the tree if the guard
+   exits. A first codegen child would be the fourth process and is refused.
 7. A 100 ms monitor records system commit, commit growth, available physical
    memory, process-tree RSS/private bytes, descendant count, and elapsed time.
    It stops the complete tree on any registered breach.
