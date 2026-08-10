@@ -1,0 +1,30 @@
+project: DIRECTION5
+stage: A2
+method: ACCR-MPC
+registered_before_execution: true
+depends_on_a1_status: PASS
+validation_seeds: [250, 299]
+excited_validation_seeds: [250, 289]
+no_excitation_validation_seeds: [290, 299]
+identification_dt_s: 0.05
+identification_horizon_s: 28.0
+measurement_noise_bound_pu: 0.00020
+residual_bound_pu: 0.0025
+window_s: 24.0
+power_truth_range_pu: [0.050, 0.090]
+ramp_truth_range_pu_per_s: [0.030, 0.080]
+delay_truth_range_s: [0.20, 1.40]
+gates:
+  containment_min: 0.95
+  false_optimism_max: 0.01
+  no_excitation_delay_width_min_s: 1.45
+  no_excitation_power_width_min_pu: 0.095
+resource_guard:
+  max_system_commit_fraction: 0.65
+  max_system_commit_growth_gib: 6.0
+  min_available_physical_gib: 8.0
+  max_process_tree_private_gib: 4.0
+  max_descendant_processes: 1
+  poll_interval_s: 0.10
+  timeout_s: 3600.0
+
