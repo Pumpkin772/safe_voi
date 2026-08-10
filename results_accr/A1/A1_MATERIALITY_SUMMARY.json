@@ -1,0 +1,37 @@
+{
+  "schema": "direction5.accr.a1.materiality.v1",
+  "stage": "A1_MATERIALITY",
+  "status": "PASS",
+  "episode_count": 48,
+  "scenario_count": 24,
+  "attempted_optimization_calls": 5448,
+  "fallback_calls": 0,
+  "restoration_calls": 0,
+  "materiality_positive_cells": [
+    {
+      "mechanism": "power_drop",
+      "sg_tension": "high",
+      "positive_metrics": "ace_iae_pu_s"
+    },
+    {
+      "mechanism": "power_drop",
+      "sg_tension": "low",
+      "positive_metrics": "ace_iae_pu_s"
+    },
+    {
+      "mechanism": "ramp_drop",
+      "sg_tension": "low",
+      "positive_metrics": "ace_iae_pu_s"
+    }
+  ],
+  "gates": {
+    "all_scenarios_paired": true,
+    "full_rolling_mpc": true,
+    "ordinary_controller_truth_leakage_zero": true,
+    "hard_violations_zero": true,
+    "at_least_two_materiality_positive_cells": true,
+    "same_power_or_ramp_mechanism_positive_at_both_tensions": true
+  },
+  "final_seeds_consumed": false,
+  "next_stage_if_literature_gate_passes": "A2"
+}
