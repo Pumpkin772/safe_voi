@@ -26,6 +26,7 @@ def main() -> None:
         int(float(values["max_process_tree_private_gib"]) * GIB),
         int(values["max_descendant_processes"]),
         float(values["poll_interval_s"]), float(values["timeout_s"]),
+        preflight_max_system_commit_fraction=float(values["preflight_max_system_commit_fraction"]),
     )
     environment = os.environ.copy()
     environment.update({"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"})

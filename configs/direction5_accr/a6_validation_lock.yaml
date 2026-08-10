@@ -54,7 +54,11 @@ gates:
   p99_solve_fraction_max: 0.50
   normal1h_frequency_peak_hz_max: 0.20
 resource_guard:
-  max_system_commit_fraction: 0.65
+  # Start only with a six-percentage-point run buffer. During execution, 70%
+  # still leaves at least 30% of the Windows commit limit unused; the separate
+  # 8-GiB available-RAM, 4-GiB task-tree and two-descendant caps remain hard.
+  preflight_max_system_commit_fraction: 0.64
+  max_system_commit_fraction: 0.70
   # Two unrelated guarded research jobs can coexist on this workstation.
   # The absolute system, available-RAM, task-private and descendant limits
   # remain the controlling fail-closed safety barriers.

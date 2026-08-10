@@ -40,6 +40,7 @@ class ResourceLimits:
     max_descendant_processes: int
     poll_interval_s: float
     timeout_s: float
+    preflight_max_system_commit_fraction: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -307,8 +308,13 @@ def run_guarded(
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     commit, commit_limit, available = _windows_memory_status()
     preflight_fraction = commit / commit_limit
+    preflight_limit = (
+        limits.max_system_commit_fraction
+        if limits.preflight_max_system_commit_fraction is None
+        else limits.preflight_max_system_commit_fraction
+    )
     if (
-        preflight_fraction > limits.max_system_commit_fraction
+        preflight_fraction > preflight_limit
         or available < limits.min_available_physical_bytes
     ):
         summary = {

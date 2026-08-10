@@ -36,3 +36,16 @@ def test_a0_resource_limits_are_hard_and_conservative() -> None:
     assert limits["max_process_tree_private_gib"] <= 4.0
     assert limits["max_system_commit_fraction"] <= 0.65
     assert limits["poll_interval_s"] <= 0.10
+
+
+def test_a6_starts_with_buffer_and_keeps_conservative_runtime_caps() -> None:
+    lock = yaml.safe_load(
+        (REPO / "configs/direction5_accr/a6_validation_lock.yaml").read_text("utf-8")
+    )
+    limits = lock["resource_guard"]
+    assert limits["preflight_max_system_commit_fraction"] <= 0.64
+    assert limits["max_system_commit_fraction"] <= 0.70
+    assert limits["max_system_commit_fraction"] - limits["preflight_max_system_commit_fraction"] >= 0.059
+    assert limits["min_available_physical_gib"] >= 8.0
+    assert limits["max_process_tree_private_gib"] <= 4.0
+    assert limits["max_descendant_processes"] <= 2
