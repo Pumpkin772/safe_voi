@@ -105,16 +105,25 @@ def main() -> None:
     safety.to_csv(RESULTS / "A6_BOUNDARY_PROBE_SAFETY.csv", index=False)
     manifest = development_manifest(lock)
     manifest.to_csv(RESULTS / "A6_DEVELOPMENT_MANIFEST.csv", index=False)
-    rows = []
+    checkpoint = RESULTS / "A6_DEVELOPMENT_EPISODES_CHECKPOINT.csv"
+    rows = pd.read_csv(checkpoint).to_dict("records") if checkpoint.is_file() else []
+    completed = {
+        (str(row["scenario_id"]), str(row["method"]), float(row["delivered_branch_weight"]))
+        for row in rows
+    }
     for weight in lock["development_candidates"]["delivered_branch_weights"]:
         for _, scenario in manifest.iterrows():
             for method in lock["primary_methods"]:
+                key = (str(scenario.scenario_id), str(method), float(weight))
+                if key in completed:
+                    continue
                 result = simulate_plant_a_episode(
                     scenario.to_dict(), method, lock, float(weight)
                 )
                 result["delivered_branch_weight"] = float(weight)
                 rows.append(result)
-                pd.DataFrame(rows).to_csv(RESULTS / "A6_DEVELOPMENT_EPISODES_CHECKPOINT.csv", index=False)
+                completed.add(key)
+                pd.DataFrame(rows).to_csv(checkpoint, index=False)
     episodes = pd.DataFrame(rows)
     episodes.to_csv(RESULTS / "A6_DEVELOPMENT_EPISODES.csv", index=False)
     weights = summarize_weights(episodes)
