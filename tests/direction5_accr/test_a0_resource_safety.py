@@ -78,3 +78,9 @@ def test_resource_guard_preserves_fast_child_exit_code(tmp_path: Path) -> None:
         summary_path=tmp_path / "summary.json",
     )
     assert code == 3
+
+
+def test_native_validation_and_final_launchers_mark_guarded_environment() -> None:
+    for script_name in ("run_a6_validation_guarded.py", "run_a7_final_guarded.py"):
+        source = (REPO / "scripts/direction5_accr" / script_name).read_text("utf-8")
+        assert '"DIRECTION5_RESOURCE_GUARDED": "1"' in source

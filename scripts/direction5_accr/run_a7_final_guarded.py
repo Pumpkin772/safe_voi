@@ -31,7 +31,12 @@ def main() -> None:
         preflight_max_system_commit_fraction=float(values["preflight_max_system_commit_fraction"]),
     )
     environment = os.environ.copy()
-    environment.update({"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"})
+    environment.update({
+        "DIRECTION5_RESOURCE_GUARDED": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+    })
     wait_for_memory_preflight(
         limits, log_path=REPO / "logs_accr/A7/PRELAUNCH_MEMORY_WAIT.jsonl",
     )
