@@ -55,7 +55,10 @@ gates:
   normal1h_frequency_peak_hz_max: 0.20
 resource_guard:
   max_system_commit_fraction: 0.65
-  max_system_commit_growth_gib: 6.0
+  # Two unrelated guarded research jobs can coexist on this workstation.
+  # The absolute system, available-RAM, task-private and descendant limits
+  # remain the controlling fail-closed safety barriers.
+  max_system_commit_growth_gib: 10.0
   min_available_physical_gib: 8.0
   max_process_tree_private_gib: 4.0
   max_descendant_processes: 2
