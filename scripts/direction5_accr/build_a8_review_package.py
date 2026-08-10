@@ -75,6 +75,7 @@ This archive contains the complete A0--A8 evidence path. Read `19_FINAL_STATUS/F
         (REPO / "src/direction5freq", STAGING / "09_SOURCE_ENV/src/direction5freq"),
         (REPO / "scripts/direction5_accr", STAGING / "09_SOURCE_ENV/scripts/direction5_accr"),
         (REPO / "configs/direction5_accr", STAGING / "09_SOURCE_ENV/configs/direction5_accr"),
+        (REPO / "research_outputs_accr/02_LITERATURE/A1_FORMAL_LITERATURE_REGISTRY.csv", STAGING / "09_SOURCE_ENV/research_outputs_accr/02_LITERATURE/A1_FORMAL_LITERATURE_REGISTRY.csv"),
         (REPO / "environment.yml", STAGING / "09_SOURCE_ENV/environment.yml"),
         (REPO / "pyproject.toml", STAGING / "09_SOURCE_ENV/pyproject.toml"),
         (REPO / "tests/direction5_accr", STAGING / "10_TESTS/tests/direction5_accr"),

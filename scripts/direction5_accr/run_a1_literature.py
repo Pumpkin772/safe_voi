@@ -9,13 +9,17 @@ import pandas as pd
 
 
 REPO = Path(__file__).resolve().parents[2]
-BASE = REPO / "research_outputs_phase_i/02_LITERATURE/CORE_LITERATURE_REGISTRY.csv"
+BASE = REPO / "research_outputs_accr/02_LITERATURE/A1_FORMAL_LITERATURE_REGISTRY.csv"
 CLOSEST = REPO / "configs/direction5_accr/a1_closest_sources.csv"
 OUTPUT = REPO / "research_outputs_accr/02_LITERATURE"
 
 
 def main() -> None:
     historical = pd.read_csv(BASE)
+    if "registry_origin" in historical:
+        historical = historical[
+            historical.registry_origin.eq("FROZEN_DIRECTION5_PHASE_I_FORMAL_CORPUS")
+        ].copy()
     historical = historical.rename(columns={"limitations": "accr_difference"})
     historical["registry_origin"] = "FROZEN_DIRECTION5_PHASE_I_FORMAL_CORPUS"
     historical["fresh_a1_primary_source_check"] = False
