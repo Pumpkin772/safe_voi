@@ -258,6 +258,9 @@ def main() -> None:
     (FINAL / "FINAL_STATUS.json").write_text(json.dumps(final, indent=2) + "\n", encoding="utf-8")
 
     PAPER.mkdir(parents=True, exist_ok=True)
+    statistics.assign(evidence_stage=evidence_stage).to_csv(
+        PAPER / "MANUSCRIPT_RESULT_SOURCE.csv", index=False
+    )
     stats_lines = "\n".join(
         f"- {row.metric}: improvement {100*row.scenario_balanced_relative_improvement:.3f}% "
         f"(95% CI {100*row.ci_lower:.3f}%, {100*row.ci_upper:.3f}%); "
