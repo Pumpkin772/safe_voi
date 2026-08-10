@@ -504,7 +504,10 @@ def main() -> None:
         for method in methods:
             key = (str(scenario.scenario_id), str(method))
             cycle_path = CYCLE_PARTS / f"{scenario.scenario_id}__{method}.parquet"
-            if key in completed and cycle_path.is_file():
+            checkpoint_has_current_manifest = bool(
+                key in row_index and rows[row_index[key]].get("design_cell")
+            )
+            if key in completed and cycle_path.is_file() and checkpoint_has_current_manifest:
                 continue
             result = simulate_plant_a_episode(
                 scenario.to_dict(), method, lock, weight,
@@ -521,7 +524,10 @@ def main() -> None:
         for method in lock["primary_methods"]:
             key = (str(scenario.scenario_id), str(method))
             cycle_path = CYCLE_PARTS / f"{scenario.scenario_id}__{method}.parquet"
-            if key in completed and cycle_path.is_file():
+            checkpoint_has_current_manifest = bool(
+                key in row_index and rows[row_index[key]].get("design_cell")
+            )
+            if key in completed and cycle_path.is_file() and checkpoint_has_current_manifest:
                 continue
             part = _native_part(str(scenario.scenario_id), str(method))
             if not part.is_file() or not cycle_path.is_file():

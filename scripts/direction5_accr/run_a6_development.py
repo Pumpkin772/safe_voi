@@ -132,7 +132,10 @@ def main() -> None:
             for method in lock["primary_methods"]:
                 key = (str(scenario.scenario_id), str(method), float(weight))
                 cycle_path = CYCLE_PARTS / f"{scenario.scenario_id}__{method}__w{float(weight):g}.parquet"
-                if key in completed and cycle_path.is_file():
+                checkpoint_has_current_manifest = bool(
+                    key in row_index and rows[row_index[key]].get("design_cell")
+                )
+                if key in completed and cycle_path.is_file() and checkpoint_has_current_manifest:
                     continue
                 result = simulate_plant_a_episode(
                     scenario.to_dict(), method, lock, float(weight),
