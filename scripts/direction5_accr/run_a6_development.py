@@ -16,13 +16,14 @@ if str(REPO / "src") not in sys.path:
     sys.path.insert(0, str(REPO / "src"))
 
 from direction5freq.accr.probing import ProbeCandidate, candidate_models, safety_result
-from direction5freq.accr.validation import simulate_plant_a_episode
+from direction5freq.accr.validation import plant_parameters, simulate_plant_a_episode
 
 
 LOCK_PATH = REPO / "configs/direction5_accr/a6_validation_lock.yaml"
 A3_LOCK_PATH = REPO / "configs/direction5_accr/a3_probe_lock.yaml"
 RESULTS = REPO / "results_accr/A6/development"
 PROGRESS = REPO / "progress_accr/A6_DEVELOPMENT.json"
+CYCLE_PARTS = RESULTS / "cycle_parts"
 
 
 def development_manifest(lock: dict) -> pd.DataFrame:
@@ -36,13 +37,24 @@ def development_manifest(lock: dict) -> pd.DataFrame:
     for index, (seed, tension, period, area, relation) in enumerate(designs):
         capability_time = 80.0 + 3.0 * index
         load_time = capability_time + (-10.0 if relation == "before" else 10.0 if relation == "after" else 0.0)
+        load_magnitude = 0.62 * min(
+            plant_parameters(tension).sg_power_upper_pu
+        )
         rows.append({
             "scenario_id": f"A6-D-{index:02d}", "split": "development", "seed": seed,
+            "design_cell": f"A_full_nonlinear|power_drop|{tension}|{period:g}",
             "plant": "A_full_nonlinear", "mechanism": "power_drop",
+            "capability_mechanism": "power_drop",
             "sg_tension": tension, "period_s": period,
+            "control_period_s": period,
             "condition": "known", "duration_s": float(lock["development_duration_s"]),
             "capability_change_time_s": capability_time, "load_event_time_s": load_time,
-            "load_area": area, "timing_relation": relation, "initial_soc": 0.50,
+            "load_area": area, "load_sign": 1, "load_magnitude_pu": load_magnitude,
+            "timing_relation": relation, "initial_soc": 0.50,
+            "initial_soc_area1": 0.50, "initial_soc_area2": 0.50,
+            "noise_std_hz": 0.0, "jitter_s": 0.0, "dropout_probability": 0.0,
+            "probe_eligible": True, "known_ood": "known",
+            "contract_status": "WITHIN_CONTRACT", "materiality_positive": True,
             "factor_assignment": "explicit_crossed_development_design",
         })
     return pd.DataFrame(rows)
@@ -111,17 +123,27 @@ def main() -> None:
         (str(row["scenario_id"]), str(row["method"]), float(row["delivered_branch_weight"]))
         for row in rows
     }
+    row_index = {
+        (str(row["scenario_id"]), str(row["method"]), float(row["delivered_branch_weight"])): index
+        for index, row in enumerate(rows)
+    }
     for weight in lock["development_candidates"]["delivered_branch_weights"]:
         for _, scenario in manifest.iterrows():
             for method in lock["primary_methods"]:
                 key = (str(scenario.scenario_id), str(method), float(weight))
-                if key in completed:
+                cycle_path = CYCLE_PARTS / f"{scenario.scenario_id}__{method}__w{float(weight):g}.parquet"
+                if key in completed and cycle_path.is_file():
                     continue
                 result = simulate_plant_a_episode(
-                    scenario.to_dict(), method, lock, float(weight)
+                    scenario.to_dict(), method, lock, float(weight),
+                    cycle_output_path=cycle_path,
                 )
                 result["delivered_branch_weight"] = float(weight)
-                rows.append(result)
+                if key in row_index:
+                    rows[row_index[key]] = result
+                else:
+                    row_index[key] = len(rows)
+                    rows.append(result)
                 completed.add(key)
                 pd.DataFrame(rows).to_csv(checkpoint, index=False)
     episodes = pd.DataFrame(rows)

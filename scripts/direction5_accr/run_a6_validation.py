@@ -32,14 +32,13 @@ LOCK_PATH = REPO / "configs/direction5_accr/a6_validation_lock.yaml"
 SELECTION_PATH = REPO / "results_accr/A6/development/A6_FROZEN_SELECTION.json"
 RESULTS = REPO / "results_accr/A6/validation"
 NATIVE_PARTS = RESULTS / "native_parts"
+CYCLE_PARTS = RESULTS / "cycle_parts"
 PROGRESS = REPO / "progress_accr/A6.json"
 
 
 def plant_a_manifest(lock: dict) -> pd.DataFrame:
     rows = []
     seed = int(lock["validation_seeds"][0])
-    relations = ("before", "after", "simultaneous", "after")
-    areas = ("area0", "both", "area1", "both")
     index = 0
     for mechanism in lock["mechanisms"]:
         for tension in lock["sg_tensions"]:
@@ -47,25 +46,38 @@ def plant_a_manifest(lock: dict) -> pd.DataFrame:
                 for condition in lock["conditions"]:
                     rng = np.random.default_rng(np.random.SeedSequence([20260810, seed, 61]))
                     capability_time = float(rng.uniform(82.0, 112.0))
-                    relation = relations[index % len(relations)]
+                    relation = str(rng.choice(("before", "simultaneous", "after")))
                     offset = -12.0 if relation == "before" else 12.0 if relation == "after" else 0.0
+                    area = str(rng.choice(("area0", "area1", "both")))
+                    load_sign = int(rng.choice((-1, 1)))
+                    load_magnitude = float(rng.uniform(0.052, 0.064))
+                    initial_soc = float(rng.choice((0.40, 0.50, 0.60)))
+                    design_cell = f"A_full_nonlinear|{mechanism}|{tension}|{float(period_s):g}"
                     rows.append({
                         "scenario_id": f"A6-V-A-{index:03d}", "split": "validation",
-                        "seed": seed, "plant": "A_full_nonlinear",
+                        "seed": seed, "design_cell": design_cell,
+                        "plant": "A_full_nonlinear",
                         "mechanism": mechanism, "sg_tension": tension,
+                        "capability_mechanism": mechanism,
                         "period_s": float(period_s), "condition": condition,
+                        "control_period_s": float(period_s), "known_ood": condition,
                         "duration_s": float(lock["duration_s"]),
                         "capability_change_time_s": capability_time,
                         "load_event_time_s": capability_time + offset,
-                        "load_area": areas[index % len(areas)],
+                        "load_area": area, "load_sign": load_sign,
+                        "load_magnitude_pu": load_magnitude,
                         "timing_relation": relation,
-                        "initial_soc": float(rng.choice((0.40, 0.50, 0.60))),
-                        "frequency_noise_std_hz": float(rng.choice((0.0, 0.0001, 0.0002))),
-                        "control_jitter_s": float(rng.choice((0.0, 0.01))),
-                        "dropout_probability": float(rng.choice((0.0, 0.001))),
+                        "initial_soc": initial_soc,
+                        "initial_soc_area1": initial_soc, "initial_soc_area2": initial_soc,
+                        "frequency_noise_std_hz": 0.0,
+                        "control_jitter_s": 0.0,
+                        "dropout_probability": 0.0,
+                        "noise_std_hz": 0.0, "jitter_s": 0.0,
                         "probe_eligible": True,
                         "contract_violation": False,
-                        "factor_assignment": "explicit_full_factorial_plus_independent_rng",
+                        "contract_status": "WITHIN_CONTRACT",
+                        "materiality_positive": mechanism == lock["statistics"]["materiality_positive_mechanism"],
+                        "factor_assignment": "explicit_full_factorial_plus_independent_seeded_draws",
                     })
                     seed += 1
                     index += 1
@@ -75,26 +87,40 @@ def plant_a_manifest(lock: dict) -> pd.DataFrame:
 def plant_b_manifest(lock: dict) -> pd.DataFrame:
     rows = []
     designs = (
-        (286, "power_drop", "known", 2.0, "area0", "before"),
-        (287, "power_drop", "OOD", 4.0, "area1", "after"),
-        (288, "ramp_drop", "known", 2.0, "both", "simultaneous"),
-        (289, "ramp_drop", "OOD", 4.0, "both", "after"),
+        (286, "power_drop", "known", 2.0),
+        (287, "power_drop", "OOD", 4.0),
+        (288, "ramp_drop", "known", 2.0),
+        (289, "ramp_drop", "OOD", 4.0),
     )
-    for index, (seed, mechanism, condition, period, area, relation) in enumerate(designs):
-        capability_time = 88.0 + 5.0 * index
+    for index, (seed, mechanism, condition, period) in enumerate(designs):
+        rng = np.random.default_rng(np.random.SeedSequence([20260810, seed, 79]))
+        capability_time = float(rng.uniform(84.0, 108.0))
+        relation = str(rng.choice(("before", "simultaneous", "after")))
+        area = str(rng.choice(("area0", "area1", "both")))
+        load_sign = int(rng.choice((-1, 1)))
+        load_magnitude = float(rng.uniform(0.035, 0.045))
         offset = -12.0 if relation == "before" else 12.0 if relation == "after" else 0.0
         rows.append({
             "scenario_id": f"A6-V-B-{index:03d}", "split": "validation",
-            "seed": seed, "plant": "B_native_ANDES_Kundur",
+            "seed": seed, "design_cell": f"B_native_ANDES_Kundur|{mechanism}|low|{period:g}",
+            "plant": "B_native_ANDES_Kundur",
             "mechanism": mechanism, "sg_tension": "low", "period_s": period,
+            "capability_mechanism": mechanism, "control_period_s": period,
             "condition": condition, "duration_s": float(lock["duration_s"]),
+            "known_ood": condition,
             "capability_change_time_s": capability_time,
             "load_event_time_s": capability_time + offset,
-            "load_area": area, "timing_relation": relation, "initial_soc": 0.50,
+            "load_area": area, "load_sign": load_sign,
+            "load_magnitude_pu": load_magnitude,
+            "timing_relation": relation, "initial_soc": 0.50,
+            "initial_soc_area1": 0.50, "initial_soc_area2": 0.50,
             "frequency_noise_std_hz": 0.0, "control_jitter_s": 0.0,
+            "noise_std_hz": 0.0, "jitter_s": 0.0,
             "dropout_probability": 0.0, "probe_eligible": True,
             "contract_violation": False,
-            "factor_assignment": "explicit_balanced_native_validation_design",
+            "contract_status": "WITHIN_CONTRACT",
+            "materiality_positive": mechanism == lock["statistics"]["materiality_positive_mechanism"],
+            "factor_assignment": "explicit_balanced_native_design_plus_independent_seeded_draws",
         })
     return pd.DataFrame(rows)
 
@@ -116,14 +142,21 @@ def normal_profile(seed: int) -> np.ndarray:
 def normal_manifest() -> pd.DataFrame:
     return pd.DataFrame([{
         "scenario_id": "A6-N-299", "split": "validation", "seed": 299,
+        "design_cell": "A_full_nonlinear|normal1h|low|4",
         "plant": "A_full_nonlinear", "mechanism": "power_drop",
+        "capability_mechanism": "none",
         "sg_tension": "low", "period_s": 4.0, "condition": "known",
+        "control_period_s": 4.0, "known_ood": "known",
         "duration_s": 3600.0, "capability_change_time_s": 5000.0,
         "load_event_time_s": 0.0, "load_area": "both",
+        "load_sign": 0, "load_magnitude_pu": np.nan,
         "timing_relation": "normal_profile", "initial_soc": 0.50,
+        "initial_soc_area1": 0.50, "initial_soc_area2": 0.50,
         "frequency_noise_std_hz": 0.0, "control_jitter_s": 0.0,
+        "noise_std_hz": 0.0, "jitter_s": 0.0,
         "dropout_probability": 0.0, "probe_eligible": True,
         "contract_violation": False,
+        "contract_status": "WITHIN_CONTRACT", "materiality_positive": False,
         "factor_assignment": "independent_real_3600s_validation_profile",
     }])
 
@@ -148,6 +181,7 @@ class NativePolicy:
             method, float(row.period_s), plant_parameters("low", 60.0), lock, weight,
             observation_dt_s=float(row.period_s),
         )
+        self.cycle_rows: list[dict[str, Any]] = []
 
     @property
     def reserve_request(self) -> np.ndarray:
@@ -157,14 +191,30 @@ class NativePolicy:
         self.policy.commit(observation.bess_actual_power_pu)
         self.policy.observe(observation)
         truth = capability_for(self.row, observation.time_s) if self.method == "perfect_capability_recourse_oracle" else None
-        return self.policy.propose(observation, truth)
+        action = self.policy.propose(observation, truth)
+        self.cycle_rows.append({
+            "scenario_id": self.row.scenario_id, "method": self.method,
+            "plant": self.row.plant, "time_s": observation.time_s,
+            "frequency0_hz": observation.frequency_deviation_hz[0],
+            "frequency1_hz": observation.frequency_deviation_hz[1],
+            "ace0_pu": observation.ace_pu[0], "ace1_pu": observation.ace_pu[1],
+            "tie_pu": observation.tie_line_pu,
+            "command_sg0_pu": action[0], "command_bess0_pu": action[1],
+            "command_sg1_pu": action[2], "command_bess1_pu": action[3],
+            "actual_bess0_pu": observation.bess_actual_power_pu[0],
+            "actual_bess1_pu": observation.bess_actual_power_pu[1],
+            "soc0": observation.measured_soc[0], "soc1": observation.measured_soc[1],
+            "certificate_issues_to_date": int(getattr(self.policy.controller, "certificate_issues", 0)),
+            **self.policy.cycle_diagnostics(),
+        })
+        return action
 
 
 def simulate_native(row_dict: dict[str, Any], method: str, lock: dict, weight: float) -> dict[str, Any]:
     row = pd.Series(row_dict)
     policy = NativePolicy(method, row, lock, weight)
     plant = PlantBAndesFull(dt_s=0.02)
-    magnitude = 0.035 if row.condition == "known" else 0.045
+    magnitude = float(row.load_magnitude_pu) * float(row.load_sign)
 
     def load(time_s: float) -> np.ndarray:
         if time_s < float(row.load_event_time_s):
@@ -189,10 +239,15 @@ def simulate_native(row_dict: dict[str, Any], method: str, lock: dict, weight: f
         np.max(np.abs(trace.frequency_deviation_hz[terminal])) <= 0.12
         and np.max(np.abs(trace.ace_pu[terminal])) <= 0.06
     )
+    command_violation = bool(
+        np.any(trace.issued_command_pu[:, [0, 2]] < np.asarray(plant_parameters("low").valve_lower_pu) - 1e-8)
+        or np.any(trace.issued_command_pu[:, [0, 2]] > np.asarray(plant_parameters("low").valve_upper_pu) + 1e-8)
+        or np.any(np.abs(trace.issued_command_pu[:, [1, 3]]) > 0.10 + 1e-8)
+    )
     hard = bool(
         np.any(trace.measured_soc < 0.10 - 1e-9)
         or np.any(trace.measured_soc > 0.90 + 1e-9)
-        or np.any(np.abs(trace.issued_command_pu[:, [1, 3]]) > 0.10 + 1e-8)
+        or np.any(np.abs(trace.bess_actual_poi_power_pu) > 0.10 + 1e-8)
     )
     summary = dict(row_dict)
     summary.update({
@@ -204,11 +259,16 @@ def simulate_native(row_dict: dict[str, Any], method: str, lock: dict, weight: f
         "sg_mechanical_mileage_pu": float(np.sum(np.abs(np.diff(trace.sg_mechanical_increment_pu, axis=0)))),
         "bess_energy_throughput_pu_s": float(np.sum(np.abs(trace.bess_actual_poi_power_pu) * dt[:, None])),
         "terminal_recovery": terminal_recovery,
-        "hard_violation": hard, "command_violation": False, "normal1h": False,
+        "hard_violation": hard, "command_violation": command_violation, "normal1h": False,
         "native_network": trace.native_network, "native_converged": trace.converged,
         "algebraic_power_balance_p99_pu": trace.algebraic_power_balance_p99_pu,
         **policy.policy.diagnostics(),
     })
+    CYCLE_PARTS.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(policy.cycle_rows).to_parquet(
+        CYCLE_PARTS / f"{row.scenario_id}__{method}.parquet",
+        index=False, compression="zstd",
+    )
     return summary
 
 
@@ -238,11 +298,18 @@ def _run_native_isolated(index: int, method: str) -> None:
     )
 
 
-def _balanced_bootstrap(values: pd.DataFrame, column: str, resamples: int, seed: int) -> tuple[float, float, float]:
+def _balanced_bootstrap(
+    values: pd.DataFrame,
+    column: str,
+    resamples: int,
+    seed: int,
+    *,
+    family_size: int = 1,
+) -> tuple[float, float, float]:
     cells = list(values.design_cell.unique())
-    point = float(values.groupby("design_cell")[column].mean().mean())
     if not cells:
         return np.nan, np.nan, np.nan
+    point = float(values.groupby("design_cell")[column].mean().mean())
     rng = np.random.default_rng(seed)
     samples = np.empty(resamples)
     for sample_index in range(resamples):
@@ -252,7 +319,8 @@ def _balanced_bootstrap(values: pd.DataFrame, column: str, resamples: int, seed:
             data = values.loc[values.design_cell.eq(cell), column].to_numpy()
             cell_means.append(float(np.mean(rng.choice(data, len(data), replace=True))))
         samples[sample_index] = np.mean(cell_means)
-    lower, upper = np.quantile(samples, (0.025, 0.975))
+    tail = 0.05 / (2.0 * int(family_size))
+    lower, upper = np.quantile(samples, (tail, 1.0 - tail))
     return point, float(lower), float(upper)
 
 
@@ -270,14 +338,14 @@ def primary_statistics(episodes: pd.DataFrame, lock: dict) -> tuple[pd.DataFrame
         accr = row.xs("accr_mpc", level=1)
         oracle = row.xs("perfect_capability_recourse_oracle", level=1)
         record = {name: row[(name, "")] for name in keys}
-        record["design_cell"] = f"{record['plant']}|{record['mechanism']}|{record['sg_tension']}|{record['period_s']}|{record['condition']}"
+        record["design_cell"] = f"{record['plant']}|{record['mechanism']}|{record['sg_tension']}|{record['period_s']}"
         for metric in metric_names[:-1]:
             record[f"absolute_improvement_{metric}"] = float(base[metric] - accr[metric])
             record[f"relative_improvement_{metric}"] = float((base[metric] - accr[metric]) / max(abs(base[metric]), 1e-9))
             denominator = float(base[metric] - oracle[metric])
             record[f"oracle_value_{metric}"] = denominator
             record[f"value_recovery_{metric}"] = float((base[metric] - accr[metric]) / denominator) if denominator > 1e-9 else np.nan
-        record["success_difference"] = float(accr["physical_success"] - base["physical_success"])
+        record["success_difference"] = float(bool(accr["physical_success"])) - float(bool(base["physical_success"]))
         rows.append(record)
     paired = pd.DataFrame(rows)
     material = paired[paired.mechanism.eq(lock["statistics"]["materiality_positive_mechanism"])].copy()
@@ -285,10 +353,15 @@ def primary_statistics(episodes: pd.DataFrame, lock: dict) -> tuple[pd.DataFrame
     stats_rows = []
     for metric in ("ace_iae_pu_s", "tie_iae_pu_s", "sg_mechanical_mileage_pu", "frequency_peak_hz"):
         column = f"relative_improvement_{metric}"
-        point, lower, upper = _balanced_bootstrap(material, column, resamples, 20260810 + len(stats_rows))
+        family_size = 2 if metric in ("ace_iae_pu_s", "tie_iae_pu_s") else 1
+        point, lower, upper = _balanced_bootstrap(
+            material, column, resamples, 20260810 + len(stats_rows),
+            family_size=family_size,
+        )
         recovery_values = material.dropna(subset=[f"value_recovery_{metric}"])
         recovery = _balanced_bootstrap(
-            recovery_values, f"value_recovery_{metric}", resamples, 20260820 + len(stats_rows)
+            recovery_values, f"value_recovery_{metric}", resamples, 20260820 + len(stats_rows),
+            family_size=family_size,
         ) if len(recovery_values) else (np.nan, np.nan, np.nan)
         stats_rows.append({
             "metric": metric, "subset": "A1_MATERIALITY_POSITIVE_POWER_CELLS",
@@ -299,6 +372,7 @@ def primary_statistics(episodes: pd.DataFrame, lock: dict) -> tuple[pd.DataFrame
             "scenario_balanced_value_recovery": recovery[0],
             "value_recovery_ci_lower": recovery[1],
             "value_recovery_ci_upper": recovery[2],
+            "ci_multiplicity": "BONFERRONI_ACE_TIE" if family_size == 2 else "NONE",
         })
     return paired, {"rows": stats_rows, "material": material}
 
@@ -321,24 +395,30 @@ def gate_decision(episodes: pd.DataFrame, normal: pd.DataFrame, lock: dict) -> t
     contract_fallback = contract.fallback_calls.sum() / max(contract.controller_calls.sum(), 1)
     accr_fallback = accr.fallback_calls.sum() / max(accr.controller_calls.sum(), 1)
     performance = statistics[statistics.metric.isin(("ace_iae_pu_s", "tie_iae_pu_s"))]
-    performance_pass = bool(((
-        performance.scenario_balanced_relative_improvement >= float(lock["gates"]["materiality_metric_improvement_min"])
-    ) & (performance.ci_lower > 0.0)).any())
-    recovery_pass = bool(((
-        performance.scenario_balanced_value_recovery >= float(lock["gates"]["value_recovery_min"])
-    ) & (performance.value_recovery_ci_lower > 0.0)).any())
+    qualifying = performance[
+        (performance.scenario_balanced_relative_improvement >= float(lock["gates"]["materiality_metric_improvement_min"]))
+        & (performance.ci_lower > 0.0)
+        & (performance.scenario_balanced_value_recovery >= float(lock["gates"]["value_recovery_min"]))
+        & (performance.value_recovery_ci_lower > 0.0)
+    ]
+    performance_pass = bool(len(qualifying))
+    recovery_pass = performance_pass
     mileage = statistics[statistics.metric.eq("sg_mechanical_mileage_pu")].iloc[0]
     plant_direction = []
-    for plant, group in paired.groupby("plant"):
+    material_paired = paired[paired.mechanism.eq(lock["statistics"]["materiality_positive_mechanism"])]
+    for plant, group in material_paired.groupby("plant"):
         plant_direction.append({
             "plant": plant,
             "ace_relative_improvement": float(group.relative_improvement_ace_iae_pu_s.mean()),
             "tie_relative_improvement": float(group.relative_improvement_tie_iae_pu_s.mean()),
         })
     directions = pd.DataFrame(plant_direction)
+    qualifying_names = set(qualifying.metric)
     cross_plant = bool(
-        (directions.ace_relative_improvement > 0.0).all()
-        or (directions.tie_relative_improvement > 0.0).all()
+        len(directions) == 2 and (
+            ("ace_iae_pu_s" in qualifying_names and (directions.ace_relative_improvement > 0.0).all())
+            or ("tie_iae_pu_s" in qualifying_names and (directions.tie_relative_improvement > 0.0).all())
+        )
     )
     all_mpc = episodes[episodes.method.isin(lock["primary_methods"] + lock["additional_baselines"]) & ~episodes.method.isin(("sg_only_anti_windup_pi", "fixed_allocation_anti_windup_pi"))]
     gates = {
@@ -412,6 +492,10 @@ def main() -> None:
     checkpoint_path = RESULTS / "A6_EPISODES_CHECKPOINT.csv"
     rows = pd.read_csv(checkpoint_path).to_dict("records") if checkpoint_path.is_file() else []
     completed = {(str(row["scenario_id"]), str(row["method"])) for row in rows}
+    row_index = {
+        (str(row["scenario_id"]), str(row["method"])): index
+        for index, row in enumerate(rows)
+    }
     representative = set(plant_a.iloc[[0, 5, 10, 15]].scenario_id)
     for _, scenario in plant_a.iterrows():
         methods = list(lock["primary_methods"])
@@ -419,20 +503,35 @@ def main() -> None:
             methods += list(lock["additional_baselines"])
         for method in methods:
             key = (str(scenario.scenario_id), str(method))
-            if key in completed:
+            cycle_path = CYCLE_PARTS / f"{scenario.scenario_id}__{method}.parquet"
+            if key in completed and cycle_path.is_file():
                 continue
-            rows.append(simulate_plant_a_episode(scenario.to_dict(), method, lock, weight))
+            result = simulate_plant_a_episode(
+                scenario.to_dict(), method, lock, weight,
+                cycle_output_path=cycle_path,
+            )
+            if key in row_index:
+                rows[row_index[key]] = result
+            else:
+                row_index[key] = len(rows)
+                rows.append(result)
             completed.add(key)
             pd.DataFrame(rows).to_csv(checkpoint_path, index=False)
     for native_index, scenario in plant_b.iterrows():
         for method in lock["primary_methods"]:
             key = (str(scenario.scenario_id), str(method))
-            if key in completed:
+            cycle_path = CYCLE_PARTS / f"{scenario.scenario_id}__{method}.parquet"
+            if key in completed and cycle_path.is_file():
                 continue
             part = _native_part(str(scenario.scenario_id), str(method))
-            if not part.is_file():
+            if not part.is_file() or not cycle_path.is_file():
                 _run_native_isolated(int(native_index), str(method))
-            rows.append(pd.read_csv(part).iloc[0].to_dict())
+            result = pd.read_csv(part).iloc[0].to_dict()
+            if key in row_index:
+                rows[row_index[key]] = result
+            else:
+                row_index[key] = len(rows)
+                rows.append(result)
             completed.add(key)
             pd.DataFrame(rows).to_csv(checkpoint_path, index=False)
     episodes = pd.DataFrame(rows)
@@ -441,14 +540,22 @@ def main() -> None:
     normal_path = RESULTS / "A6_NORMAL1H_EPISODES_CHECKPOINT.csv"
     normal_rows = pd.read_csv(normal_path).to_dict("records") if normal_path.is_file() else []
     normal_completed = {str(row["method"]) for row in normal_rows}
+    normal_index = {str(row["method"]): index for index, row in enumerate(normal_rows)}
     profile = normal_profile(299)
     normal_scenario = normals.iloc[0]
     for method in ("contract_only_recourse_mpc", "accr_mpc"):
-        if method in normal_completed:
+        cycle_path = CYCLE_PARTS / f"{normal_scenario.scenario_id}__{method}.parquet"
+        if method in normal_completed and cycle_path.is_file():
             continue
-        normal_rows.append(simulate_plant_a_episode(
-            normal_scenario.to_dict(), method, lock, weight, normal_profile=profile
-        ))
+        result = simulate_plant_a_episode(
+            normal_scenario.to_dict(), method, lock, weight, normal_profile=profile,
+            cycle_output_path=cycle_path,
+        )
+        if method in normal_index:
+            normal_rows[normal_index[method]] = result
+        else:
+            normal_index[method] = len(normal_rows)
+            normal_rows.append(result)
         pd.DataFrame(normal_rows).to_csv(normal_path, index=False)
     normal = pd.DataFrame(normal_rows)
     normal.to_csv(RESULTS / "A6_NORMAL1H_EPISODES.csv", index=False)

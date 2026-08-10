@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -72,7 +73,8 @@ def capability_for(row: pd.Series, time_s: float) -> CapabilityRealization:
 def load_for(row: pd.Series, parameters: PlantAParameters, time_s: float) -> np.ndarray:
     if time_s < float(row.load_event_time_s):
         return np.zeros(2)
-    magnitude = 0.62 * min(parameters.sg_power_upper_pu)
+    magnitude = float(row.get("load_magnitude_pu", 0.62 * min(parameters.sg_power_upper_pu)))
+    magnitude *= float(row.get("load_sign", 1.0))
     if row.load_area == "area0":
         return np.array((magnitude, 0.25 * magnitude))
     if row.load_area == "area1":
@@ -110,6 +112,7 @@ class ValidationPolicy:
         self.probe_active_calls = 0
         self.certified_surplus_l1_pu_s = 0.0
         self.full_rolling_all = True
+        self.latest_deliverability = None
         self.observer = ConstrainedGridLoadMHE(
             nominal_frequency_hz=parameters.nominal_frequency_hz,
             inertia_s=parameters.inertia_s,
@@ -228,6 +231,7 @@ class ValidationPolicy:
                 performance_ramp_pu_per_s=np.asarray(evaluation_truth.ramp_up_pu_per_s),
                 delay_interval_s=np.c_[np.zeros(2), np.asarray(evaluation_truth.delay_s)],
             )
+        self.latest_deliverability = snapshot
         inputs = DCSVInput(observation, estimate.load_pu, snapshot, domain)
         if self.method == "accr_mpc":
             result = self.controller.propose(inputs)
@@ -258,6 +262,39 @@ class ValidationPolicy:
         self.last_result = result
         self.last_command = action.copy()
         return action
+
+    def cycle_diagnostics(self) -> dict[str, Any]:
+        """Return only causal state available at the completed control cycle."""
+        result = self.last_result
+        snapshot = self.latest_deliverability
+        certificate = getattr(result, "certificate", None)
+        diagnostics = getattr(result, "diagnostics", None)
+        contract = getattr(result, "contract_component_pu", np.zeros(4))
+        certified = getattr(result, "certified_component_pu", np.zeros(4))
+        probe = getattr(result, "probe_component_pu", np.zeros(4))
+        return {
+            "probe_active": bool(getattr(diagnostics, "probe_active", False)),
+            "probe_triggered": bool(getattr(diagnostics, "probe_triggered", False)),
+            "certificate_valid": bool(getattr(diagnostics, "certificate_valid", False)),
+            "certificate_revoked": bool(getattr(diagnostics, "certificate_revoked", False)),
+            "certificate_retained_model_count": int(getattr(certificate, "retained_model_count", 0)),
+            "certificate_expiry_time_s": float(getattr(certificate, "expiry_time_s", np.nan)),
+            "certificate_power0_pu": float(certificate.power_lower_pu[0]) if certificate is not None else np.nan,
+            "certificate_power1_pu": float(certificate.power_lower_pu[1]) if certificate is not None else np.nan,
+            "certificate_ramp0_pu_per_s": float(certificate.ramp_lower_pu_per_s[0]) if certificate is not None else np.nan,
+            "certificate_ramp1_pu_per_s": float(certificate.ramp_lower_pu_per_s[1]) if certificate is not None else np.nan,
+            "certificate_delay0_s": float(certificate.maximum_delay_s[0]) if certificate is not None else np.nan,
+            "certificate_delay1_s": float(certificate.maximum_delay_s[1]) if certificate is not None else np.nan,
+            "performance_power0_pu": float(snapshot.performance_power_pu[0]) if snapshot is not None else np.nan,
+            "performance_power1_pu": float(snapshot.performance_power_pu[1]) if snapshot is not None else np.nan,
+            "performance_ramp0_pu_per_s": float(snapshot.performance_ramp_pu_per_s[0]) if snapshot is not None else np.nan,
+            "performance_ramp1_pu_per_s": float(snapshot.performance_ramp_pu_per_s[1]) if snapshot is not None else np.nan,
+            "feasible_delay_count0": int(np.sum(snapshot.feasible_delay_mask[0])) if snapshot is not None else 0,
+            "feasible_delay_count1": int(np.sum(snapshot.feasible_delay_mask[1])) if snapshot is not None else 0,
+            "contract_component_l1_pu": float(np.sum(np.abs(contract))),
+            "certified_component_l1_pu": float(np.sum(np.abs(certified))),
+            "probe_component_l1_pu": float(np.sum(np.abs(probe))),
+        }
 
     def commit(self, actual_bess_pu: np.ndarray) -> None:
         if self.last_result is None or not self.is_mpc:
@@ -301,6 +338,7 @@ def simulate_plant_a_episode(
     delivered_branch_weight: float,
     *,
     normal_profile: np.ndarray | None = None,
+    cycle_output_path: Path | None = None,
 ) -> dict[str, Any]:
     row = pd.Series(row_dict)
     dt_s = float(lock["physical_dt_s"])
@@ -324,6 +362,7 @@ def simulate_plant_a_episode(
     terminal_frequency: list[float] = []
     terminal_ace: list[float] = []
     previous_mechanical = state.mechanical_power_pu.copy()
+    cycle_rows: list[dict[str, Any]] = []
     duration_s = float(row.duration_s)
     steps = int(round(duration_s / dt_s))
 
@@ -352,6 +391,21 @@ def simulate_plant_a_episode(
                 or np.any(np.abs(command[[1, 3]]) > parameters.bess.rating_pu + 1e-8)
             )
             pending_commit = policy.is_mpc
+            cycle_rows.append({
+                "scenario_id": row.scenario_id, "method": method, "plant": row.plant,
+                "time_s": time_s,
+                "frequency0_hz": public.frequency_deviation_hz[0],
+                "frequency1_hz": public.frequency_deviation_hz[1],
+                "ace0_pu": public.ace_pu[0], "ace1_pu": public.ace_pu[1],
+                "tie_pu": public.tie_line_pu,
+                "command_sg0_pu": command[0], "command_bess0_pu": command[1],
+                "command_sg1_pu": command[2], "command_bess1_pu": command[3],
+                "actual_bess0_pu": public.bess_actual_power_pu[0],
+                "actual_bess1_pu": public.bess_actual_power_pu[1],
+                "soc0": public.measured_soc[0], "soc1": public.measured_soc[1],
+                "certificate_issues_to_date": int(getattr(policy.controller, "certificate_issues", 0)),
+                **policy.cycle_diagnostics(),
+            })
             next_control_s += float(row.period_s)
         frequency_peak = max(frequency_peak, float(np.max(np.abs(public.frequency_deviation_hz))))
         ace_iae += float(np.sum(np.abs(public.ace_pu))) * dt_s
@@ -393,6 +447,9 @@ def simulate_plant_a_episode(
         "normal1h": normal_profile is not None,
         **policy.diagnostics(),
     })
+    if cycle_output_path is not None:
+        cycle_output_path.parent.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(cycle_rows).to_parquet(cycle_output_path, index=False, compression="zstd")
     return summary
 
 
