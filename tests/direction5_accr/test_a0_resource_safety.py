@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
+import sys
 
 import yaml
+
+from direction5freq.accr.resource_guard import GIB, ResourceLimits, run_guarded
 
 
 REPO = Path(__file__).resolve().parents[2]
@@ -52,3 +56,25 @@ def test_a6_starts_with_buffer_and_keeps_conservative_runtime_caps() -> None:
     # short-lived Windows/ANDES helpers produce an observed peak of three
     # descendants. Any fourth descendant still fails closed.
     assert limits["max_descendant_processes"] == 3
+
+
+def test_resource_guard_preserves_fast_child_exit_code(tmp_path: Path) -> None:
+    limits = ResourceLimits(
+        max_system_commit_fraction=0.99,
+        max_system_commit_growth_bytes=10 * GIB,
+        min_available_physical_bytes=0,
+        max_tree_private_bytes=GIB,
+        max_descendant_processes=1,
+        poll_interval_s=0.1,
+        timeout_s=10.0,
+        preflight_max_system_commit_fraction=0.99,
+    )
+    code = run_guarded(
+        [sys.executable, "-c", "import time; time.sleep(0.02); raise SystemExit(3)"],
+        cwd=REPO,
+        environment=os.environ.copy(),
+        limits=limits,
+        monitor_log=tmp_path / "monitor.jsonl",
+        summary_path=tmp_path / "summary.json",
+    )
+    assert code == 3

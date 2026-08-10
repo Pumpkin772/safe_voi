@@ -1,3 +1,4 @@
 repair_round,stage,classification,evidence,scientific_parameters_changed,validation_rows_before_repair,final_seeds_consumed,status
 1,development,PROBE_TRIGGER_BOUNDARY_PRELOAD,"Registered boundary preload repair recorded in A6_FROZEN_SELECTION.json",false,0,false,FROZEN
 2,validation,RESOURCE_GUARD_NATIVE_WORKER_DESCENDANT_CAP,"A6 attempt 04 observed a legitimate peak of 3 descendants when the isolated native Plant-B worker started; all scientific settings remain locked",false,72,false,APPLIED
+3,validation,RESOURCE_GUARD_PROCESS_EXIT_RACE,"A6 attempt 05 exposed a poll-to-psutil NoSuchProcess race that discarded the guarded child return code; sampling now rechecks process exit without changing any scientific setting",false,72,false,APPLIED

@@ -352,8 +352,18 @@ def run_guarded(
             _terminate_tree(process.pid)
             raise
         with monitor_log.open("w", encoding="utf-8") as stream:
-            while process.poll() is None:
-                sample = _sample(process.pid, started)
+            while True:
+                if process.poll() is not None:
+                    break
+                try:
+                    sample = _sample(process.pid, started)
+                except ResourceGuardError:
+                    # The process can exit between ``poll`` and the psutil
+                    # lookup. Preserve its real return code instead of
+                    # misclassifying that normal race as a guard failure.
+                    if process.poll() is not None:
+                        break
+                    raise
                 peak_commit_fraction = max(peak_commit_fraction, sample.system_commit_fraction)
                 peak_tree_private = max(peak_tree_private, sample.tree_private_bytes)
                 peak_descendants = max(peak_descendants, sample.descendant_processes)
