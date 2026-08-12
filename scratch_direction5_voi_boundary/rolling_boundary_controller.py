@@ -126,7 +126,24 @@ class RollingBoundaryController:
             solution.sg_command[1, 0], solution.bess_command[1, 0],
         ))
         changed = self._detect_change(observation)
-        if self.scheduler is not None and changed:
+        if self.scheduler is not None and changed and not self.lookup.has_positive_region:
+            # A globally empty frozen positive region is decided before any
+            # candidate-specific solve.  The control path therefore contains
+            # exactly the same robust MPC solve as contract MPC.
+            self.last_decision = self.scheduler.consider(
+                CausalBoundaryFeatures(
+                    period_s=point.period_s, sg_tension=point.sg_tension,
+                    objective=point.objective, load_magnitude_pu=point.load_magnitude_pu,
+                    power_spread_pu=point.power_spread_pu,
+                    ramp_spread_pu_per_s=point.ramp_spread_pu_per_s,
+                    delay_spread_s=point.delay_spread_s,
+                    noise_std_pu=point.noise_std_pu, soc=point.soc,
+                    tie_loading_pu=point.tie_loading_pu,
+                ),
+                causal_change_epoch=self._change_epoch,
+                decision_relevant=True,
+            )
+        elif self.scheduler is not None and changed:
             # Decision relevance is causal: candidate-specific first actions are
             # solved from the same public state; no true model is queried.
             candidate_actions = []

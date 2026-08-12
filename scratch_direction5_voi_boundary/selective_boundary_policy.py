@@ -60,12 +60,18 @@ class FrozenBoundaryLookup:
         self.neighbors = int(neighbors)
         if self.neighbors <= 0:
             raise ValueError("neighbors must be positive")
+        region_column = "final_region" if "final_region" in self.frame else "region"
+        self.has_positive_region = bool(
+            self.frame[region_column].astype(str).eq("POSITIVE_VALUE").any()
+        )
 
     @staticmethod
     def _vector(values) -> np.ndarray:
         return np.asarray([float(getattr(values, name)) for name in FEATURES]) / FEATURE_RANGES
 
     def decide(self, features: CausalBoundaryFeatures) -> BoundaryDecision:
+        if not self.has_positive_region:
+            return BoundaryDecision(False, "FROZEN_MAP_HAS_NO_POSITIVE_REGION", 0.0, None, None, ())
         compatible = self.frame.loc[
             np.isclose(self.frame.period_s, features.period_s)
             & self.frame.sg_tension.eq(features.sg_tension)
@@ -192,4 +198,3 @@ __all__ = [
     "BoundaryDecision", "CausalBoundaryFeatures", "ConservativeCapability",
     "FrozenBoundaryLookup", "SelectiveProbeScheduler",
 ]
-
