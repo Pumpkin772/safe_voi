@@ -1,0 +1,75 @@
+schema: direction5.voi_boundary.scratch_lock.v1
+project: DIRECTION5
+method: selective_VOI_ACCR_MPC
+
+registered_formulation:
+  physical_horizon_s: 24.0
+  policy_class: common_sequence_robust_mpc
+  uncertainty: power_ramp_delay_finite_outer_vertices
+  observation: bounded_actual_POI_power_matched_filter
+  posterior_enumeration: all_scalar_interval_endpoint_cells
+  objective_preferences:
+    balanced: {frequency_hz: 0.20, ace_pu: 0.08, tie_pu: 0.04, sg_move_pu: 0.03, bess_move_pu: 0.03}
+    regional_responsibility: {frequency_hz: 0.20, ace_pu: 0.05, tie_pu: 0.025, sg_move_pu: 0.03, bess_move_pu: 0.03}
+    resource_economy: {frequency_hz: 0.20, ace_pu: 0.08, tie_pu: 0.04, sg_move_pu: 0.02, bess_move_pu: 0.04}
+
+design_space:
+  control_period_s: [2.0, 4.0]
+  sg_tension: [low, medium, high]
+  load_magnitude_pu: [0.015, 0.075]
+  power_spread_pu: [0.0, 0.035]
+  ramp_spread_pu_per_s: [0.0, 0.035]
+  delay_spread_s: [0.0, 1.3]
+  noise_std_pu: [0.0005, 0.0020]
+  soc: [0.30, 0.70]
+  tie_loading_pu: [0.0, 0.04]
+  initial_latin_hypercube_points: 512
+  adaptive_boundary_points_max: 1024
+  unclassified_volume_max: 0.05
+
+probe_library:
+  physical_duration_s: [4.0, 8.0, 12.0]
+  amplitude_pu: [0.00125, 0.0025, 0.00375, 0.0050, 0.0075]
+  shapes: [biphasic, plateau_reverse, staircase, prbs]
+  allocation_areas: [1, 2]
+  signs: [-1, 1]
+  allocation_neutral: true
+  development_shortlist_by_tube_separation: 8
+  theorem_requires_all_safe_probes_or_universal_bound: true
+
+seeds:
+  design_lhs: 7000
+  development: [7000, 7199]
+  validation_1: [7300, 7399]
+  validation_2: [7400, 7499]
+  final: [7600, 7699]
+  minimum_independent_repeats_per_exact_validation_cell: 10
+  minimum_native_plant_b_pairs_per_representative_cell: 6
+  minimum_normal1h_profiles_per_method: 6
+
+decision_thresholds:
+  exact_positive_value: 1.0e-8
+  false_optimistic_certificate_rate_max: 0.01
+  positive_region_precision_min: 0.70
+  posterior_diameter_reduction_min: 0.40
+  oracle_value_recovery_min: 0.25
+  zero_region_probe_rate_max: 0.05
+  zero_region_core_command_relative_difference_max: 0.01
+  probe_window_incremental_frequency_hz_max: 0.02
+  frequency_peak_absolute_delta_hz_max: 0.02
+  hard_physical_violations_max: 0
+
+resource_limits:
+  one_simulation_at_a_time: true
+  maximum_descendant_processes: 2
+  maximum_task_private_gib: 3.0
+  minimum_available_physical_gib: 8.0
+  maximum_system_commit_fraction: 0.92
+  maximum_system_commit_growth_gib: 6.0
+
+immutability:
+  final_seed_use_once: true
+  no_tuning_after_final: true
+  no_result_deletion: true
+  predecessor_result_preserved: true
+

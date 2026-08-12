@@ -1,0 +1,60 @@
+项目统一命名为：方向5 / DIRECTION5 / direction5。
+
+请完整阅读：
+
+research/direction5_voi_boundary_final/
+
+下的全部文件，并将CODEX_GOAL.md作为唯一总Goal执行。
+
+不要把任务拆成许多需要我再次发送指令的小阶段，也不要在单个配置失败后停止。
+
+唯一论文目标：
+
+建立黑箱IBR能力信息的控制价值边界，证明何时任何安全探测都不值得、
+何时存在净正价值的安全探测，并实现一个只在正值区域探测、在零值区域
+严格退化为合同MPC的选择性VOI-ACCR-MPC。
+
+必须：
+
+1. 冻结当前启发式VOI-ACCR负结果；
+2. 用正式nested robust/posterior VoI替代heuristic proxy；
+3. 不再用固定HIGH_VALUE负荷标签定义worthwhile；
+4. 使用frequency/ACE/tie均非零的物理归一化目标；
+5. 计算registered-formulation perfect-information value；
+6. 计算safe probe的观测管、所有可能后验集合和实际追索代价；
+7. 建立no-probe theorem和正值区域；
+8. 探测按物理时长归一化，2s和4s分别设计；
+9. 探测代价必须包含完整闭环反事实；
+10. no-probe区域必须与同一合同MPC数值等价；
+11. false optimistic certificate≤1%；
+12. 每个validation cell使用独立重复seed；
+13. Plant A和原生Plant B都要验证；
+14. Plant B若被判定无价值，安全放弃是正确结果，不强制正改善；
+15. normal1h至少6条profile；
+16. 普通控制器禁止读取true capability、true load和future event；
+17. final后禁止调参，不得删除失败或扩大事故制造正区。
+
+你可以在development内自主改进probe库、边界求解、adaptive sampling、
+缓存和并行，直到：
+
+- 非空正值区域在独立validation中复现并形成正面论文；或
+- 完整物理设计域表明正值区域为空/不可复现，形成no-probe boundary论文。
+
+在证据里程碑前：
+
+禁止git add
+禁止git commit
+禁止git tag
+禁止push
+
+仅使用scratch_direction5_voi_boundary、research_outputs_boundary和
+progress_boundary.json保存工作。
+
+最终生成小于512MB的：
+
+DIRECTION5_VOI_BOUNDARY_SINGLE_REVIEW_PACKAGE.zip
+
+并报告：
+ZIP路径、大小、SHA256、Git状态、boundary map、正/零值区域、
+no-probe theorem、exact vs heuristic VoI、selected probe、Plant A/B、
+validation/final、normal1h、solver、失败案例、论文状态和最终结论。

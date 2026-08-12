@@ -1,0 +1,3543 @@
+{
+  "all_safe_probes_evaluated": true,
+  "candidate_count": 4,
+  "candidate_models": [
+    {
+      "delay_s": 0.4469285249838235,
+      "model_id": "M00_P0.0450_R0.0250_D0.447",
+      "power_pu": 0.045,
+      "ramp_pu_per_s": 0.025
+    },
+    {
+      "delay_s": 1.5,
+      "model_id": "M01_P0.0450_R0.0250_D1.500",
+      "power_pu": 0.045,
+      "ramp_pu_per_s": 0.025
+    },
+    {
+      "delay_s": 0.4469285249838235,
+      "model_id": "M02_P0.0717_R0.0250_D0.447",
+      "power_pu": 0.0717247644946645,
+      "ramp_pu_per_s": 0.025
+    },
+    {
+      "delay_s": 1.5,
+      "model_id": "M03_P0.0717_R0.0250_D1.500",
+      "power_pu": 0.0717247644946645,
+      "ramp_pu_per_s": 0.025
+    }
+  ],
+  "delay_spread_s": 1.0530714750161765,
+  "elapsed_s": 0.7393312000203878,
+  "evaluated_probe_count": 60,
+  "heuristic_value": 0.029396378079513428,
+  "load_magnitude_pu": 0.075,
+  "maximum_exact_probe_value": NaN,
+  "maximum_safe_probe_upper_value": -0.062165966699796016,
+  "no_probe_reason": "MAXIMUM_SAFE_PROBE_UPPER_VALUE_NONPOSITIVE",
+  "noise_std_pu": 0.001880306201893,
+  "nominal_frequency_hz": 50.0,
+  "objective": "resource_economy",
+  "perfect_information_cost": 11.190145080589282,
+  "perfect_information_value": 0.00023019692018877436,
+  "period_s": 4.0,
+  "point_id": "B1_ADAPT_0703",
+  "power_spread_pu": 0.0267247644946645,
+  "probes": [
+    {
+      "amplitude_pu": 0.00125,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.004119483661010957,
+          0.014306821213163692
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.007989712322333618,
+          0.018177049874486356
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.004538070358043294,
+          0.014725407910196029
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.007989712322333618,
+          0.018177049874486356
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A1_n_0.00125",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.00125,
+        -0.0,
+        0.00125
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.06336505663718128,
+      "worst_post_probe_cost": 11.253740334146652
+    },
+    {
+      "amplitude_pu": 0.00125,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.006904971387847629,
+          0.003282366164305107
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.007993756221566627,
+          0.0021935813305861097
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.006869386184838775,
+          0.003317951367313961
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.007993756221566627,
+          0.0021935813305861097
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A1_p_0.00125",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0006249999999999999,
+        -0.00125,
+        0.000625
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.09822024431876564,
+      "worst_post_probe_cost": 11.288595521828237
+    },
+    {
+      "amplitude_pu": 0.0025,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4285714285714286,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.0046746510789807795,
+          0.014861988631133517
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.00844810998177645,
+          0.018635447533929185
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.005648405193982753,
+          0.01583574274613549
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.00877096232233095,
+          0.018958299874483685
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447"
+        ],
+        [
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A1_n_0.00250",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0025,
+        -0.0,
+        0.0025
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.2527812156060225,
+      "worst_post_probe_cost": 11.443156493115493
+    },
+    {
+      "amplitude_pu": 0.00125,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.0027461715806105713,
+          0.012933509132763307
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.004855921718615962,
+          0.015043259270768699
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.0027461715806105713,
+          0.012933509132763307
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.004855921718615962,
+          0.015043259270768699
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A1_n_0.00125",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.00125,
+        0.00125
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.10370952384483267,
+      "worst_post_probe_cost": 11.294084801354304
+    },
+    {
+      "amplitude_pu": 0.00125,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.010852504624944012,
+          -0.0006651670727912768
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.013949509270773618,
+          -0.0037621717186208806
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.010852504624944012,
+          -0.0006651670727912768
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.013949509270773618,
+          -0.0037621717186208806
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A1_p_0.00125",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.00125,
+        -0.00125
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.10304135835654193,
+      "worst_post_probe_cost": 11.293416635866013
+    },
+    {
+      "amplitude_pu": 0.00125,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.0014449519328595924,
+          0.01163228948501233
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.002154550256460719,
+          0.012341887808613455
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.0014449519328595924,
+          0.01163228948501233
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.002154550256460719,
+          0.012341887808613455
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A2_n_0.00125",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.00125,
+        0.00125
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.1035878084015156,
+      "worst_post_probe_cost": 11.293963085910987
+    },
+    {
+      "amplitude_pu": 0.00125,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.009551284977193032,
+          0.0006360525749597038
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.011248137808618372,
+          -0.001060800256465635
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.009551284977193032,
+          0.0006360525749597038
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.011248137808618372,
+          -0.001060800256465635
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A2_p_0.00125",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.00125,
+        -0.00125
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.10322146991821235,
+      "worst_post_probe_cost": 11.293596747427683
+    },
+    {
+      "amplitude_pu": 0.00125,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.012504738238317114,
+          -0.0023174006861643786
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.016614549874491683,
+          -0.006427212322338946
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.012504738238317114,
+          -0.0023174006861643786
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.016614549874491683,
+          -0.006427212322338946
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A1_p_0.00125",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.00125,
+        0.0,
+        -0.00125
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.062165966699796016,
+      "worst_post_probe_cost": 11.252541244209267
+    },
+    {
+      "amplitude_pu": 0.00125,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.004481749264947475,
+          0.014669086817100212
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.005954732430028539,
+          0.016142069982181276
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.004481749264947475,
+          0.014669086817100212
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.005954732430028539,
+          0.016142069982181276
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A2_n_0.00125",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.00125,
+        -0.0,
+        0.00125
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.06259912359993614,
+      "worst_post_probe_cost": 11.252974401109407
+    },
+    {
+      "amplitude_pu": 0.00125,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.012448417145221293,
+          -0.002261079593068558
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.014579569982186596,
+          -0.004392232430033861
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.012448417145221293,
+          -0.002261079593068558
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.014579569982186596,
+          -0.004392232430033861
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A2_p_0.00125",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.00125,
+        0.0,
+        -0.00125
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.06279331470589078,
+      "worst_post_probe_cost": 11.253168592215362
+    },
+    {
+      "amplitude_pu": 0.00125,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.0017921142774643987,
+          0.008395223274688338
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.001490456330589693,
+          0.008696881221563042
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.0017921142774643987,
+          0.008395223274688338
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.001490456330589693,
+          0.008696881221563042
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A1_n_0.00125",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0006249999999999999,
+        0.00125,
+        -0.000625
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.09744990705151224,
+      "worst_post_probe_cost": 11.287825184560983
+    },
+    {
+      "amplitude_pu": 0.00125,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.0030651733786674603,
+          0.007122164173485276
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.0031743378465924005,
+          0.007012999705560336
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.0030651733786674603,
+          0.007122164173485276
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.0031743378465924005,
+          0.007012999705560336
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A2_n_0.00125",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0006249999999999999,
+        0.00125,
+        -0.000625
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.098117856026116,
+      "worst_post_probe_cost": 11.288493133535587
+    },
+    {
+      "amplitude_pu": 0.00125,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.0055963270836357085,
+          0.004591010468517028
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.006309874705563922,
+          0.0038774628465888137
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.0055963270836357085,
+          0.004591010468517028
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.006309874705563922,
+          0.0038774628465888137
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A2_p_0.00125",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0006249999999999999,
+        -0.00125,
+        0.000625
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.09778466839035715,
+      "worst_post_probe_cost": 11.288159945899828
+    },
+    {
+      "amplitude_pu": 0.0025,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.006245928406400351,
+          0.003941409145752385
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.007642193721568424,
+          0.002545143830584312
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.006106467639913995,
+          0.004080869912238741
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.007642193721568424,
+          0.002545143830584312
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A1_p_0.00250",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0012499999999999998,
+        -0.0025,
+        0.00125
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.3926307190024936,
+      "worst_post_probe_cost": 11.583005996511964
+    },
+    {
+      "amplitude_pu": 0.00375,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4285714285714286,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.0052298184969506,
+          0.015417156049103337
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.008838734981775426,
+          0.01902607253392816
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.0067587400299222175,
+          0.016946077582074955
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.00955221232232829,
+          0.019739549874481024
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447"
+        ],
+        [
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A1_n_0.00375",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.00375,
+        -0.0,
+        0.00375
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.5680751172416283,
+      "worst_post_probe_cost": 11.7584503947511
+    },
+    {
+      "amplitude_pu": 0.0025,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.0037866738345202185,
+          0.013974011386672956
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.005402796718613506,
+          0.015590134270766241
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.0037866738345202185,
+          0.013974011386672956
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.005402796718613506,
+          0.015590134270766241
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A1_n_0.00250",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0025,
+        0.0025
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.414824602781497,
+      "worst_post_probe_cost": 11.605199880290968
+    },
+    {
+      "amplitude_pu": 0.0025,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.009812002371034367,
+          0.00037533518111836865
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.013402634270776075,
+          -0.00321529671862334
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.009812002371034367,
+          0.00037533518111836865
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.013402634270776075,
+          -0.00321529671862334
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A1_p_0.00250",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0025,
+        -0.0025
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.41348827180491554,
+      "worst_post_probe_cost": 11.603863549314386
+    },
+    {
+      "amplitude_pu": 0.0025,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.0024854541867692422,
+          0.012672791738921978
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.0027014252564582595,
+          0.012888762808610996
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.0024854541867692422,
+          0.012672791738921978
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.0027014252564582595,
+          0.012888762808610996
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A2_n_0.00250",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0025,
+        0.0025
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.41463956801321444,
+      "worst_post_probe_cost": 11.605014845522685
+    },
+    {
+      "amplitude_pu": 0.0025,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.00851078272328339,
+          0.0016765548288693458
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.010701262808620833,
+          -0.000513925256468096
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.00851078272328339,
+          0.0016765548288693458
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.010701262808620833,
+          -0.000513925256468096
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A2_p_0.00250",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0025,
+        -0.0025
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.4139068910466097,
+      "worst_post_probe_cost": 11.60428216855608
+    },
+    {
+      "amplitude_pu": 0.0025,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.011394403402377653,
+          -0.0012070658502249176
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.015833299874494344,
+          -0.005645962322341608
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.011394403402377653,
+          -0.0012070658502249176
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.015833299874494344,
+          -0.005645962322341608
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A1_p_0.00250",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0025,
+        0.0,
+        -0.0025
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.2519960506700407,
+      "worst_post_probe_cost": 11.442371328179512
+    },
+    {
+      "amplitude_pu": 0.0025,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.005592084100886932,
+          0.01577942165303967
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.006735982430025875,
+          0.016923319982178612
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.005592084100886932,
+          0.01577942165303967
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.006735982430025875,
+          0.016923319982178612
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A2_n_0.00250",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0025,
+        -0.0,
+        0.0025
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.25111076450038006,
+      "worst_post_probe_cost": 11.441486042009851
+    },
+    {
+      "amplitude_pu": 0.0025,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.011338082309281832,
+          -0.001150744757129095
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.013798319982189264,
+          -0.0036109824300365285
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.011338082309281832,
+          -0.001150744757129095
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.013798319982189264,
+          -0.0036109824300365285
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A2_p_0.00250",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0025,
+        0.0,
+        -0.0025
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.2514991467122911,
+      "worst_post_probe_cost": 11.441874424221762
+    },
+    {
+      "amplitude_pu": 0.0025,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.0010291957325396133,
+          0.009158141819613122
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.0011388938305914855,
+          0.009048443721561251
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.0010291957325396133,
+          0.009158141819613122
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.0011388938305914855,
+          0.009048443721561251
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A1_n_0.00250",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0012499999999999998,
+        0.0025,
+        -0.00125
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.3910900444679868,
+      "worst_post_probe_cost": 11.581465321977458
+    },
+    {
+      "amplitude_pu": 0.0025,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.0023022548337426766,
+          0.007885082718410059
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.0028227753465941896,
+          0.007364562205558547
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.0023022548337426766,
+          0.007885082718410059
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.0028227753465941896,
+          0.007364562205558547
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A2_n_0.00250",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0012499999999999998,
+        0.0025,
+        -0.00125
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.3926583154633878,
+      "worst_post_probe_cost": 11.583033592972859
+    },
+    {
+      "amplitude_pu": 0.0025,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.0048334085387109265,
+          0.00535392901344181
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.005958312205565715,
+          0.004229025346587021
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.0048334085387109265,
+          0.00535392901344181
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.005958312205565715,
+          0.004229025346587021
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A2_p_0.00250",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0012499999999999998,
+        -0.0025,
+        0.00125
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.39199194019186834,
+      "worst_post_probe_cost": 11.58236721770134
+    },
+    {
+      "amplitude_pu": 0.00375,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.005586885424953075,
+          0.004600452127199661
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.007290631221570213,
+          0.002896706330582523
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.005343549094989215,
+          0.004843788457163521
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.007290631221570213,
+          0.002896706330582523
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A1_p_0.00375",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0018749999999999997,
+        -0.00375,
+        0.001875
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.8830580643862902,
+      "worst_post_probe_cost": 12.073433341895761
+    },
+    {
+      "amplitude_pu": 0.005,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4285714285714286,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.005784985914920423,
+          0.015972323467073158
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.0092293599817744,
+          0.01941669753392714
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.007869074865861674,
+          0.01805641241801441
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.010333462322325626,
+          0.020520799874478364
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447"
+        ],
+        [
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A1_n_0.00500",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.005,
+        -0.0,
+        0.005
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -1.0092467615440004,
+      "worst_post_probe_cost": 12.199622039053471
+    },
+    {
+      "amplitude_pu": 0.00375,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.0048271760884298605,
+          0.015014513640582598
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.005949671718611045,
+          0.01613700927076378
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.0048271760884298605,
+          0.015014513640582598
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.005949671718611045,
+          0.01613700927076378
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A1_n_0.00375",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.00375,
+        0.00375
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.9331270125131734,
+      "worst_post_probe_cost": 12.123502290022644
+    },
+    {
+      "amplitude_pu": 0.00375,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.008771500117124725,
+          0.0014158374350280124
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.01285575927077854,
+          -0.0026684217186258045
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.008771500117124725,
+          0.0014158374350280124
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.01285575927077854,
+          -0.0026684217186258045
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A1_p_0.00375",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.00375,
+        -0.00375
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.9360979068002795,
+      "worst_post_probe_cost": 12.12647318430975
+    },
+    {
+      "amplitude_pu": 0.00375,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.0035259564406788886,
+          0.013713293992831624
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.0032483002564558027,
+          0.013435637808608538
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.0035259564406788886,
+          0.013713293992831624
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.0032483002564558027,
+          0.013435637808608538
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A2_n_0.00375",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.00375,
+        0.00375
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.9329370545382805,
+      "worst_post_probe_cost": 12.123312332047751
+    },
+    {
+      "amplitude_pu": 0.00375,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.007470280469373741,
+          0.0027170570827789947
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.010154387808623294,
+          3.2949743529442875e-05
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.007470280469373741,
+          0.0027170570827789947
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.010154387808623294,
+          3.2949743529442875e-05
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A2_p_0.00375",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.00375,
+        -0.00375
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.9318380390883725,
+      "worst_post_probe_cost": 12.122213316597843
+    },
+    {
+      "amplitude_pu": 0.00375,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.010284068566438192,
+          -9.673101428545484e-05
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.015052049874497007,
+          -0.004864712322344272
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.010284068566438192,
+          -9.673101428545484e-05
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.015052049874497007,
+          -0.004864712322344272
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A1_p_0.00375",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.00375,
+        0.0,
+        -0.00375
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.6343637682679564,
+      "worst_post_probe_cost": 11.824739045777427
+    },
+    {
+      "amplitude_pu": 0.00375,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.0067024189368263916,
+          0.016889756488979127
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.007517232430023208,
+          0.017704569982175945
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.0067024189368263916,
+          0.016889756488979127
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.007517232430023208,
+          0.017704569982175945
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A2_n_0.00375",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.00375,
+        -0.0,
+        0.00375
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.5653615630364399,
+      "worst_post_probe_cost": 11.75573684054591
+    },
+    {
+      "amplitude_pu": 0.00375,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.010227747473342371,
+          -4.040992118963579e-05
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.013017069982191931,
+          -0.002829732430039194
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.010227747473342371,
+          -4.040992118963579e-05
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.013017069982191931,
+          -0.002829732430039194
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A2_p_0.00375",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.00375,
+        0.0,
+        -0.00375
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.5659441363543074,
+      "worst_post_probe_cost": 11.756319413863778
+    },
+    {
+      "amplitude_pu": 0.00375,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.00026627718761483305,
+          0.009921060364537902
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.0007873313305932833,
+          0.009400006221559454
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.00026627718761483305,
+          0.009921060364537902
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.0007873313305932833,
+          0.009400006221559454
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A1_n_0.00375",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0018749999999999997,
+        0.00375,
+        -0.001875
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.88074705258453,
+      "worst_post_probe_cost": 12.071122330094001
+    },
+    {
+      "amplitude_pu": 0.00375,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.001539336288817898,
+          0.008648001263334839
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.002471212846595982,
+          0.007716124705556754
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.001539336288817898,
+          0.008648001263334839
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.002471212846595982,
+          0.007716124705556754
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A2_n_0.00375",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0018749999999999997,
+        0.00375,
+        -0.001875
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.8834480186469218,
+      "worst_post_probe_cost": 12.073823296156393
+    },
+    {
+      "amplitude_pu": 0.00375,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.004070489993786144,
+          0.0061168475583665925
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.005606749705567506,
+          0.00458058784658523
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.004070489993786144,
+          0.0061168475583665925
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.005606749705567506,
+          0.00458058784658523
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A2_p_0.00375",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0018749999999999997,
+        -0.00375,
+        0.001875
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -0.8824484557396417,
+      "worst_post_probe_cost": 12.072823733249113
+    },
+    {
+      "amplitude_pu": 0.005,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.005784985914920423,
+          0.015972323467073158
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.006496546718608582,
+          0.01668388427076132
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.005867678342339508,
+          0.016055015894492243
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.006496546718608582,
+          0.01668388427076132
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A1_n_0.00500",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.005,
+        0.005
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -1.658616753039862,
+      "worst_post_probe_cost": 12.848992030549333
+    },
+    {
+      "amplitude_pu": 0.005,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.00027428376583116514,
+          0.0104616213179839
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.00043576883059507406,
+          0.009751568721557663
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.0004966413573099472,
+          0.010683978909462682
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.00043576883059507406,
+          0.009751568721557663
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A1_n_0.00500",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0024999999999999996,
+        0.005,
+        -0.0025
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -1.5664209314011401,
+      "worst_post_probe_cost": 12.756796208910611
+    },
+    {
+      "amplitude_pu": 0.005,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.0049278424435057954,
+          0.005259495108646941
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.006939068721572006,
+          0.0032482688305807304
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.004580630550064429,
+          0.005606707002088307
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.006939068721572006,
+          0.0032482688305807304
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A1_p_0.00500",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0024999999999999996,
+        -0.005,
+        0.0025
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -1.5695022804701537,
+      "worst_post_probe_cost": 12.759877557979625
+    },
+    {
+      "amplitude_pu": 0.005,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.007730997863215071,
+          0.002456339688937665
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.012308884270780997,
+          -0.0021215467186282604
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.007730997863215071,
+          0.002456339688937665
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.012308884270780997,
+          -0.0021215467186282604
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A1_p_0.00500",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.005,
+        -0.005
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -1.727767276879348,
+      "worst_post_probe_cost": 12.918142554388819
+    },
+    {
+      "amplitude_pu": 0.005,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.004566458694588536,
+          0.014753796246741273
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.0037951752564533434,
+          0.01398251280860608
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.004566458694588536,
+          0.014753796246741273
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.0037951752564533434,
+          0.01398251280860608
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A2_n_0.00500",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.005,
+        0.005
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -1.6584802679767119,
+      "worst_post_probe_cost": 12.848855545486183
+    },
+    {
+      "amplitude_pu": 0.005,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.006429778215464096,
+          0.0037575593366886402
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.00960751280862575,
+          0.0005798247435269861
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.006429778215464096,
+          0.0037575593366886402
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.00960751280862575,
+          0.0005798247435269861
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A2_p_0.00500",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.005,
+        -0.005
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -1.6570149140434989,
+      "worst_post_probe_cost": 12.84739019155297
+    },
+    {
+      "amplitude_pu": 0.005,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.009173733730498734,
+          0.0010136038216540027
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.014270799874499671,
+          -0.004083462322346934
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.009173733730498734,
+          0.0010136038216540027
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.014270799874499671,
+          -0.004083462322346934
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A1_p_0.00500",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.005,
+        0.0,
+        -0.005
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -1.1426092285326384,
+      "worst_post_probe_cost": 12.33298450604211
+    },
+    {
+      "amplitude_pu": 0.005,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.007812753772765853,
+          0.01800009132491859
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.008298482430020543,
+          0.01848581998217328
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.007812753772765853,
+          0.01800009132491859
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.008298482430020543,
+          0.01848581998217328
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A2_n_0.00500",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.005,
+        -0.0,
+        0.005
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -1.005351519208114,
+      "worst_post_probe_cost": 12.195726796717585
+    },
+    {
+      "amplitude_pu": 0.005,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.009117412637402914,
+          0.0010699249147498218
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.012235819982194593,
+          -0.002048482430041857
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.009117412637402914,
+          0.0010699249147498218
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.012235819982194593,
+          -0.002048482430041857
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A2_p_0.00500",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.005,
+        0.0,
+        -0.005
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -1.0061282836319378,
+      "worst_post_probe_cost": 12.196503561141409
+    },
+    {
+      "amplitude_pu": 0.005,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.0007764177438931126,
+          0.009410919808259623
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.0021196503465977764,
+          0.008067687205554959
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.0007764177438931126,
+          0.009410919808259623
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.0021196503465977764,
+          0.008067687205554959
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A2_n_0.00500",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0024999999999999996,
+        0.005,
+        -0.0025
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -1.5704869655767162,
+      "worst_post_probe_cost": 12.760862243086187
+    },
+    {
+      "amplitude_pu": 0.005,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.0033075714488613635,
+          0.006879766103291373
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.0052551872055693035,
+          0.004932150346583433
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.0033075714488613635,
+          0.006879766103291373
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.0052551872055693035,
+          0.004932150346583433
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A2_p_0.00500",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0024999999999999996,
+        -0.005,
+        0.0025
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -1.5691542150336772,
+      "worst_post_probe_cost": 12.759529492543148
+    },
+    {
+      "amplitude_pu": 0.0075,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4285714285714286,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.006895320750860064,
+          0.0170826583030128
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.010010609981772351,
+          0.02019794753392509
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.01008974453774059,
+          0.020277082089893324
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.011895962322320295,
+          0.022083299874473033
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447"
+        ],
+        [
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500"
+        ],
+        [
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A1_n_0.00750",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0075,
+        -0.0,
+        0.0075
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -2.2692232781490436,
+      "worst_post_probe_cost": 13.459598555658514
+    },
+    {
+      "amplitude_pu": 0.0075,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.006895320750860064,
+          0.0170826583030128
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.007590296718603667,
+          0.017777634270756404
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.007948682850158807,
+          0.01813602040231154
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.007590296718603667,
+          0.017777634270756404
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447"
+        ],
+        [
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A1_n_0.00750",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0075,
+        0.0075
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -3.731158226478275,
+      "worst_post_probe_cost": 14.921533503987746
+    },
+    {
+      "amplitude_pu": 0.0075,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.0007596186017724436,
+          0.010946956153925179
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.0002673561694013409,
+          0.010454693721554078
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.0020224784471595163,
+          0.012209815999312253
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.0002673561694013409,
+          0.010454693721554078
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A1_n_0.00750",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0037499999999999994,
+        0.0075,
+        -0.00375
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -3.5647831581550236,
+      "worst_post_probe_cost": 14.755158435664494
+    },
+    {
+      "amplitude_pu": 0.0075,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.4,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.003609756480611236,
+          0.0065775810715415
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.006235943721575596,
+          0.00395139383057714
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.0030547934602148654,
+          0.007132544091937871
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.006235943721575596,
+          0.00395139383057714
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A1_p_0.00750",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0037499999999999994,
+        -0.0075,
+        0.00375
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -3.5304413247380815,
+      "worst_post_probe_cost": 14.720816602247552
+    },
+    {
+      "amplitude_pu": 0.0075,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.005649993355395773,
+          0.004537344196756963
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.011215134270785913,
+          -0.0010277967186331774
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.005649993355395773,
+          0.004537344196756963
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.011215134270785913,
+          -0.0010277967186331774
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A1_p_0.00750",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0075,
+        -0.0075
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -3.9326680094225246,
+      "worst_post_probe_cost": 15.123043286931996
+    },
+    {
+      "amplitude_pu": 0.0075,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.00664746320240783,
+          0.016834800754560567
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.004888925256448421,
+          0.015076262808601158
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.00664746320240783,
+          0.016834800754560567
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.004888925256448421,
+          0.015076262808601158
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A2_n_0.00750",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0075,
+        0.0075
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -3.7313038755936674,
+      "worst_post_probe_cost": 14.921679153103138
+    },
+    {
+      "amplitude_pu": 0.0075,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.0043487737076448015,
+          0.005838563844507935
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.00851376280863067,
+          0.0016735747435220648
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.0043487737076448015,
+          0.005838563844507935
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.00851376280863067,
+          0.0016735747435220648
+        ]
+      },
+      "physical_duration_s": 8.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_8s_A2_p_0.00750",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0075,
+        -0.0075
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -3.7291058446938514,
+      "worst_post_probe_cost": 14.919481122203322
+    },
+    {
+      "amplitude_pu": 0.0075,
+      "area": 0,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.006953064058619811,
+          0.0032342734935329248
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.012708299874504999,
+          -0.0025209623223522637
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.006953064058619811,
+          0.0032342734935329248
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.012708299874504999,
+          -0.0025209623223522637
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A1_p_0.00750",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0075,
+        0.0,
+        -0.0075
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -2.5367333770622977,
+      "worst_post_probe_cost": 13.727108654571769
+    },
+    {
+      "amplitude_pu": 0.0075,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.010033423444644769,
+          0.020220760996797506
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          0.009860982430015215,
+          0.020048319982167953
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.010033423444644769,
+          0.020220760996797506
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          0.009860982430015215,
+          0.020048319982167953
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A2_n_0.00750",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0075,
+        -0.0,
+        0.0075
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -2.262548904458308,
+      "worst_post_probe_cost": 13.452924181967779
+    },
+    {
+      "amplitude_pu": 0.0075,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.006896742965523996,
+          0.0032905945866287404
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.01067331998219992,
+          -0.0004859824300471839
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.006896742965523996,
+          0.0032905945866287404
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.01067331998219992,
+          -0.0004859824300471839
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "biphasic_12s_A2_p_0.00750",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0075,
+        0.0,
+        -0.0075
+      ],
+      "shape": "biphasic",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -2.263714051094043,
+      "worst_post_probe_cost": 13.454089328603514
+    },
+    {
+      "amplitude_pu": 0.0075,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          0.0007494193459564478,
+          0.010936756898109183
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.0014165253466013649,
+          0.00877081220555137
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          0.0007494193459564478,
+          0.010936756898109183
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.0014165253466013649,
+          0.00877081220555137
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A2_n_0.00750",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        -0.0037499999999999994,
+        0.0075,
+        -0.00375
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -3.5333125906750897,
+      "worst_post_probe_cost": 14.72368786818456
+    },
+    {
+      "amplitude_pu": 0.0075,
+      "area": 1,
+      "exact_value": NaN,
+      "maximum_posterior_size": 4,
+      "mean_posterior_reduction": 0.33333333333333337,
+      "observation_intervals": {
+        "M00_P0.0450_R0.0250_D0.447": [
+          -0.001781734359011797,
+          0.008405603193140938
+        ],
+        "M01_P0.0450_R0.0250_D1.500": [
+          -0.00455206220557289,
+          0.005635275346579846
+        ],
+        "M02_P0.0717_R0.0250_D0.447": [
+          -0.001781734359011797,
+          0.008405603193140938
+        ],
+        "M03_P0.0717_R0.0250_D1.500": [
+          -0.00455206220557289,
+          0.005635275346579846
+        ]
+      },
+      "physical_duration_s": 12.0,
+      "possible_posteriors": [
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M02_P0.0717_R0.0250_D0.447"
+        ],
+        [
+          "M01_P0.0450_R0.0250_D1.500",
+          "M03_P0.0717_R0.0250_D1.500"
+        ],
+        [
+          "M00_P0.0450_R0.0250_D0.447",
+          "M01_P0.0450_R0.0250_D1.500",
+          "M02_P0.0717_R0.0250_D0.447",
+          "M03_P0.0717_R0.0250_D1.500"
+        ]
+      ],
+      "probe_counterfactual_cost": NaN,
+      "probe_id": "prbs_12s_A2_p_0.00750",
+      "reason": "QUADRATIC_RECOURSE_UPPER_NONPOSITIVE",
+      "safe": true,
+      "sequence_pu": [
+        0.0037499999999999994,
+        -0.0075,
+        0.00375
+      ],
+      "shape": "prbs",
+      "solver_attempts": 0,
+      "solver_failures": 0,
+      "upper_value": -3.531313464860533,
+      "worst_post_probe_cost": 14.721688742370004
+    }
+  ],
+  "ramp_spread_pu_per_s": 0.0,
+  "region": "ZERO_VALUE_PROVED",
+  "registered_probe_count": 60,
+  "robust_cost": 11.190375277509471,
+  "safe_probe_count": 60,
+  "selected_probe_id": null,
+  "sg_tension": "medium",
+  "soc": 0.4848166319985265,
+  "solver_attempts": 5,
+  "solver_failures": 0,
+  "tie_loading_pu": 0.0
+}

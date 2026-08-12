@@ -1,0 +1,15 @@
+scope,metric,target,interpretation
+all,physical_hard_violations,0,safety
+all,success_rate_drop_pp,<=1,safety
+all,frequency_peak_absolute_delta_hz,<=0.02,noninferiority
+all,p99_solve_fraction,<0.5,realtime
+predicted_positive,actual_net_value_ci_lower,>0,primary_value
+predicted_positive,value_recovery_ci_lower,>0,information_value
+predicted_positive,value_recovery_point,>=0.25,information_value
+predicted_positive,candidate_diameter_reduction,>=0.40,identification
+predicted_positive,false_optimism,<=0.01,certificate
+predicted_positive,probe_window_frequency_delta_hz,<=0.02,probe_safety
+predicted_zero,false_positive_probe_rate,<=0.05,abstention
+predicted_zero,core_metric_absolute_change,<=0.01,baseline_equivalence
+boundary,positive_region_precision,>=0.70,boundary_validation
+normal1h,profiles_per_method,>=6,normal_operation
