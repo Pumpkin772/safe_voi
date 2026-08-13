@@ -82,6 +82,7 @@ From a fresh extraction root run:
 ```text
 python 19_REPRODUCIBILITY/verify_manifest.py
 python 19_REPRODUCIBILITY/reproduce_minimal.py
+python 19_REPRODUCIBILITY/reproduce_all.py
 ```
 """
     write("00_README/README.md", readme)
@@ -180,6 +181,76 @@ result = evaluate_boundary_point(
 print(json.dumps(result.summary(), indent=2, sort_keys=True))
 '''
     write("19_REPRODUCIBILITY/recompute_small_boundary.py", recompute)
+    recompute_validation = '''from __future__ import annotations
+import json
+from pathlib import Path
+import pandas as pd
+root = Path(__file__).resolve().parents[1]
+raw = root / "14_RAW_RESULTS/research_outputs_boundary"
+plant_a = pd.concat([
+    pd.read_csv(raw / "B2_VALIDATION_1_PLANT_A/EPISODES.csv"),
+    pd.read_csv(raw / "B2_VALIDATION_2_PLANT_A/EPISODES.csv"),
+], ignore_index=True)
+plant_b = pd.read_csv(raw / "B2_NATIVE_PLANT_B/EPISODES.csv")
+selected_a = plant_a.loc[plant_a.method.eq("selective_voi_accr_mpc")]
+selected_b = plant_b.loc[plant_b.method.eq("selective_voi_accr_mpc")]
+combined = pd.concat([selected_a, selected_b], ignore_index=True)
+summary = {
+    "plant_a_scenarios": int(len(selected_a)),
+    "plant_a_physical_successes": int(selected_a.physical_success.astype(bool).sum()),
+    "native_plant_b_scenarios": int(len(selected_b)),
+    "native_plant_b_physical_successes": int(selected_b.physical_success.astype(bool).sum()),
+    "optimization_calls": int(combined.optimization_attempts.sum()),
+    "solver_failures": int(combined.solver_failure_calls.sum()),
+    "fallbacks": int(combined.fallback_calls.sum()),
+    "probe_triggers": int(combined.probe_triggers.sum()),
+    "maximum_contract_action_difference_pu": float(
+        combined.contract_action_max_abs_difference_pu.max()
+    ),
+}
+assert summary == {
+    "plant_a_scenarios": 40,
+    "plant_a_physical_successes": 40,
+    "native_plant_b_scenarios": 12,
+    "native_plant_b_physical_successes": 12,
+    "optimization_calls": 5902,
+    "solver_failures": 0,
+    "fallbacks": 0,
+    "probe_triggers": 0,
+    "maximum_contract_action_difference_pu": 0.0,
+}
+print(json.dumps(summary, indent=2, sort_keys=True))
+'''
+    write("19_REPRODUCIBILITY/recompute_validation_summary.py", recompute_validation)
+    reproduce_all = '''from __future__ import annotations
+import os
+from pathlib import Path
+import subprocess
+import sys
+root = Path(__file__).resolve().parents[1]
+for script in (
+    "verify_manifest.py",
+    "reproduce_minimal.py",
+    "recompute_small_boundary.py",
+    "recompute_validation_summary.py",
+):
+    subprocess.run(
+        [sys.executable, str(root / "19_REPRODUCIBILITY" / script)],
+        cwd=root, check=True,
+    )
+environment = dict(os.environ)
+source = root / "08_SOURCE_ENV"
+environment["PYTHONPATH"] = os.pathsep.join((
+    str(source / "scratch_direction5_voi_boundary"),
+    str(source / "src"),
+))
+subprocess.run(
+    [sys.executable, "-m", "pytest", "09_TESTS/test_boundary_engine.py", "-q"],
+    cwd=root, env=environment, check=True,
+)
+print("REPRODUCE_ALL_OK")
+'''
+    write("19_REPRODUCIBILITY/reproduce_all.py", reproduce_all)
     write("20_GIT_MANIFEST/GIT_COMMIT.txt", commit + "\n")
     write("20_GIT_MANIFEST/GIT_STATUS.txt", git_status)
     copy(ROOT / "results_boundary/final/FINAL_STATUS.json", "21_FINAL_STATUS/FINAL_STATUS.json")
