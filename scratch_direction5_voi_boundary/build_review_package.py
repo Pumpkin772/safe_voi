@@ -201,7 +201,7 @@ summary = {
     "plant_a_physical_successes": int(selected_a.physical_success.astype(bool).sum()),
     "native_plant_b_scenarios": int(len(selected_b)),
     "native_plant_b_physical_successes": int(selected_b.physical_success.astype(bool).sum()),
-    "optimization_calls": int(combined.optimization_attempts.sum()),
+    "optimization_calls": int(combined.attempted_optimization_calls.sum()),
     "solver_failures": int(combined.solver_failure_calls.sum()),
     "fallbacks": int(combined.fallback_calls.sum()),
     "probe_triggers": int(combined.probe_triggers.sum()),
