@@ -8,12 +8,13 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import tempfile
 import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACTS = ROOT / "artifacts_direction5_voi_boundary"
-STAGE = ARTIFACTS / "review_package_stage"
+STAGE = Path(tempfile.gettempdir()) / "d5vb_review_stage"
 ZIP = ROOT / "DIRECTION5_VOI_BOUNDARY_SINGLE_REVIEW_PACKAGE.zip"
 
 
@@ -49,7 +50,7 @@ def main() -> None:
         raise RuntimeError("refusing to package an unfinished or inconsistent result")
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     if STAGE.exists():
-        if STAGE.resolve().parent != ARTIFACTS.resolve():
+        if STAGE.resolve().parent != Path(tempfile.gettempdir()).resolve():
             raise RuntimeError("unsafe stage path")
         shutil.rmtree(STAGE)
     STAGE.mkdir()
