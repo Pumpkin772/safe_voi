@@ -246,7 +246,10 @@ environment["PYTHONPATH"] = os.pathsep.join((
     str(source / "src"),
 ))
 subprocess.run(
-    [sys.executable, "-m", "pytest", "09_TESTS/test_boundary_engine.py", "-q"],
+    [
+        sys.executable, "-m", "pytest", "09_TESTS/test_boundary_engine.py", "-q",
+        "--basetemp=19_REPRODUCIBILITY/.pytest_tmp",
+    ],
     cwd=root, env=environment, check=True,
 )
 print("REPRODUCE_ALL_OK")
