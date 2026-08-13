@@ -18,11 +18,13 @@ Both independently reproduce the empty registered positive-value region.
 
 - 40 independent 300 s scenarios: two 2 s cells and two 4 s cells, with 10
   seeds per cell and balanced known/OOD coverage.
-- 37/40 met the registered terminal-recovery condition.
+- 40/40 met the registered terminal-recovery condition after the retained
+  post-lock deterministic signed-load integration correction.
 - All 40 had zero hard and command violations.
-- The three retained failures were 2 s OOD area-1 persistent-imbalance cases;
-  peak frequency remained below 0.429 Hz, but terminal ACE/frequency did not
-  recover within the last 30 s.
+- Maximum peak frequency deviation was 0.430007 Hz. The superseded
+  pre-correction results, including their three terminal-recovery failures,
+  remain under `B2_PRE_CORRECTION_SIGNED_LOAD`; they are not used as corrected
+  method evidence.
 - All issued zero probes and had exactly zero contract-action and core-metric
   difference. The contract and selective rows refer to one shared physical
   trajectory because the frozen scheduler returns the same contract action
@@ -35,14 +37,14 @@ Both independently reproduce the empty registered positive-value region.
 - 12/12 initialized and converged; maximum initialization residual was
   2.3093e-14 and maximum p99 algebraic balance residual was 1.8446e-8 pu.
 - 12/12 were physically successful with zero hard/command violations.
-- Maximum peak frequency deviation was 0.077381 Hz.
+- Maximum peak frequency deviation was 0.077480 Hz.
 - All issued zero probes and were exactly contract-equivalent.
 
 ## Computation and interpretation
 
 Across the 52 actually executed selective trajectories there were 5,902
 rolling optimization calls, zero solver failures, and zero fallbacks. The
-maximum individual solve time was 2.6514 s; hence the present Python/CVXPY
+maximum individual solve time was 7.8864 s; hence the present Python/CVXPY
 implementation does not establish the registered 2 s real-time requirement,
 even though the physical and no-probe results are unaffected. Ordinary
 controllers read no capability truth.

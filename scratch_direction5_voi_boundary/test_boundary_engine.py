@@ -10,6 +10,7 @@ from voi_boundary_engine import (
     normalized_probe_sequence,
     objective_scales,
     probe_library,
+    solve_policy,
 )
 from selective_boundary_policy import CausalBoundaryFeatures, FrozenBoundaryLookup, SelectiveProbeScheduler
 
@@ -88,3 +89,20 @@ def test_zero_region_returns_identical_contract_action_object(tmp_path) -> None:
     assert not decision.worthwhile
     action = np.array((0.01, 0.02, 0.03, 0.04))
     assert scheduler.overlay(action) is action
+
+
+def test_rolling_policy_uses_signed_causal_area_load_forecast() -> None:
+    item = point(period_s=4.0)
+    models = candidate_models(item)
+    signed = solve_policy(
+        item, models, horizon_steps=6, initial_grid_state=np.zeros(7),
+        load_forecast_pu=np.array((-0.02, 0.01)),
+    )
+    legacy_unsigned = solve_policy(
+        item, models, horizon_steps=6, initial_grid_state=np.zeros(7),
+    )
+    assert np.isfinite(signed.objective)
+    assert signed.sg_command[0, 0] < 0.0
+    assert signed.bess_command[0, 0] < 0.0
+    assert legacy_unsigned.sg_command[0, 0] > 0.0
+    assert legacy_unsigned.bess_command[0, 0] > 0.0

@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\Desktop\zhr\研究生材料\方向5实现\d5_hidden_mode_frequency_from_scratch\scratch_direction5_voi_boundary\run_normal1h.py", line 168, in normal_episode
+    result = simulate(seed, OUTPUT / f"NORMAL1H_{seed}_progress.json")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Lenovo\Desktop\zhr\研究生材料\方向5实现\d5_hidden_mode_frequency_from_scratch\scratch_direction5_voi_boundary\run_normal1h.py", line 97, in simulate
+    state, _diagnostics = plant.step(
+                          ^^^^^^^^^^^
+  File "C:\Users\Lenovo\Desktop\zhr\研究生材料\方向5实现\d5_hidden_mode_frequency_from_scratch\src\direction5freq\models\plant_a_full.py", line 200, in step
+    next_bess, bess_diag = step_bess(
+                           ^^^^^^^^^^
+  File "C:\Users\Lenovo\Desktop\zhr\研究生材料\方向5实现\d5_hidden_mode_frequency_from_scratch\src\direction5freq\models\capability_contract.py", line 180, in step_bess
+    raise RuntimeError("measured BESS energy crossed a physical bound")
+RuntimeError: measured BESS energy crossed a physical bound

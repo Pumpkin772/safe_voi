@@ -115,6 +115,7 @@ class RollingBoundaryController:
             previous_sg_command=self.last_action[[0, 2]],
             previous_bess_command=self.last_action[[1, 3]],
             initial_energy_mwh=observation.measured_soc * self.parameters.bess.energy_mwh,
+            load_forecast_pu=load,
             scales=objective_scales(point.objective),
         )
         self.attempts += 1; self.solve_times.append(solution.solve_time_s)
@@ -156,6 +157,7 @@ class RollingBoundaryController:
                     previous_sg_command=self.last_action[[0, 2]],
                     previous_bess_command=self.last_action[[1, 3]],
                     initial_energy_mwh=observation.measured_soc * self.parameters.bess.energy_mwh,
+                    load_forecast_pu=load,
                     scales=objective_scales(point.objective),
                 )
                 self.attempts += 1; self.solve_times.append(candidate.solve_time_s)

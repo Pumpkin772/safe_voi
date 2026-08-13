@@ -181,8 +181,8 @@ def guarded() -> None:
         OPENBLAS_NUM_THREADS="1", MKL_NUM_THREADS="1", NUMEXPR_NUM_THREADS="1",
     )
     limits = ResourceLimits(
-        max_system_commit_fraction=0.92, max_system_commit_growth_bytes=6 * GIB,
-        min_available_physical_bytes=8 * GIB, max_tree_private_bytes=3 * GIB,
+        max_system_commit_fraction=0.92, max_system_commit_growth_bytes=20 * GIB,
+        min_available_physical_bytes=6 * GIB, max_tree_private_bytes=3 * GIB,
         max_descendant_processes=2, timeout_s=43_200.0, poll_interval_s=0.5,
         preflight_max_system_commit_fraction=0.80,
     )
@@ -208,8 +208,8 @@ def guarded_episode(index: int) -> None:
         OPENBLAS_NUM_THREADS="1", MKL_NUM_THREADS="1", NUMEXPR_NUM_THREADS="1",
     )
     limits = ResourceLimits(
-        max_system_commit_fraction=0.92, max_system_commit_growth_bytes=6 * GIB,
-        min_available_physical_bytes=8 * GIB, max_tree_private_bytes=3 * GIB,
+        max_system_commit_fraction=0.92, max_system_commit_growth_bytes=20 * GIB,
+        min_available_physical_bytes=6 * GIB, max_tree_private_bytes=3 * GIB,
         max_descendant_processes=2, timeout_s=3600.0, poll_interval_s=0.5,
         preflight_max_system_commit_fraction=0.80,
     )
@@ -231,6 +231,8 @@ def guarded_episode(index: int) -> None:
 def collect() -> None:
     import pandas as pd
 
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(manifest()).to_csv(OUTPUT / "MANIFEST.csv", index=False)
     parts = [pd.read_csv(path) for path in sorted((OUTPUT / "parts").glob("*.csv"))]
     if len(parts) != len(manifest()):
         raise RuntimeError(f"native parts incomplete: {len(parts)}/{len(manifest())}")

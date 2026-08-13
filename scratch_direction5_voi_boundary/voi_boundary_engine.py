@@ -348,6 +348,7 @@ def solve_policy(
     previous_sg_command: np.ndarray | None = None,
     previous_bess_command: np.ndarray | None = None,
     initial_energy_mwh: np.ndarray | None = None,
+    load_forecast_pu: np.ndarray | None = None,
     scales: ObjectiveScales | None = None,
 ) -> PolicySolution:
     """Solve the common-sequence robust MPC for exactly the supplied posterior."""
@@ -361,7 +362,13 @@ def solve_policy(
     policy_scales = objective_scales(point.objective) if scales is None else scales
     parameters = plant_parameters(point.sg_tension, point.nominal_frequency_hz)
     ad, bd = _discrete_grid(parameters, point.period_s)
-    load = load_vector(point)
+    load = (
+        load_vector(point)
+        if load_forecast_pu is None
+        else np.asarray(load_forecast_pu, dtype=float)
+    )
+    if load.shape != (2,) or not np.all(np.isfinite(load)):
+        raise ValueError("load forecast must contain two finite causal area loads")
     p0 = np.zeros(2) if initial_bess_power is None else np.asarray(initial_bess_power, dtype=float)
     prior_sg = np.zeros(2) if previous_sg_command is None else np.asarray(previous_sg_command, dtype=float)
     prior_bess = np.zeros(2) if previous_bess_command is None else np.asarray(previous_bess_command, dtype=float)

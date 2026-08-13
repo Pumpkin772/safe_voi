@@ -122,7 +122,7 @@ def guarded(arguments: argparse.Namespace) -> None:
         OPENBLAS_NUM_THREADS="1", MKL_NUM_THREADS="1", NUMEXPR_NUM_THREADS="1",
     )
     limits = ResourceLimits(
-        max_system_commit_fraction=0.92, max_system_commit_growth_bytes=6 * GIB,
+        max_system_commit_fraction=0.92, max_system_commit_growth_bytes=20 * GIB,
         min_available_physical_bytes=8 * GIB, max_tree_private_bytes=3 * GIB,
         max_descendant_processes=2, timeout_s=43_200.0, poll_interval_s=0.5,
         preflight_max_system_commit_fraction=0.80,
