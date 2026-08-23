@@ -23,16 +23,18 @@ physical_ranges:
   load_event_time_s: [210.0, 390.0]
 
 probe_library:
-  allocation_neutral: true
+  modes: [allocation_neutral, control_aligned_surplus]
+  control_aligned_keeps_sg_contract_base: true
+  control_aligned_requires_current_binding_need: true
   physical_duration_s: [4.0, 8.0, 12.0]
-  amplitude_pu: [0.0005, 0.0010, 0.0015, 0.0025, 0.0035, 0.0050]
+  amplitude_pu: [0.0005, 0.0010, 0.0015, 0.0025, 0.0035, 0.0050, 0.0075, 0.0100, 0.0150]
   observation: causal_vector_actual_poi_power_tube
   shapes: [biphasic, ternary, short_prbs]
 
 value:
   physical_safety: robust_hard_constraints
-  primary: registered_event_distribution_expected_cost
-  secondary: [cvar_0_95, worst_episode]
+  primary: worst_capability_expected_event_paired_benefit
+  secondary: [evidence_based_bayesian_capability_value, cvar_0_95, worst_episode]
   objective_terms: [frequency, ace, tie, sg_movement, bess_movement, energy]
   all_grid_terms_nonzero: true
 

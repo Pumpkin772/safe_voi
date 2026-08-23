@@ -37,7 +37,8 @@ class ControllerScenarioContext:
     information_validity_horizon_s: float
     episode_duration_s: float
     measured_initial_soc: float
-    public_event_rate_per_s: float
+    public_event_count: int
+    public_event_time_window_s: tuple[float, float]
 
 
 @dataclass(frozen=True)
@@ -62,7 +63,6 @@ class ScenarioSpec:
     true_ramp_pu_per_s: float
     true_delay_s: float
     measurement_noise_std_pu: float
-    public_event_rate_per_s: float
 
     def __post_init__(self) -> None:
         if self.seed not in SEED_RANGES[self.split]:
@@ -93,7 +93,8 @@ class ScenarioSpec:
             information_validity_horizon_s=self.information_validity_horizon_s,
             episode_duration_s=self.episode_duration_s,
             measured_initial_soc=self.initial_soc,
-            public_event_rate_per_s=self.public_event_rate_per_s,
+            public_event_count=1,
+            public_event_time_window_s=(210.0, 390.0),
         )
 
     def evaluation_record(self) -> dict[str, Any]:
@@ -167,7 +168,6 @@ def generate_scenario(split: StudySplit, seed: int) -> ScenarioSpec:
         true_ramp_pu_per_s=ramp,
         true_delay_s=delay,
         measurement_noise_std_pu=float(noise.uniform(0.0002, 0.0015)),
-        public_event_rate_per_s=1.0 / 180.0,
     )
 
 

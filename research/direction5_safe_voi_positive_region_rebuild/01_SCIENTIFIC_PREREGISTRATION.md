@@ -36,22 +36,36 @@ registered event-distribution cost(contract MPC)
 ```
 
 Hard physical safety is evaluated robustly over every retained capability and
-non-delivery branch. Expected control value never replaces the hard safety
-test. CVaR(0.95) and worst episode are secondary reported quantities.
+non-delivery branch. The primary net value is the minimum, over retained
+capability hypotheses, of expected-event paired benefit. Expected control value
+never replaces the hard safety test. A Bayesian capability average is secondary
+and may be reported only when an external, evidence-based prior is available.
+CVaR(0.95) and worst episode are secondary reported quantities.
 
 ## Model and scenario changes that are allowed before validation
 
 - information validity horizon: 120, 180, 240, or 300 s;
 - 24 or 32 s rolling MPC horizon;
 - vector POI observation windows of 4, 8, or 12 s;
-- allocation-neutral probe amplitude from 0.0005 to 0.005 pu;
+- allocation-neutral probe amplitude from 0.0005 to 0.015 pu, subject to a
+  robust all-capability physical-safety calculation before value evaluation;
 - candidate power/ramp/delay values inside the Plant-A physical realization
   range and the native Plant-B interface range;
+- zero-sum allocation probes and control-aligned surplus probes. A
+  control-aligned probe is eligible only when the causal contract-MPC command
+  is near the public BESS floor, its direction helps the current regulation
+  need, the SG contract-safe command is unchanged, and all capability branches
+  remain physically safe;
 - capability persistence and independent load-event hazard within the locked
   480 s episode;
 - three fixed, nonzero frequency/ACE/tie objective preferences.
 
 No validation result may be used to choose among these alternatives.
+
+Sequential evidence may accumulate over non-overlapping eligible windows while
+the capability state remains unchanged. Certificate expiry is enforced at the
+registered information-validity time. Correlated-window sensitivity must be
+reported; independent-window calculations are development screens only.
 
 ## Required comparisons
 

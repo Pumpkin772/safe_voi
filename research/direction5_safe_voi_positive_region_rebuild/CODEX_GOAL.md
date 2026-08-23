@@ -37,7 +37,9 @@ Selective VOI-ACCR-MPC
 2. 安全约束仍对能力集鲁棒，控制价值对预注册事件分布取期望并报告尾部风险；
 3. 使用完整、因果的actual-POI-power时序观测管，不再压缩为单一标量；
 4. 能力变化后允许存在不含负荷事故的因果观测窗，后续负荷事件从独立分布抽样；
-5. 可在development内改进物理时长归一化probe库、后验集观测管和缓存算法。
+5. 可在development内改进物理时长归一化probe库、后验集观测管和缓存算法；
+6. development probe幅值可在`0.0005–0.015 pu`内搜索，但每个候选必须先通过全能力集物理安全计算。
+7. 允许比较两类因果probe：SG–IBR零和分配probe，以及在contract MPC已接近BESS保证功率且当前调频需求与probe同向时的control-aligned surplus probe。后者保持SG contract-safe命令不变，只有在全能力候选下均安全时才可使用。
 
 ## 禁止
 

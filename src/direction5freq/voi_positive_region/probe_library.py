@@ -15,13 +15,20 @@ class ProbeDesign:
     amplitude_pu: float
     shape: str
     sequence_pu: tuple[float, ...]
+    mode: str = "allocation_neutral"
 
     def __post_init__(self) -> None:
         sequence = np.asarray(self.sequence_pu, dtype=float)
         if len(sequence) < 2:
             raise ValueError("a nonzero zero-integral probe needs at least two samples")
-        if abs(float(sequence.sum()) * self.period_s) > 1e-12:
-            raise ValueError("probe has nonzero physical-time integral")
+        if self.mode == "allocation_neutral":
+            if abs(float(sequence.sum()) * self.period_s) > 1e-12:
+                raise ValueError("allocation-neutral probe has nonzero integral")
+        elif self.mode == "control_aligned_surplus":
+            if np.any(sequence < 0.0) or not np.any(sequence > 0.0):
+                raise ValueError("control-aligned surplus must be nonnegative and nonzero")
+        else:
+            raise ValueError("unknown probe mode")
         if np.max(np.abs(sequence)) > self.amplitude_pu + 1e-12:
             raise ValueError("probe exceeds registered amplitude")
         if abs(len(sequence) * self.period_s - self.physical_duration_s) > 1e-12:
@@ -74,4 +81,33 @@ def registered_probe_library(
                     shape=name,
                     sequence_pu=sequence,
                 ))
+    return probes
+
+
+def registered_control_aligned_library(
+    period_s: float,
+    durations_s: tuple[float, ...] = (12.0, 24.0),
+    amplitudes_pu: tuple[float, ...] = (0.0020, 0.0025, 0.0030, 0.0035, 0.0040),
+) -> list[ProbeDesign]:
+    """Surplus requests used only under a causal binding-regulation trigger."""
+
+    probes: list[ProbeDesign] = []
+    for duration_s in durations_s:
+        samples = int(round(duration_s / period_s))
+        if samples < 2 or not np.isclose(samples * period_s, duration_s):
+            continue
+        active_samples = max(1, samples // 3)
+        start = max(0, (samples - active_samples) // 2)
+        for amplitude in amplitudes_pu:
+            sequence = np.zeros(samples)
+            sequence[start:start + active_samples] = amplitude
+            probes.append(ProbeDesign(
+                probe_id=f"control_aligned_{duration_s:g}s_{amplitude:.4f}pu_{period_s:g}s",
+                period_s=period_s,
+                physical_duration_s=duration_s,
+                amplitude_pu=amplitude,
+                shape="surplus_plateau",
+                sequence_pu=tuple(float(value) for value in sequence),
+                mode="control_aligned_surplus",
+            ))
     return probes
