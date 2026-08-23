@@ -73,8 +73,10 @@ class NestedValueResult:
     contract_expected_cost: float
     perfect_information_expected_cost: float
     perfect_information_value: float
+    perfect_information_value_by_hypothesis: tuple[float, ...]
     probe_expected_cost: dict[str, float]
     probe_net_value: dict[str, float]
+    probe_net_value_by_hypothesis: dict[str, tuple[float, ...]]
     safe_probe_ids: tuple[str, ...]
     selected_probe_id: str | None
     selected_net_value: float
@@ -102,12 +104,12 @@ def evaluate_nested_value(
     safe_mask = np.all(data.probe_safe_for_hypothesis, axis=1)
     probe_cost: dict[str, float] = {}
     probe_value: dict[str, float] = {}
+    probe_value_by_hypothesis: dict[str, tuple[float, ...]] = {}
     for probe_index, probe_id in enumerate(data.probe_ids):
+        branch_value = contract_by_hypothesis - probe_by_hypothesis[probe_index]
         if data.capability_aggregation == "worst_case":
             cost = float(np.max(probe_by_hypothesis[probe_index]))
-            value = float(np.min(
-                contract_by_hypothesis - probe_by_hypothesis[probe_index]
-            ))
+            value = float(np.min(branch_value))
         else:
             probability = data.hypothesis_probability
             assert probability is not None
@@ -115,6 +117,7 @@ def evaluate_nested_value(
             value = contract - cost
         probe_cost[probe_id] = cost
         probe_value[probe_id] = value
+        probe_value_by_hypothesis[probe_id] = tuple(float(item) for item in branch_value)
 
     safe_ids = tuple(
         probe_id for probe_id, safe in zip(data.probe_ids, safe_mask, strict=True) if safe
@@ -128,8 +131,12 @@ def evaluate_nested_value(
         contract_expected_cost=contract,
         perfect_information_expected_cost=perfect,
         perfect_information_value=perfect_value,
+        perfect_information_value_by_hypothesis=tuple(
+            float(item) for item in contract_by_hypothesis - perfect_by_hypothesis
+        ),
         probe_expected_cost=probe_cost,
         probe_net_value=probe_value,
+        probe_net_value_by_hypothesis=probe_value_by_hypothesis,
         safe_probe_ids=safe_ids,
         selected_probe_id=selected,
         selected_net_value=selected_value,

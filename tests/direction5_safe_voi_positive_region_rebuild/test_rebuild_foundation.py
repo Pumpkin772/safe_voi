@@ -98,6 +98,7 @@ def test_nested_value_selects_only_robustly_safe_positive_probe() -> None:
     assert result.selected_probe_id == "safe_positive"
     assert result.selected_net_value > 0.0
     assert result.region == "POSITIVE_VALUE"
+    assert len(result.probe_net_value_by_hypothesis["safe_positive"]) == 2
 
 
 def test_nested_value_abstains_when_safe_probe_has_no_net_value() -> None:

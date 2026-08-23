@@ -146,6 +146,19 @@ def worker(arguments: argparse.Namespace) -> None:
     finally:
         nonlinear.RollingBoundaryController = original
     result["method"] = arguments.method
+    result["objective_preference"] = arguments.objective
+    result["probe_amplitude_pu"] = (
+        0.0 if arguments.method == "contract" else arguments.amplitude
+    )
+    result["maximum_probe_windows"] = (
+        0 if arguments.method == "contract" else arguments.maximum_windows
+    )
+    result["evidence_model"] = (
+        "none" if arguments.method != "dual" else arguments.evidence_label
+    )
+    result["certificate_validity_s"] = (
+        0.0 if arguments.method != "dual" else arguments.certificate_validity
+    )
     if arguments.method != "contract" and created_controllers:
         controller = created_controllers[0]
         result["power_certified"] = controller.power_certificate_time_s is not None

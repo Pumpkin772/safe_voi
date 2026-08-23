@@ -35,6 +35,9 @@ def main() -> None:
         item = {
             "scenario_id": row["scenario_id"],
             "method": row["method"],
+            "objective_preference": row.get("objective_preference", "resource_economy"),
+            "probe_amplitude_pu": row.get("probe_amplitude_pu"),
+            "evidence_model": row.get("evidence_model"),
             "physical_success": row["physical_success"],
             "hard_violation": row["hard_violation"],
             "solver_failure_calls": row["solver_failure_calls"],
