@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from scipy.stats import norm
 
 
 @dataclass(frozen=True)
@@ -17,8 +18,13 @@ class ControlAlignedConfig:
     maximum_frequency_hz: float = 0.25
     maximum_ace_pu: float = 0.12
     contract_power_pu: float = 0.045
-    certificate_margin_pu: float = 0.0028
+    certificate_samples: int = 2
     certificate_validity_s: float = 120.0
+    minimum_excitation_margin_pu: float = 0.0015
+    measurement_noise_std_pu: float = 0.001
+    observation_residual_bound_pu: float = 0.00025
+    evidence_window_correlation: float = 0.2
+    false_optimism_rate: float = 0.01
 
 
 class ControlAlignedSequentialProbe:
@@ -34,6 +40,7 @@ class ControlAlignedSequentialProbe:
         self.command_l1_pu = 0.0
         self.power_certified_until_s = -float("inf")
         self.evidence_started_at_s: float | None = None
+        self._signed_delivery_samples: list[float] = []
 
     def observe_delivery(
         self,
@@ -47,11 +54,29 @@ class ControlAlignedSequentialProbe:
         actual = np.asarray(actual_bess_poi_power, dtype=float)
         area = int(np.argmax(np.abs(issued)))
         direction = float(np.sign(issued[area]))
-        threshold = self.config.contract_power_pu + self.config.certificate_margin_pu
-        newly_certified = bool(
+        eligible = bool(
             direction != 0.0
-            and abs(issued[area]) > threshold
-            and direction * actual[area] > threshold
+            and abs(issued[area])
+            > self.config.contract_power_pu + self.config.minimum_excitation_margin_pu
+        )
+        if eligible:
+            self._signed_delivery_samples.append(direction * float(actual[area]))
+        samples = len(self._signed_delivery_samples)
+        effective_samples = (
+            samples
+            * (1.0 - self.config.evidence_window_correlation)
+            / (1.0 + self.config.evidence_window_correlation)
+        )
+        threshold = (
+            self.config.contract_power_pu
+            + self.config.observation_residual_bound_pu
+            + float(norm.ppf(1.0 - self.config.false_optimism_rate))
+            * self.config.measurement_noise_std_pu
+            / np.sqrt(max(effective_samples, 1e-12))
+        )
+        newly_certified = bool(
+            samples >= self.config.certificate_samples
+            and float(np.mean(self._signed_delivery_samples)) > threshold
         )
         if newly_certified:
             start = time_s if self.evidence_started_at_s is None else self.evidence_started_at_s
@@ -60,6 +85,10 @@ class ControlAlignedSequentialProbe:
 
     def power_certified(self, time_s: float) -> bool:
         return bool(time_s <= self.power_certified_until_s)
+
+    @property
+    def signed_delivery_samples(self) -> tuple[float, ...]:
+        return tuple(self._signed_delivery_samples)
 
     def overlay(
         self,

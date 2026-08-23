@@ -6,6 +6,7 @@ from direction5freq.voi_positive_region import (
     NestedValueInputs,
     ControlAlignedSequentialProbe,
     BinaryPriorValueBoundary,
+    OpportunityValuePoint,
     StudySplit,
     VectorObservationTube,
     causal_posterior,
@@ -14,6 +15,8 @@ from direction5freq.voi_positive_region import (
     registered_probe_library,
     registered_control_aligned_library,
     trajectory_metrics,
+    select_opportunity,
+    development_factorial,
 )
 from direction5freq.voi_positive_region.sequential_evidence import (
     effective_windows_ar1,
@@ -154,10 +157,15 @@ def test_delivery_certificate_is_causal_and_expires() -> None:
         ace_pu=np.zeros(2),
         measured_soc=np.full(2, 0.5),
     )
-    assert policy.observe_delivery(
+    assert not policy.observe_delivery(
         100.0,
         issued_bess_command=np.asarray((0.049, 0.0)),
-        actual_bess_poi_power=np.asarray((0.048, 0.0)),
+        actual_bess_poi_power=np.asarray((0.050, 0.0)),
+    )
+    assert policy.observe_delivery(
+        104.0,
+        issued_bess_command=np.asarray((0.049, 0.0)),
+        actual_bess_poi_power=np.asarray((0.050, 0.0)),
     )
     assert policy.power_certified(210.0)
     assert not policy.power_certified(210.1)
@@ -185,3 +193,48 @@ def test_stacked_covariance_reproduces_independent_information_gain() -> None:
     covariance = np.eye(4)
     assert np.isclose(stacked_mahalanobis_separation(low, high, covariance), 2.0)
     assert np.isclose(stacked_equal_prior_error(low, high, covariance), 0.1586552539)
+
+
+def test_information_value_expires_from_first_evidence_window() -> None:
+    point = OpportunityValuePoint(
+        amplitude_pu=0.003,
+        evidence_window_s=24.0,
+        windows_to_certify=10,
+        information_validity_s=300.0,
+        low_acquisition_control_value=-0.002,
+        high_acquisition_control_value=0.05,
+        low_information_value_per_s=0.0,
+        high_information_value_per_s=0.001,
+        physical_safe=True,
+    )
+    assert point.certification_time_s == 240.0
+    assert point.useful_information_time_s == 60.0
+    assert point.high_total_value == 0.11
+    assert point.prior_boundary.break_even_probability() is not None
+
+
+def test_opportunity_selection_uses_worst_prior_in_interval() -> None:
+    candidate = OpportunityValuePoint(
+        amplitude_pu=0.003,
+        evidence_window_s=12.0,
+        windows_to_certify=8,
+        information_validity_s=240.0,
+        low_acquisition_control_value=-0.001,
+        high_acquisition_control_value=0.03,
+        low_information_value_per_s=0.0,
+        high_information_value_per_s=0.001,
+        physical_safe=True,
+    )
+    selected = select_opportunity(
+        [candidate],
+        prior_lower=0.3,
+        prior_upper=0.8,
+        low_capability_downside_limit=0.01,
+    )
+    assert selected is candidate
+
+
+def test_development_factorial_has_eight_unique_cells() -> None:
+    cells = development_factorial()
+    assert len(cells) == 8
+    assert len({cell.cell_id for cell in cells}) == 8

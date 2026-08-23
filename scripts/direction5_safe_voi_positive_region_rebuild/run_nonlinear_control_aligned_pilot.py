@@ -46,7 +46,9 @@ def worker(arguments: argparse.Namespace) -> None:
                 active_steps=arguments.active_steps,
                 cooldown_steps=arguments.cooldown_steps,
                 maximum_windows=arguments.maximum_windows,
-                certificate_margin_pu=arguments.poi_certificate_margin,
+                certificate_samples=arguments.certificate_samples,
+                certificate_validity_s=arguments.certificate_validity,
+                observation_residual_bound_pu=arguments.poi_residual_bound,
             ))
             self.all_models = self.models
             self.power_certificate_active = False
@@ -109,7 +111,8 @@ def worker(arguments: argparse.Namespace) -> None:
             if arguments.method == "contract"
             else (
                 f"R1_{arguments.capability.upper()}_{arguments.method.upper()}_"
-                f"A{arguments.amplitude:.4f}_W{arguments.maximum_windows}"
+                f"A{arguments.amplitude:.4f}_W{arguments.maximum_windows}_"
+                f"{arguments.evidence_label.upper()}"
             )
         ),
         "design_cell": "power_ramp_binding",
@@ -148,6 +151,13 @@ def worker(arguments: argparse.Namespace) -> None:
         result["power_certificate_active_at_end"] = controller.power_certificate_active
         result["power_certificate_time_s"] = controller.power_certificate_time_s
         result["probe_windows_started"] = controller.aligned_probe.windows_started
+        result["evidence_started_at_s"] = controller.aligned_probe.evidence_started_at_s
+        result["power_certified_until_s"] = (
+            controller.aligned_probe.power_certified_until_s
+            if np.isfinite(controller.aligned_probe.power_certified_until_s)
+            else None
+        )
+        result["signed_delivery_evidence_pu"] = controller.aligned_probe.signed_delivery_samples
     OUTPUT.mkdir(parents=True, exist_ok=True)
     destination = OUTPUT / f"{row['scenario_id']}.json"
     destination.write_text(
@@ -163,7 +173,8 @@ def guarded(arguments: argparse.Namespace) -> None:
         if arguments.method == "contract"
         else (
             f"R1_{arguments.capability.upper()}_{arguments.method.upper()}_"
-            f"A{arguments.amplitude:.4f}_W{arguments.maximum_windows}"
+            f"A{arguments.amplitude:.4f}_W{arguments.maximum_windows}_"
+            f"{arguments.evidence_label.upper()}"
         )
     )
     command = [
@@ -184,8 +195,14 @@ def guarded(arguments: argparse.Namespace) -> None:
         str(arguments.cooldown_steps),
         "--maximum-windows",
         str(arguments.maximum_windows),
-        "--poi-certificate-margin",
-        str(arguments.poi_certificate_margin),
+        "--poi-residual-bound",
+        str(arguments.poi_residual_bound),
+        "--certificate-samples",
+        str(arguments.certificate_samples),
+        "--certificate-validity",
+        str(arguments.certificate_validity),
+        "--evidence-label",
+        arguments.evidence_label,
     ]
     environment = dict(os.environ)
     environment.update(
@@ -233,7 +250,10 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--active-steps", type=int, default=2)
     result.add_argument("--cooldown-steps", type=int, default=4)
     result.add_argument("--maximum-windows", type=int, default=10)
-    result.add_argument("--poi-certificate-margin", type=float, default=0.0028)
+    result.add_argument("--poi-residual-bound", type=float, default=0.00025)
+    result.add_argument("--certificate-samples", type=int, default=2)
+    result.add_argument("--certificate-validity", type=float, default=120.0)
+    result.add_argument("--evidence-label", default="stacked_ar1")
     return result
 
 

@@ -141,3 +141,34 @@ An attempted 0.002 pu run produced no scientific result because unrelated
 system memory use raised total commit from about 85% to 91.97% within seconds;
 the resource monitor stopped the worker while its own private memory was about
 0.40 GiB. It is retained as not evaluated, not counted as method failure.
+
+## First causal recourse result
+
+The 0.003 pu dual version used the same nonlinear high-capability episode. It
+issued only one two-action window, certified delivered power at 148 s from
+actual POI measurements, and used the reduced power set until its certificate
+expired. It remained physically successful with no hard violation, solver
+failure, or fallback.
+
+Relative to exploit-only 0.003 pu surplus, causal posterior recourse reduced:
+
+- ACE IAE by `0.110228`;
+- tie IAE by `0.031214`;
+- SG mechanical mileage by `0.103612`.
+
+This is direct evidence of pure information value: the exploit-only and dual
+methods share the same first information-producing action, while only the dual
+method uses the resulting capability information.
+
+Relative to contract MPC, the complete dual result was close but not yet
+positive overall:
+
+- frequency peak was identical;
+- ACE IAE was 0.078% worse;
+- tie IAE was 2.74% worse;
+- SG mechanical mileage was 8.43% higher.
+
+A 0.0025 pu fixed-threshold version did not certify after seven windows and was
+therefore substantially worse. It motivated replacement of pointwise threshold
+logic by a stacked, correlated actual-POI statistic. That new estimator has not
+yet completed a nonlinear run and is not counted as evidence.

@@ -15,6 +15,8 @@ from .control_aligned_policy import (
     ControlAlignedSequentialProbe,
 )
 from .prior_value_boundary import BinaryPriorValueBoundary
+from .information_value_surface import OpportunityValuePoint, select_opportunity
+from .factorial_design import FactorialCell, development_factorial
 from .physical_metrics import GridMetricScales, PhysicalMetrics, trajectory_metrics
 from .scenario_registry import ScenarioSpec, StudySplit, generate_scenarios
 from .value_accounting import NestedValueInputs, NestedValueResult, evaluate_nested_value
@@ -27,6 +29,8 @@ __all__ = [
     "ControlAlignedConfig",
     "ControlAlignedSequentialProbe",
     "BinaryPriorValueBoundary",
+    "OpportunityValuePoint",
+    "FactorialCell",
     "GridMetricScales",
     "PhysicalMetrics",
     "ScenarioSpec",
@@ -38,4 +42,6 @@ __all__ = [
     "registered_probe_library",
     "registered_control_aligned_library",
     "trajectory_metrics",
+    "select_opportunity",
+    "development_factorial",
 ]
