@@ -26,12 +26,12 @@ def main() -> None:
         row = json.loads(path.read_text(encoding="utf-8"))
         if "frequency_peak_hz" in row:
             rows.append(row)
-    contract = next(
-        row for row in rows
-        if row["scenario_id"] == "R1_HIGH_CONTRACT"
-    )
+    contracts = {
+        row["design_cell"]: row for row in rows if row["method"] == "contract"
+    }
     summary = []
     for row in rows:
+        contract = contracts.get(row["design_cell"])
         item = {
             "scenario_id": row["scenario_id"],
             "method": row["method"],
@@ -45,7 +45,9 @@ def main() -> None:
         }
         for metric in METRICS:
             item[metric] = row[metric]
-            item[f"delta_{metric}"] = row[metric] - contract[metric]
+            item[f"delta_{metric}"] = (
+                None if contract is None else row[metric] - contract[metric]
+            )
         summary.append(item)
     destination = OUTPUT / "SUMMARY.csv"
     with destination.open("w", newline="", encoding="utf-8") as stream:

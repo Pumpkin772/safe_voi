@@ -1,65 +1,67 @@
-# Direction5 Phase I: final scientific convergence
+# safe_voi
 
-This repository's current project is **Direction5 / DIRECTION5 / direction5**.
-The sole active method is **DCSV-MPC** (Disturbance--Capability-Separated
-Viability MPC), governed by
-`research/direction5_phase_i_final_convergence/CODEX_GOAL.md`.
+This repository contains the Direction5 research history and the active study:
 
-## Binding outcome
+> **Direction5: Safe Capability-Information Positive-Value Region Rebuild**
 
 ```text
-DIRECTION5_TERMINATED_WITH_DECISIVE_NEGATIVE_EVIDENCE
+DIRECTION5_SAFE_VOI_POSITIVE_REGION_REBUILD
+direction5_safe_voi_positive_region_rebuild
 ```
 
-I0--I5 passed. Corrected full validation at I6 failed four registered Gates:
-none of the three core metrics achieved at least 8% improvement with a positive
-cluster-bootstrap lower bound; unresolved mathematical infeasibility exceeded
-0.1%; fallback exceeded 1%; and Plant A/B did not show a positive performance
-direction. I7 final seeds were therefore not evaluated, and no success/failure
-was imputed to them. I8 sealed and independently replayed the negative result.
+The governing research goal is
+[`research/direction5_safe_voi_positive_region_rebuild/CODEX_GOAL.md`](research/direction5_safe_voi_positive_region_rebuild/CODEX_GOAL.md).
+The method remains **Selective VOI-ACCR-MPC**.
 
-The result is bounded rather than category-level: Phase I retains the
-actual-POI load observer, causal power/ramp/delay deliverability estimator,
-contract-floor semantics, conditional local Plant-A RPI sets, finite-horizon
-bridge certificates, and physical-infeasibility certificates. It does not
-support DCSV-MPC deployment advantage, global recursive feasibility, or a
-rigorous native Plant-B RPI claim.
+## Frozen predecessor result
 
-## Active source and evidence
+The completed predecessor is preserved at Git tag
+`direction5-voi-boundary-final` with status:
 
-- Active source: `src/direction5freq/`
-- Phase scripts: `scripts/phase_i/`
-- Tests: `tests/phase_i/`
-- Locked validation: `configs/phase_i/i6_validation_lock.yaml`
-- Final status: `results_phase_i/final/FINAL_STATUS.json`
-- Final reports: `research_outputs_phase_i/08_FINAL/`
-- Final figures: `figures_phase_i/I8/`
+```text
+PAPER_READY_NO_PROBE_BOUNDARY
+```
 
-Older Direction1, `direction5_freq`, and `d5freq` materials remain immutable
-historical evidence. They are not the active method or current claim authority.
+Its registered finite domain contained 1,920 zero-value points and no positive
+safe-probe point. The successor project does not overwrite this result.
 
-## Environment and verification
+## Active scientific question
 
-Use the repository-owned Python 3.11 environment:
+The active branch studies whether a positive information-value region appears
+when:
+
+- robust physical safety is separated from distributionally robust operating
+  value;
+- capability value persists across multiple rolling MPC decisions but expires
+  at a registered time;
+- the complete causal actual-POI-power sequence is used for capability
+  evidence;
+- information acquisition is compared between allocation-neutral excitation
+  and control-aligned informative surplus actions.
+
+The primary paper object is a break-even boundary over capability prior,
+information lifetime, observation quality, and acquisition cost. A uniform
+capability prior is not used as the primary claim.
+
+## Current development status
+
+The first full nonlinear Plant-A pilot has shown positive **pure information
+value**: using a causal power-delivery certificate substantially improved ACE,
+tie-line error, and SG mileage relative to the same surplus action without
+posterior recourse. The complete dual policy is not yet better than contract
+MPC, so a positive paper result has not yet been established.
+
+Quantitative findings are retained in
+[`research_outputs_direction5_safe_voi_positive_region_rebuild/R1_DIAGNOSTIC_FINDINGS.md`](research_outputs_direction5_safe_voi_positive_region_rebuild/R1_DIAGNOSTIC_FINDINGS.md).
+
+## Environment
 
 ```powershell
 conda env update --name topo_sfr --file environment.yml --prune
 conda activate topo_sfr
 python -m pip install -e . --no-deps
-python -m pytest tests/phase_i -q
+python -m pytest tests/direction5_safe_voi_positive_region_rebuild -q
 ```
 
-The reviewed delivery is:
-
-```text
-DIRECTION5_PHASE_I_FINAL_CONVERGENCE_SINGLE_REVIEW_PACKAGE.zip
-```
-
-After extraction, run from the package root:
-
-```powershell
-python 15_REPRODUCIBILITY/verify_manifest.py
-python 15_REPRODUCIBILITY/reproduce_minimal.py
-```
-
-No commercial solver license is included or required by the Phase-I replay.
+Run one guarded nonlinear episode at a time. Ordinary controllers cannot read
+true capability, true load, exact future events, or future modes.

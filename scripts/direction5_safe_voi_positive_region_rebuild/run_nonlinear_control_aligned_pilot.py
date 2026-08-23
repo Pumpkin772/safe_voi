@@ -103,19 +103,20 @@ def worker(arguments: argparse.Namespace) -> None:
         0.0010,
         0.50,
         0.0,
-        "resource_economy",
+        arguments.objective,
     )
     row = {
         "scenario_id": (
-            f"R1_{arguments.capability.upper()}_{arguments.method.upper()}"
+            f"R1_{arguments.capability.upper()}_{arguments.method.upper()}_"
+            f"{arguments.objective.upper()}"
             if arguments.method == "contract"
             else (
                 f"R1_{arguments.capability.upper()}_{arguments.method.upper()}_"
                 f"A{arguments.amplitude:.4f}_W{arguments.maximum_windows}_"
-                f"{arguments.evidence_label.upper()}"
+                f"{arguments.evidence_label.upper()}_{arguments.objective.upper()}"
             )
         ),
-        "design_cell": "power_ramp_binding",
+        "design_cell": f"power_ramp_binding|{arguments.objective}",
         "known_ood": "known",
         "seed": 8100,
         "duration_s": arguments.duration,
@@ -169,12 +170,13 @@ def worker(arguments: argparse.Namespace) -> None:
 def guarded(arguments: argparse.Namespace) -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     stem = (
-        f"R1_{arguments.capability.upper()}_{arguments.method.upper()}"
+        f"R1_{arguments.capability.upper()}_{arguments.method.upper()}_"
+        f"{arguments.objective.upper()}"
         if arguments.method == "contract"
         else (
             f"R1_{arguments.capability.upper()}_{arguments.method.upper()}_"
             f"A{arguments.amplitude:.4f}_W{arguments.maximum_windows}_"
-            f"{arguments.evidence_label.upper()}"
+            f"{arguments.evidence_label.upper()}_{arguments.objective.upper()}"
         )
     )
     command = [
@@ -203,6 +205,8 @@ def guarded(arguments: argparse.Namespace) -> None:
         str(arguments.certificate_validity),
         "--evidence-label",
         arguments.evidence_label,
+        "--objective",
+        arguments.objective,
     ]
     environment = dict(os.environ)
     environment.update(
@@ -254,6 +258,11 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--certificate-samples", type=int, default=2)
     result.add_argument("--certificate-validity", type=float, default=120.0)
     result.add_argument("--evidence-label", default="stacked_ar1")
+    result.add_argument(
+        "--objective",
+        choices=("balanced", "regional_responsibility", "resource_economy"),
+        default="resource_economy",
+    )
     return result
 
 
