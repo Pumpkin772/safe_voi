@@ -33,10 +33,15 @@ probe_library:
 
 value:
   physical_safety: robust_hard_constraints
-  primary: worst_capability_expected_event_paired_benefit
-  secondary: [evidence_based_bayesian_capability_value, cvar_0_95, worst_episode]
+  primary: prior_ambiguity_break_even_boundary
+  no_fixed_uniform_prior_claim: true
+  secondary: [capability_min, evidence_based_bayesian_point, cvar_0_95, worst_episode]
   objective_terms: [frequency, ace, tie, sg_movement, bess_movement, energy]
   all_grid_terms_nonzero: true
+  low_capability_downside:
+    frequency_peak_increment_hz_max: 0.005
+    ace_relative_worsening_max: 0.01
+    tie_relative_worsening_max: 0.01
 
 seeds:
   development: [8100, 8299]

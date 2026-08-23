@@ -36,11 +36,23 @@ registered event-distribution cost(contract MPC)
 ```
 
 Hard physical safety is evaluated robustly over every retained capability and
-non-delivery branch. The primary net value is the minimum, over retained
-capability hypotheses, of expected-event paired benefit. Expected control value
-never replaces the hard safety test. A Bayesian capability average is secondary
-and may be reported only when an external, evidence-based prior is available.
+non-delivery branch. Performance value is reported as a complete break-even
+boundary over an explicit capability prior and as the worst value over a prior
+ambiguity set. No selected uniform prior is a primary result. The pure minimum
+over capability hypotheses is retained as a distribution-free no-probe
+sensitivity. Expected control value never replaces the hard safety test.
 CVaR(0.95) and worst episode are secondary reported quantities.
+
+For a binary high/low capability cell, the primary map reports
+
+```text
+V(p) = p Delta_H + (1-p) Delta_L
+```
+
+and its analytic break-even `p*`. A positive claim requires a nonempty interval
+`Pi` for which the worst value over `Pi` is positive. External fleet data may
+later locate an operating prior on this map, but development does not choose a
+prior to make the result positive.
 
 ## Model and scenario changes that are allowed before validation
 
@@ -75,6 +87,18 @@ reported; independent-window calculations are development screens only.
 4. evaluation-only registered-formulation perfect-information comparator;
 5. scalar-observation predecessor ablation;
 6. short-value-horizon predecessor ablation.
+
+The selective method is additionally decomposed into:
+
+1. contract MPC;
+2. exploit-only control-aligned surplus without posterior use;
+3. dual control-aligned surplus with causal certification and recourse.
+
+This separates immediate control value from pure information value.
+
+The low-capability branch must remain physically safe. Its performance downside
+relative to contract MPC is limited before validation to 0.005 Hz incremental
+frequency peak and 1% on primary ACE and tie metrics.
 
 ## Interpretation rule
 

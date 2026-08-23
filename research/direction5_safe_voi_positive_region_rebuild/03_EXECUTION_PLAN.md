@@ -17,6 +17,9 @@
 
 - use seeds 8100–8299 only;
 - compare scalar vs vector observation and short vs persistent value;
+- complete the `24/240 s x scalar/vector x neutral/control-aligned` factorial;
+- report `Delta_L`, `Delta_H`, break-even prior, low-branch downside, and the
+  decomposition into immediate control and pure information value;
 - retain the full zero/positive/unsafe map;
 - freeze one region definition or conclude that the region remains empty.
 

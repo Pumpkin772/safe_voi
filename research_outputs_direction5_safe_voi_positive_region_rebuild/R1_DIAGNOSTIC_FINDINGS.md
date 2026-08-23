@@ -108,3 +108,36 @@ not yet a positive primary result because the strict minimum over capability
 hypotheses remains slightly negative at 0.003 pu, and the independent-window
 noise assumption still needs correlated-noise sensitivity and nonlinear
 closed-loop confirmation.
+
+## First full nonlinear Plant-A check
+
+The first nonlinear paired high-capability episode used seed 8100, a 300 s full
+rolling simulation, a capability change at 90 s, and an independent load event
+at 120 s. Contract MPC and the probe-only policy both remained physically
+successful with no hard violation, solver failure, or fallback.
+
+The initial 0.003 pu policy used nine windows but did not yet use its posterior.
+Relative to contract MPC it produced:
+
+- identical frequency peak: `0.399575 Hz`;
+- ACE IAE `2.752961` versus `2.640688` (4.25% worse);
+- tie IAE `0.325860` versus `0.286786` (13.62% worse);
+- SG mechanical mileage `0.529238` versus `0.392528` (34.83% higher).
+
+Reducing to 0.0025 pu and five windows narrowed but did not reverse the gap:
+
+- ACE IAE `2.675623` (1.32% worse than contract);
+- tie IAE `0.297514` (3.74% worse);
+- SG mechanical mileage `0.462779` (17.90% higher);
+- frequency peak unchanged and all physical/solver conditions still satisfied.
+
+These are exploit-only/probe-cost results, not the complete dual policy: no
+posterior-dependent recourse was applied. They show that the frozen linear
+screen understated nonlinear feedback and SG-mileage cost. The next nonlinear
+comparison therefore separates contract, exploit-only surplus, and dual
+surplus with a causal power-delivery certificate and expiry.
+
+An attempted 0.002 pu run produced no scientific result because unrelated
+system memory use raised total commit from about 85% to 91.97% within seconds;
+the resource monitor stopped the worker while its own private memory was about
+0.40 GiB. It is retained as not evaluated, not counted as method failure.

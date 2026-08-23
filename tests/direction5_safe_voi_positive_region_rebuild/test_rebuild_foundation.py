@@ -4,6 +4,8 @@ import numpy as np
 
 from direction5freq.voi_positive_region import (
     NestedValueInputs,
+    ControlAlignedSequentialProbe,
+    BinaryPriorValueBoundary,
     StudySplit,
     VectorObservationTube,
     causal_posterior,
@@ -14,8 +16,12 @@ from direction5freq.voi_positive_region import (
     trajectory_metrics,
 )
 from direction5freq.voi_positive_region.sequential_evidence import (
+    effective_windows_ar1,
     equal_prior_binary_error,
+    stacked_equal_prior_error,
+    stacked_mahalanobis_separation,
     windows_for_error,
+    windows_for_error_ar1,
 )
 from direction5freq.voi_positive_region.scenario_registry import SEED_RANGES
 
@@ -122,3 +128,60 @@ def test_independent_observation_windows_accumulate_information() -> None:
     assert one_window_error > 0.20
     assert required == 10
     assert equal_prior_binary_error(1.472183339877956, required) <= 0.01
+
+
+def test_control_aligned_probe_keeps_sg_action_and_uses_current_state_only() -> None:
+    policy = ControlAlignedSequentialProbe()
+    contract = np.asarray((0.04, 0.041, 0.02, 0.01))
+    result = policy.overlay(
+        contract,
+        time_s=100.0,
+        frequency_deviation_hz=np.asarray((0.03, -0.01)),
+        ace_pu=np.asarray((0.04, -0.01)),
+        measured_soc=np.asarray((0.5, 0.5)),
+    )
+    assert np.array_equal(result[[0, 2]], contract[[0, 2]])
+    assert np.isclose(result[1] - contract[1], 0.003)
+    assert policy.windows_started == 1
+
+
+def test_delivery_certificate_is_causal_and_expires() -> None:
+    policy = ControlAlignedSequentialProbe()
+    policy.overlay(
+        np.asarray((0.04, 0.041, 0.02, 0.01)),
+        time_s=90.0,
+        frequency_deviation_hz=np.zeros(2),
+        ace_pu=np.zeros(2),
+        measured_soc=np.full(2, 0.5),
+    )
+    assert policy.observe_delivery(
+        100.0,
+        issued_bess_command=np.asarray((0.049, 0.0)),
+        actual_bess_poi_power=np.asarray((0.048, 0.0)),
+    )
+    assert policy.power_certified(210.0)
+    assert not policy.power_certified(210.1)
+
+
+def test_binary_prior_boundary_reports_break_even_probability() -> None:
+    boundary = BinaryPriorValueBoundary(
+        low_capability_net_value=-0.01,
+        high_capability_net_value=0.04,
+    )
+    assert np.isclose(boundary.break_even_probability(), 0.2)
+    assert boundary.net_value(0.8) > 0.0
+    assert boundary.worst_value_over_prior_interval(0.3, 0.8) > 0.0
+
+
+def test_ar1_correlation_reduces_effective_evidence() -> None:
+    assert np.isclose(effective_windows_ar1(10, 0.2), 10 * 0.8 / 1.2)
+    assert windows_for_error_ar1(1.472183339877956, 0.2) == 15
+    assert windows_for_error_ar1(1.472183339877956, 0.4) == 24
+
+
+def test_stacked_covariance_reproduces_independent_information_gain() -> None:
+    low = np.zeros(4)
+    high = np.ones(4)
+    covariance = np.eye(4)
+    assert np.isclose(stacked_mahalanobis_separation(low, high, covariance), 2.0)
+    assert np.isclose(stacked_equal_prior_error(low, high, covariance), 0.1586552539)

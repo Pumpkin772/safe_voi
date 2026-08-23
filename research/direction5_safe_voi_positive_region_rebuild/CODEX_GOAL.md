@@ -65,12 +65,14 @@ Validation和final seed不得用于development配置选择。
 只有同时满足以下条件才允许称为正结果：
 
 - development和独立validation都存在非空正价值区；
+- 主结果不使用人为uniform capability prior，而是报告完整break-even prior及一个非空先验模糊集`Pi`，并满足`inf_{pi in Pi} V(pi)>0`；
 - 正区paired absolute net benefit的95%置信下界大于0；
 - registered-formulation perfect-information value recovery点估计不低于25%；
 - hard physical violations为0，频率安全相对contract MPC非劣；
 - false optimistic certificate不高于1%；
 - 零价值区probe rate不高于5%且与contract MPC等价；
 - Plant A复现正区，Plant B至少正确复现正区或安全放弃。
+- 低能力分支必须物理安全，且相对contract MPC的频率峰值增量不超过0.005 Hz，ACE和tie主指标恶化均不超过1%。
 
 ## 停止条件
 
