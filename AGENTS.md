@@ -1,6 +1,31 @@
 # Repository instructions for coding agents
 
-## Current binding authority: Direction5 VOI-ACCR-MPC result-driven study
+## Current binding authority: Direction5 safe-VOI positive-region rebuild
+
+The project name is **Direction5 / DIRECTION5 / direction5**.  The current
+governing Goal is
+`research/direction5_safe_voi_positive_region_rebuild/CODEX_GOAL.md`.  The
+project title is **Direction5: Safe Capability-Information Positive-Value
+Region Rebuild** and the method remains **Selective VOI-ACCR-MPC**.
+
+The completed no-probe boundary result is immutable historical evidence at tag
+`direction5-voi-boundary-final`.  New models, scenarios, seeds, and results must
+live in the new project namespace and must not overwrite
+`research_outputs_boundary`, `results_boundary`, or the frozen review ZIP.
+
+The successor study may search for a positive value region only in development.
+Every model or scenario change must be physically motivated and registered
+before its validation seeds are consumed.  Robust physical safety remains a
+hard constraint while expected control value is evaluated over a registered,
+independent event distribution.  Ordinary controllers cannot read true
+capability, exact future load events, future modes, or validation/final results.
+All failed and zero-value development configurations must be retained.
+
+Run one guarded simulation at a time.  Do not use parallel episode workers.
+The prior memory limits remain the default even though the user has authorized
+some additional memory headroom.
+
+## Historical authority: Direction5 VOI-ACCR-MPC result-driven study
 
 The project name is **Direction5 / DIRECTION5 / direction5**.  The current
 governing Goal is
