@@ -43,6 +43,11 @@ def worker(arguments: argparse.Namespace) -> None:
             super().__init__(*args, **kwargs)
             self.aligned_probe = ControlAlignedSequentialProbe(ControlAlignedConfig(
                 amplitude_pu=arguments.amplitude,
+                second_window_amplitude_pu=(
+                    None
+                    if arguments.second_window_amplitude <= 0.0
+                    else arguments.second_window_amplitude
+                ),
                 active_steps=arguments.active_steps,
                 cooldown_steps=arguments.cooldown_steps,
                 maximum_windows=arguments.maximum_windows,
@@ -105,20 +110,27 @@ def worker(arguments: argparse.Namespace) -> None:
         0.0,
         arguments.objective,
     )
+    suffix_parts = []
+    if arguments.run_label:
+        suffix_parts.append(arguments.run_label.upper())
+    if arguments.seed != 8100:
+        suffix_parts.append(f"S{arguments.seed}")
+    run_suffix = "_" + "_".join(suffix_parts) if suffix_parts else ""
     row = {
         "scenario_id": (
             f"R1_{arguments.capability.upper()}_{arguments.method.upper()}_"
-            f"{arguments.objective.upper()}"
+            f"{arguments.objective.upper()}{run_suffix}"
             if arguments.method == "contract"
             else (
                 f"R1_{arguments.capability.upper()}_{arguments.method.upper()}_"
                 f"A{arguments.amplitude:.4f}_W{arguments.maximum_windows}_"
                 f"{arguments.evidence_label.upper()}_{arguments.objective.upper()}"
+                f"{run_suffix}"
             )
         ),
         "design_cell": f"power_ramp_binding|{arguments.objective}",
         "known_ood": "known",
-        "seed": 8100,
+        "seed": arguments.seed,
         "duration_s": arguments.duration,
         "initial_soc": 0.50,
         "capability_change_time_s": 90.0,
@@ -150,6 +162,9 @@ def worker(arguments: argparse.Namespace) -> None:
     result["probe_amplitude_pu"] = (
         0.0 if arguments.method == "contract" else arguments.amplitude
     )
+    result["second_window_amplitude_pu"] = (
+        0.0 if arguments.method == "contract" else arguments.second_window_amplitude
+    )
     result["maximum_probe_windows"] = (
         0 if arguments.method == "contract" else arguments.maximum_windows
     )
@@ -172,6 +187,7 @@ def worker(arguments: argparse.Namespace) -> None:
             else None
         )
         result["signed_delivery_evidence_pu"] = controller.aligned_probe.signed_delivery_samples
+        result["futility_stopped"] = controller.aligned_probe.futility_stopped
     OUTPUT.mkdir(parents=True, exist_ok=True)
     destination = OUTPUT / f"{row['scenario_id']}.json"
     destination.write_text(
@@ -192,6 +208,10 @@ def guarded(arguments: argparse.Namespace) -> None:
             f"{arguments.evidence_label.upper()}_{arguments.objective.upper()}"
         )
     )
+    if arguments.run_label:
+        stem += f"_{arguments.run_label.upper()}"
+    if arguments.seed != 8100:
+        stem += f"_S{arguments.seed}"
     command = [
         sys.executable,
         str(Path(__file__).resolve()),
@@ -206,6 +226,8 @@ def guarded(arguments: argparse.Namespace) -> None:
         str(arguments.amplitude),
         "--active-steps",
         str(arguments.active_steps),
+        "--second-window-amplitude",
+        str(arguments.second_window_amplitude),
         "--cooldown-steps",
         str(arguments.cooldown_steps),
         "--maximum-windows",
@@ -220,6 +242,10 @@ def guarded(arguments: argparse.Namespace) -> None:
         arguments.evidence_label,
         "--objective",
         arguments.objective,
+        "--run-label",
+        arguments.run_label,
+        "--seed",
+        str(arguments.seed),
     ]
     environment = dict(os.environ)
     environment.update(
@@ -231,7 +257,7 @@ def guarded(arguments: argparse.Namespace) -> None:
     )
     limits = ResourceLimits(
         max_system_commit_fraction=0.92,
-        max_system_commit_growth_bytes=10 * GIB,
+        max_system_commit_growth_bytes=20 * GIB,
         min_available_physical_bytes=5 * GIB,
         max_tree_private_bytes=4 * GIB,
         max_descendant_processes=2,
@@ -265,6 +291,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--duration", type=float, default=300.0)
     result.add_argument("--amplitude", type=float, default=0.003)
     result.add_argument("--active-steps", type=int, default=2)
+    result.add_argument("--second-window-amplitude", type=float, default=0.0)
     result.add_argument("--cooldown-steps", type=int, default=4)
     result.add_argument("--maximum-windows", type=int, default=10)
     result.add_argument("--poi-residual-bound", type=float, default=0.00025)
@@ -276,6 +303,8 @@ def parser() -> argparse.ArgumentParser:
         choices=("balanced", "regional_responsibility", "resource_economy"),
         default="resource_economy",
     )
+    result.add_argument("--run-label", default="")
+    result.add_argument("--seed", type=int, default=8100)
     return result
 
 

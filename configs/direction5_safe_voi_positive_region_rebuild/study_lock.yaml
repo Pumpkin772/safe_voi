@@ -37,6 +37,11 @@ probe_library:
   amplitude_pu: [0.0005, 0.0010, 0.0015, 0.0025, 0.0035, 0.0050, 0.0075, 0.0100, 0.0150]
   observation: causal_vector_actual_poi_power_tube
   shapes: [biphasic, ternary, short_prbs]
+  sequential_total_alpha: 0.03
+  empirical_false_optimism_target: 0.01
+  futility_after_samples: 1
+  futility_delivery_margin_pu: 0.0005
+  adaptive_control_aligned_amplitudes_pu: [0.003, 0.004]
 
 value:
   physical_safety: robust_hard_constraints
@@ -62,6 +67,7 @@ resource_limits:
   maximum_task_private_gib: 4.0
   minimum_available_physical_gib: 5.0
   maximum_system_commit_fraction: 0.92
+  maximum_system_commit_growth_gib: 20.0
 
 immutability:
   validation_after_development_lock_only: true

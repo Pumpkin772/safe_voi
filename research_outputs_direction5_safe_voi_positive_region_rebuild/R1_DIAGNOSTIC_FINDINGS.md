@@ -172,3 +172,90 @@ A 0.0025 pu fixed-threshold version did not certify after seven windows and was
 therefore substantially worse. It motivated replacement of pointwise threshold
 logic by a stacked, correlated actual-POI statistic. That new estimator has not
 yet completed a nonlinear run and is not counted as evidence.
+
+## Sequential false-optimism calculation
+
+The stacked one-sided power statistic allocates a total one-percent false-
+optimism probability across at most twenty sequential looks and uses an AR(1)
+window correlation of 0.2. A 100,000-trial Monte Carlo per branch, with the
+deterministic residual fixed at its adverse registered bound, gave:
+
+| true delivered power | certification rate | median samples | p95 samples |
+|---:|---:|---:|---:|
+| 0.045 pu | 0.215% | 10 | 18.3 |
+| 0.048 pu | 100% | 2 | 4 |
+| 0.050 pu | 100% | 2 | 2 |
+
+Thus the development statistic is below the one-percent false-optimism target
+while detecting the tested high-delivery branches rapidly. This remains a
+model-based Monte Carlo result; independent nonlinear low/high episodes are
+still required.
+
+Correlation sensitivity retained the same conclusion:
+
+| AR(1) correlation | low false certification | high 0.048 detection | high p95 samples |
+|---:|---:|---:|---:|
+| 0.0 | 0.329% | 100% | 3 |
+| 0.2 | 0.215% | 100% | 4 |
+| 0.4 | 0.132% | 100% | 6 |
+
+The threshold accounts for the assumed correlation, so increasing correlation
+reduces false certification and increases the evidence time rather than
+silently overstating effective sample size.
+
+A development alpha-spending sensitivity selected total alpha `0.03`:
+
+- at alpha 0.03, low-branch false certification was 0.955%, 0.606%, and
+  0.391% for correlations 0.0, 0.2, and 0.4;
+- at alpha 0.04, the correlation-zero case rose to 1.245% and was rejected;
+- high 0.048 pu detection remained 100% throughout the accepted range.
+
+Thus 0.03 is the largest tested total alpha satisfying the registered empirical
+one-percent limit across the correlation sensitivity. It is frozen before
+validation.
+
+## Adaptive two-window mechanism result
+
+The next development policy used a 0.003 pu first control-aligned surplus
+window.  A first causal delivery sample below the public contract floor plus
+0.0005 pu stopped further excitation; otherwise a second 0.004 pu window was
+allowed.  Evidence used total alpha 0.03, AR(1) correlation 0.2, a 240 s
+validity time measured from the first evidence sample, and at most two windows.
+The comparison used paired nonlinear Plant-A seeds 8100--8105 for contract,
+exploit-only, and dual policies.
+
+All six high-power episodes certified after two windows; all six low-power
+episodes stopped after one window and none falsely certified.  Every run had
+zero hard violation, solver failure, and fallback.  Frequency peak was exactly
+unchanged relative to contract MPC.
+
+Mean paired value, defined as comparator cost minus dual-policy cost, was:
+
+| branch | comparison | ACE IAE | tie IAE | SG mechanical mileage |
+|---|---|---:|---:|---:|
+| high | contract minus dual | +0.0216369 | +0.0028284 | -0.0301106 |
+| high | exploit-only minus dual | +0.0128173 | +0.0030111 | +0.0091131 |
+| low | contract minus dual | +0.0001390 | -0.0011052 | -0.0108781 |
+| low | exploit-only minus dual | +0.0018130 | +0.0007272 | +0.0023180 |
+
+High-branch total ACE value was positive for 6/6 seeds and pure information
+ACE value was positive for 6/6 seeds.  High-branch pure information tie value
+was positive for 5/6 seeds.  Low-branch worst relative deterioration was
+0.0624% for ACE and 0.7465% for tie, both below the registered one-percent
+limit.  The complete dual policy used more BESS energy throughput than the
+exploit-only comparator; this tradeoff must enter an explicit resource-price
+sensitivity rather than being hidden by selecting ACE alone.
+
+For the total ACE metric the estimated break-even high-capability probability
+was zero because the sample mean was positive in both branches.  For tie IAE it
+was 0.281.  These are development estimates, not external capability priors.
+
+This result establishes a credible nonlinear mechanism and, because the dual
+policy improves on the same surplus action without posterior use, a nonzero
+pure information effect.  It does not yet establish the registered paper
+result.  These pilot episodes lasted 300 s with fixed capability change at
+90 s and fixed load event at 120 s, whereas the registered target distribution
+uses 480 s episodes and independently drawn capability and load times.  The
+candidate must therefore be evaluated under that target distribution after a
+single multi-metric physical cost is frozen and before any validation seed is
+used.

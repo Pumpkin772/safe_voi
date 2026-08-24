@@ -172,6 +172,61 @@ def test_delivery_certificate_is_causal_and_expires() -> None:
     assert not policy.power_certified(210.1)
 
 
+def test_contract_floor_delivery_does_not_create_power_certificate() -> None:
+    policy = ControlAlignedSequentialProbe()
+    contract = np.asarray((0.03, 0.049, 0.02, 0.01))
+    for index in range(20):
+        assert not policy.observe_delivery(
+            float(index * 4),
+            issued_bess_command=contract[[1, 3]],
+            actual_bess_poi_power=np.asarray((0.045, 0.0)),
+        )
+
+
+def test_low_delivery_stops_second_information_window_causally() -> None:
+    policy = ControlAlignedSequentialProbe()
+    contract = np.asarray((0.03, 0.045, 0.02, 0.01))
+    first = policy.overlay(
+        contract, 100.0, np.zeros(2), np.zeros(2), np.full(2, 0.5)
+    )
+    policy.observe_delivery(104.0, first[[1, 3]], np.asarray((0.045, 0.0)))
+    second = policy.overlay(
+        contract, 104.0, np.zeros(2), np.zeros(2), np.full(2, 0.5)
+    )
+    policy.observe_delivery(108.0, second[[1, 3]], np.asarray((0.045, 0.0)))
+    for index in range(6):
+        policy.overlay(
+            contract,
+            108.0 + 4.0 * index,
+            np.zeros(2),
+            np.zeros(2),
+            np.full(2, 0.5),
+        )
+    assert policy.futility_stopped
+    assert policy.windows_started == 1
+
+
+def test_second_window_can_increase_amplitude_after_causal_evidence() -> None:
+    from direction5freq.voi_positive_region import ControlAlignedConfig
+
+    policy = ControlAlignedSequentialProbe(ControlAlignedConfig(
+        second_window_amplitude_pu=0.004,
+    ))
+    contract = np.asarray((0.03, 0.045, 0.02, 0.01))
+    first = policy.overlay(contract, 100.0, np.zeros(2), np.zeros(2), np.full(2, 0.5))
+    policy.observe_delivery(104.0, first[[1, 3]], np.asarray((0.046, 0.0)))
+    second = policy.overlay(contract, 104.0, np.zeros(2), np.zeros(2), np.full(2, 0.5))
+    policy.observe_delivery(108.0, second[[1, 3]], np.asarray((0.046, 0.0)))
+    candidate = contract
+    for index in range(5):
+        candidate = policy.overlay(
+            contract, 108.0 + 4.0 * index,
+            np.zeros(2), np.zeros(2), np.full(2, 0.5),
+        )
+    assert policy.windows_started == 2
+    assert np.isclose(candidate[1] - contract[1], 0.004)
+
+
 def test_binary_prior_boundary_reports_break_even_probability() -> None:
     boundary = BinaryPriorValueBoundary(
         low_capability_net_value=-0.01,

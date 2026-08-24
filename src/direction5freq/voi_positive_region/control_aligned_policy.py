@@ -11,6 +11,7 @@ from scipy.stats import norm
 @dataclass(frozen=True)
 class ControlAlignedConfig:
     amplitude_pu: float = 0.003
+    second_window_amplitude_pu: float | None = None
     binding_command_pu: float = 0.040
     active_steps: int = 2
     cooldown_steps: int = 4
@@ -24,7 +25,13 @@ class ControlAlignedConfig:
     measurement_noise_std_pu: float = 0.001
     observation_residual_bound_pu: float = 0.00025
     evidence_window_correlation: float = 0.2
-    false_optimism_rate: float = 0.01
+    # Bonferroni total alpha. Development Monte Carlo selected 0.03 because
+    # empirical sequential false certification stayed below one percent for
+    # registered AR(1) correlations 0.0, 0.2, and 0.4; 0.04 did not.
+    false_optimism_rate: float = 0.03
+    maximum_evidence_samples: int = 20
+    futility_minimum_samples: int = 1
+    futility_delivery_margin_pu: float = 0.0005
 
 
 class ControlAlignedSequentialProbe:
@@ -35,12 +42,14 @@ class ControlAlignedSequentialProbe:
         self._remaining_active = 0
         self._remaining_cooldown = 0
         self._direction = 0.0
+        self._active_amplitude_pu = config.amplitude_pu
         self.windows_started = 0
         self.active_calls = 0
         self.command_l1_pu = 0.0
         self.power_certified_until_s = -float("inf")
         self.evidence_started_at_s: float | None = None
         self._signed_delivery_samples: list[float] = []
+        self.futility_stopped = False
 
     def observe_delivery(
         self,
@@ -59,7 +68,7 @@ class ControlAlignedSequentialProbe:
             and abs(issued[area])
             > self.config.contract_power_pu + self.config.minimum_excitation_margin_pu
         )
-        if eligible:
+        if eligible and len(self._signed_delivery_samples) < self.config.maximum_evidence_samples:
             self._signed_delivery_samples.append(direction * float(actual[area]))
         samples = len(self._signed_delivery_samples)
         effective_samples = (
@@ -70,7 +79,11 @@ class ControlAlignedSequentialProbe:
         threshold = (
             self.config.contract_power_pu
             + self.config.observation_residual_bound_pu
-            + float(norm.ppf(1.0 - self.config.false_optimism_rate))
+            + float(norm.ppf(
+                1.0
+                - self.config.false_optimism_rate
+                / self.config.maximum_evidence_samples
+            ))
             * self.config.measurement_noise_std_pu
             / np.sqrt(max(effective_samples, 1e-12))
         )
@@ -103,11 +116,19 @@ class ControlAlignedSequentialProbe:
             self._remaining_cooldown -= 1
 
         if self._remaining_active == 0 and self._remaining_cooldown == 0:
+            if (
+                len(self._signed_delivery_samples) >= self.config.futility_minimum_samples
+                and float(np.mean(self._signed_delivery_samples))
+                < self.config.contract_power_pu
+                + self.config.futility_delivery_margin_pu
+            ):
+                self.futility_stopped = True
             bess = action[[1, 3]]
             area = int(np.argmax(np.abs(bess)))
             direction = float(np.sign(bess[area]))
             eligible = bool(
                 self.windows_started < self.config.maximum_windows
+                and not self.futility_stopped
                 and direction != 0.0
                 and abs(bess[area]) >= self.config.binding_command_pu
                 and np.max(np.abs(frequency_deviation_hz)) <= self.config.maximum_frequency_hz
@@ -120,6 +141,12 @@ class ControlAlignedSequentialProbe:
                 if time_s > self.evidence_started_at_s + self.config.certificate_validity_s:
                     return action
                 self._direction = direction
+                self._active_amplitude_pu = (
+                    self.config.amplitude_pu
+                    if self.windows_started == 0
+                    or self.config.second_window_amplitude_pu is None
+                    else self.config.second_window_amplitude_pu
+                )
                 self._remaining_active = self.config.active_steps
                 self.windows_started += 1
 
@@ -129,10 +156,10 @@ class ControlAlignedSequentialProbe:
         bess = action[[1, 3]]
         area = int(np.argmax(np.abs(bess)))
         result = action.copy()
-        result[[1, 3][area]] += self._direction * self.config.amplitude_pu
+        result[[1, 3][area]] += self._direction * self._active_amplitude_pu
         self._remaining_active -= 1
         self.active_calls += 1
-        self.command_l1_pu += self.config.amplitude_pu
+        self.command_l1_pu += self._active_amplitude_pu
         if self._remaining_active == 0:
             self._remaining_cooldown = self.config.cooldown_steps
         return result

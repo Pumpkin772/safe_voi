@@ -206,7 +206,16 @@ are reported.
 
 ## 9. Current evidence status
 
-The first nonlinear high-capability pilot established positive pure information
-value relative to exploit-only surplus, but the complete dual policy remained
-slightly worse than contract MPC on ACE/tie and SG mileage. Therefore the
-positive prior-ambiguity region is not yet established.
+Across six paired nonlinear development seeds, the adaptive 0.003--0.004 pu
+control-aligned action established positive pure information ACE value in all
+six high-capability episodes and zero false certification in all six low-
+capability episodes.  Mean total ACE and tie values relative to contract MPC
+were positive in the high branch, while total SG movement and BESS throughput
+increased.  The pilot therefore establishes a candidate information mechanism,
+not a paper result.
+
+Before a positive prior-ambiguity region can be declared, the registered
+multi-metric physical cost must explicitly price the resource tradeoff and the
+candidate must be rerun on the 480 s independent capability/load-event
+distribution.  The six-seed pilot used a fixed 300 s screening episode, so its
+positive values cannot be substituted for independent validation evidence.

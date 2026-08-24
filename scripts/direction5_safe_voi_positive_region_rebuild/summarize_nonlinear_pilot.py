@@ -18,6 +18,16 @@ METRICS = (
 )
 
 
+def capability_branch(row: dict[str, object]) -> str:
+    return "high" if float(row["true_power_pu"]) > 0.045 + 1e-8 else "low"
+
+
+def normalized_cell(row: dict[str, object]) -> str:
+    base = str(row["design_cell"]).split("|")[0]
+    objective = str(row.get("objective_preference", "resource_economy"))
+    return f"{base}|{objective}"
+
+
 def main() -> None:
     rows = []
     for path in sorted(OUTPUT.glob("*.json")):
@@ -27,11 +37,12 @@ def main() -> None:
         if "frequency_peak_hz" in row:
             rows.append(row)
     contracts = {
-        row["design_cell"]: row for row in rows if row["method"] == "contract"
+        (normalized_cell(row), capability_branch(row)): row
+        for row in rows if row["method"] == "contract"
     }
     summary = []
     for row in rows:
-        contract = contracts.get(row["design_cell"])
+        contract = contracts.get((normalized_cell(row), capability_branch(row)))
         item = {
             "scenario_id": row["scenario_id"],
             "method": row["method"],
