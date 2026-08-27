@@ -129,3 +129,25 @@ hard physical violations                0
 The maximum screen value occurred at `336 s`.  The trajectory therefore lies
 well inside the action-insensitive abstention region and executes the contract
 MPC throughout.
+
+## High-capability seed 8117
+
+The actual and reported capability transition both occurred at
+`138.191498236 s`.  The independent area-0 contingency occurred at
+`344.288964360 s` with magnitude `+0.0270357366 pu`.
+
+```text
+eligible first-stage evaluations        0
+first-stage positive states             0
+second-stage evaluations                0
+acquisition windows                     0
+frequency peak                          0.091755204 Hz
+grid-service cost                       40.593881260 s
+attempted optimization calls            181
+solver failures / fallbacks             0 / 0
+hard physical violations                0
+```
+
+No point simultaneously met the binding-command, frequency, ACE, SoC, and
+cooldown conditions.  This is a causal pre-screen abstention and supplies no
+second-stage value observation.
