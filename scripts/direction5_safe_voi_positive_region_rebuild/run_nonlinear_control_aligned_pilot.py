@@ -126,7 +126,10 @@ def worker(arguments: argparse.Namespace) -> None:
             bess = np.asarray(contract)[[1, 3]]
             return bool(
                 self.aligned_probe._remaining_active == 0
-                and self.aligned_probe._remaining_cooldown == 0
+                # overlay() decrements a final cooldown count before deciding
+                # whether a new window may start, so value must be refreshed
+                # when the pre-overlay count is either zero or one.
+                and self.aligned_probe._remaining_cooldown <= 1
                 and self.aligned_probe.windows_started
                 < self.aligned_probe.config.maximum_windows
                 and not self.aligned_probe.futility_stopped

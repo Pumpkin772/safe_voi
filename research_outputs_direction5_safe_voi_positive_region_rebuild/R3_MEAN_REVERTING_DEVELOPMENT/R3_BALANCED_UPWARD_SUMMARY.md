@@ -47,3 +47,32 @@ exploit-only probe overlay can materially change closed-loop cost without
 producing a capability certificate.  The next design question is whether a
 public-state, candidate-model calculation can predict the sign of the Oracle
 gap before probing and abstain exactly when that value is nonpositive.
+
+## Myopic public-state value diagnostic
+
+The first action-preserving diagnostic was evaluated on seed 8256.  At the
+first otherwise eligible probe instant, `t=308 s`, the causal load estimate
+was `[0.0492146, 0.0349468] pu`.  Over the unchanged 24 s rolling horizon,
+
+```text
+J_contract-set*       = 0.127177756642
+J_high-posterior-set* = 0.127177755203
+Vhat_H                = 1.4393e-9
+first BESS action gap = 1.1195e-8 pu.
+```
+
+This is effectively zero even though the same complete path has a positive
+full-episode perfect-capability grid value of `0.724216864 s`.  The 24 s
+constant-load calculation therefore cannot see the future 240 s stochastic
+regulation opportunity and is rejected as a standalone acquisition gate.  No
+additional paths were spent calibrating a threshold for this disproved score.
+
+The diagnostic run reproduced the original dual grid cost exactly
+(`69.742340667752 s`) and remained physically successful.  It recorded one
+extra value evaluation (two optimization calls).  A control-flow defect was
+also found: a second window could begin on the call that decremented cooldown
+from one to zero before the external value check.  The condition was corrected
+before any active threshold experiment.  A defensible gate must use the
+registered future-event distribution and the same frozen controller objective;
+pathwise `J_grid` remains a reported outcome, not the online optimization
+criterion.
