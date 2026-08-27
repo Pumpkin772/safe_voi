@@ -94,3 +94,14 @@ is already action-identical to contract and exploit-only; exploit-only is run
 separately for every seed that actually starts a window so pure information
 value remains paired without spending duplicate nonlinear episodes in exact
 abstention paths.
+
+Seed 8109 completed with no basic binding-eligible state, zero value-screen
+evaluations, zero probe windows, and 181 rolling MPC calls.  It was physically
+successful with no solver failure or fallback and is an exact abstention path.
+
+The first attempt to run seed 8110 never started a simulation worker.  An
+unrelated process held system commit between approximately 95% and 96%, above
+the fixed 85% preflight start limit, until the 1800 s preflight timeout.  This
+is a resource stop with no episode result and is not counted as a controller
+failure.  Seed 8110 remains in the fixed panel and must be rerun when memory is
+available.
