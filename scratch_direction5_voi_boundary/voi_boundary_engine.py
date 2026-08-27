@@ -10,6 +10,7 @@ state, measured POI power, measured SoC, and the persistent load estimate.
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 from itertools import product
 from functools import lru_cache
@@ -21,6 +22,7 @@ import cvxpy as cp
 import numpy as np
 from scipy.signal import cont2discrete
 
+from direction5freq.estimation.grid_load_observer import LoadObserverInput
 from direction5freq.models.plant_a_full import PlantAFull, PlantAParameters
 
 
@@ -102,6 +104,7 @@ class RollingPrefix:
     terminal_energy_mwh: dict[str, np.ndarray]
     previous_sg_command: dict[str, np.ndarray]
     previous_bess_command: dict[str, np.ndarray]
+    load_observer: dict[str, object]
     prefix_cost: dict[str, float]
     solver_attempts: int
     solver_failures: int
@@ -731,6 +734,8 @@ def _rolling_acquisition_prefix(
     previous_bess_command: np.ndarray,
     initial_energy_mwh: np.ndarray,
     load_forecast_pu: np.ndarray,
+    current_time_s: float,
+    load_observer: object,
 ) -> RollingPrefix:
     """Recompute contract-set MPC at every pre-certificate control instant."""
 
@@ -740,6 +745,7 @@ def _rolling_acquisition_prefix(
     terminal_energy: dict[str, np.ndarray] = {}
     previous_sg: dict[str, np.ndarray] = {}
     previous_bess: dict[str, np.ndarray] = {}
+    observers: dict[str, object] = {}
     prefix_cost: dict[str, float] = {}
     attempts = 0
     failures = 0
@@ -749,6 +755,8 @@ def _rolling_acquisition_prefix(
         energy = np.asarray(initial_energy_mwh, dtype=float).copy()
         prior_sg = np.asarray(previous_sg_command, dtype=float).copy()
         prior_bess = np.asarray(previous_bess_command, dtype=float).copy()
+        observer = deepcopy(load_observer)
+        load_estimate = np.asarray(load_forecast_pu, dtype=float).copy()
         cost = 0.0
         for step, surplus in enumerate(probe.sequence_pu):
             solution = baseline if step == 0 else solve_policy(
@@ -760,7 +768,7 @@ def _rolling_acquisition_prefix(
                 previous_sg_command=prior_sg,
                 previous_bess_command=prior_bess,
                 initial_energy_mwh=energy,
-                load_forecast_pu=load_forecast_pu,
+                load_forecast_pu=load_estimate,
                 scales=scales,
             )
             if step > 0:
@@ -768,7 +776,7 @@ def _rolling_acquisition_prefix(
             if not np.isfinite(solution.objective):
                 failures += 1
                 return RollingPrefix(
-                    False, f"PREFIX_SOLVE_{truth.model_id}", {}, {}, {}, {}, {}, {},
+                    False, f"PREFIX_SOLVE_{truth.model_id}", {}, {}, {}, {}, {}, {}, {},
                     attempts, failures,
                 )
             sg = solution.sg_command[:, 0].copy()
@@ -780,16 +788,16 @@ def _rolling_acquisition_prefix(
                 or np.any(np.abs(bess) > parameters.bess.rating_pu + 1e-10)
             ):
                 return RollingPrefix(
-                    False, f"PREFIX_COMMAND_{truth.model_id}", {}, {}, {}, {}, {}, {},
+                    False, f"PREFIX_COMMAND_{truth.model_id}", {}, {}, {}, {}, {}, {}, {},
                     attempts, failures,
                 )
             next_state, next_power, next_energy, safe = _propagate_truth_interval(
                 point, truth, state, power, energy, sg, bess, prior_bess,
-                load_forecast_pu,
+                load_estimate,
             )
             if not safe:
                 return RollingPrefix(
-                    False, f"PREFIX_PHYSICAL_{truth.model_id}", {}, {}, {}, {}, {}, {},
+                    False, f"PREFIX_PHYSICAL_{truth.model_id}", {}, {}, {}, {}, {}, {}, {},
                     attempts, failures,
                 )
             cost += _numeric_stage_cost(
@@ -801,15 +809,24 @@ def _rolling_acquisition_prefix(
             energy = next_energy
             prior_sg = sg
             prior_bess = bess
+            load_estimate = observer.update(LoadObserverInput(
+                current_time_s + (step + 1) * point.period_s,
+                point.nominal_frequency_hz * state[:2],
+                float(state[2]),
+                state[5:7],
+                power,
+                np.zeros(2),
+            )).load_pu
         terminal_state[truth.model_id] = state
         terminal_power[truth.model_id] = power
         terminal_energy[truth.model_id] = energy
         previous_sg[truth.model_id] = prior_sg
         previous_bess[truth.model_id] = prior_bess
+        observers[truth.model_id] = observer
         prefix_cost[truth.model_id] = float(cost)
     return RollingPrefix(
         True, "SAFE", terminal_state, terminal_power, terminal_energy,
-        previous_sg, previous_bess, prefix_cost, attempts, failures,
+        previous_sg, previous_bess, observers, prefix_cost, attempts, failures,
     )
 
 
@@ -826,16 +843,20 @@ def _rolling_continuation_cost(
     previous_sg_command: np.ndarray,
     previous_bess_command: np.ndarray,
     load_path_pu: np.ndarray,
+    current_time_s: float,
+    load_observer: object,
 ) -> tuple[float, int, int, bool]:
     state = np.asarray(initial_grid_state, dtype=float).copy()
     power = np.asarray(initial_bess_power, dtype=float).copy()
     energy = np.asarray(initial_energy_mwh, dtype=float).copy()
     prior_sg = np.asarray(previous_sg_command, dtype=float).copy()
     prior_bess = np.asarray(previous_bess_command, dtype=float).copy()
+    observer = deepcopy(load_observer)
+    load_estimate = np.asarray(observer._load, dtype=float).copy()
     cost = 0.0
     attempts = 0
     failures = 0
-    for load in np.asarray(load_path_pu, dtype=float):
+    for step, load in enumerate(np.asarray(load_path_pu, dtype=float)):
         solution = solve_policy(
             point,
             policy_models,
@@ -845,7 +866,7 @@ def _rolling_continuation_cost(
             previous_sg_command=prior_sg,
             previous_bess_command=prior_bess,
             initial_energy_mwh=energy,
-            load_forecast_pu=load,
+            load_forecast_pu=load_estimate,
             scales=scales,
         )
         attempts += 1
@@ -868,6 +889,14 @@ def _rolling_continuation_cost(
         energy = next_energy
         prior_sg = np.asarray(sg, dtype=float).copy()
         prior_bess = np.asarray(bess, dtype=float).copy()
+        load_estimate = observer.update(LoadObserverInput(
+            current_time_s + (step + 1) * point.period_s,
+            point.nominal_frequency_hz * state[:2],
+            float(state[2]),
+            state[5:7],
+            power,
+            np.zeros(2),
+        )).load_pu
     return float(cost), attempts, failures, True
 
 
@@ -886,6 +915,8 @@ def evaluate_acquisition_information_value(
     initial_energy_mwh: np.ndarray,
     load_forecast_pu: np.ndarray,
     continuation_load_paths_pu: np.ndarray | None = None,
+    current_time_s: float = 0.0,
+    load_observer: object | None = None,
     high_power_threshold_pu: float = 0.045,
     numerical_margin: float = 1e-7,
 ) -> AcquisitionInformationValue:
@@ -898,6 +929,8 @@ def evaluate_acquisition_information_value(
     every hidden candidate, so no capability prior is read by the controller.
     """
 
+    if load_observer is None:
+        raise ValueError("a causal warmed load observer is required")
     prefix = _rolling_acquisition_prefix(
         point,
         models,
@@ -911,6 +944,8 @@ def evaluate_acquisition_information_value(
         previous_bess_command=previous_bess_command,
         initial_energy_mwh=initial_energy_mwh,
         load_forecast_pu=load_forecast_pu,
+        current_time_s=current_time_s,
+        load_observer=load_observer,
     )
     if not prefix.safe:
         return AcquisitionInformationValue(
@@ -968,6 +1003,8 @@ def evaluate_acquisition_information_value(
                 previous_sg_command=prefix.previous_sg_command[truth.model_id],
                 previous_bess_command=prefix.previous_bess_command[truth.model_id],
                 load_path_pu=path,
+                current_time_s=current_time_s + probe.duration_s,
+                load_observer=prefix.load_observer[truth.model_id],
             )
             exploit_value, used, failed, exploit_safe = _rolling_continuation_cost(
                 point, truth, models, **common

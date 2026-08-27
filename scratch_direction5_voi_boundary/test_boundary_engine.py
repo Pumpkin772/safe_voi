@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from direction5freq.estimation.grid_load_mhe import ConstrainedGridLoadMHE
 from voi_boundary_engine import (
     BoundaryPoint,
     Probe,
@@ -132,6 +133,15 @@ def test_control_aligned_acquisition_value_uses_identical_surplus_prefix() -> No
         load_forecast_pu=load,
         scales=objective_scales(item.objective),
     )
+    observer = ConstrainedGridLoadMHE(
+        nominal_frequency_hz=50.0,
+        inertia_s=(5.0, 5.0),
+        damping_pu_per_pu_frequency=(1.0, 1.0),
+        derivative_filter=0.40,
+        warmup_samples=8,
+        window_samples=6,
+    )
+    observer._load = load.copy()
     area = int(np.argmax(np.abs(baseline.bess_command[:, 0])))
     direction = int(np.sign(baseline.bess_command[area, 0]))
     probe = Probe(
@@ -168,6 +178,8 @@ def test_control_aligned_acquisition_value_uses_identical_surplus_prefix() -> No
         previous_bess_command=np.zeros(2),
         initial_energy_mwh=energy,
         load_forecast_pu=load,
+        current_time_s=100.0,
+        load_observer=observer,
     )
     assert value.safe
     assert value.low_branch_value == 0.0

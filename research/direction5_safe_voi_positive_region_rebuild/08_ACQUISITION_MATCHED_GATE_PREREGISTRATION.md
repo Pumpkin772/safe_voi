@@ -100,6 +100,10 @@ was replaced by the following closer match to the online controller.
   episode end.  At every `4 s` step, exploit and posterior policies each solve
   the same rolling MPC from their own causal state and see the same integration
   load path.
+- The integration load is never passed directly to either controller.  Each
+  arm starts from a copy of the already warmed actual-POI MHE and updates its
+  load estimate from causal frequency, tie-line, SG mechanical-power, and
+  actual BESS POI observations before the next MPC solve.
 
 The integration paths are public numerical nodes, not the current episode's
 future realization.  A current load estimate outside the registered OU-only
@@ -111,3 +115,8 @@ The registered 720 s nonlinear paired episodes remain the measurement of
 realized closed-loop value.  Until the relationship between predicted and
 realized pure information value is established on the fixed development panel,
 this rule is a development hypothesis rather than a paper result.
+
+Weak dominance applies only to the pure-information comparison between exploit
+and dual.  The acquisition action's low-capability effect relative to contract
+MPC remains a separate paired quantity and must satisfy the registered
+frequency-peak, ACE, and tie-line downside limits.

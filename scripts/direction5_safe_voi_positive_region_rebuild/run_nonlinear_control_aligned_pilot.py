@@ -302,6 +302,8 @@ def worker(arguments: argparse.Namespace) -> None:
                 ),
                 load_forecast_pu=load,
                 continuation_load_paths_pu=continuation_paths,
+                current_time_s=observation.time_s,
+                load_observer=self.observer,
             )
             self.attempts += result.solver_attempts
             self.failures += result.solver_failures
