@@ -555,7 +555,7 @@ def guarded(arguments: argparse.Namespace) -> None:
     wait_for_memory_preflight(
         limits,
         log_path=output / f"{stem}_preflight.jsonl",
-        timeout_s=1800.0,
+        timeout_s=120.0,
         poll_interval_s=5.0,
     )
     code = run_guarded(
