@@ -169,23 +169,20 @@ def worker(arguments: argparse.Namespace) -> None:
                 load_forecast_pu=load,
                 scales=objective_scales(point.objective),
             )
-            contract_solution = solve_policy(point, self.all_models, **common)
+            contract_solution = self.last_solution
+            assert contract_solution is not None
             high_models = tuple(
                 model for model in self.all_models
                 if model.power_pu > 0.045 + 1e-8
             )
             high_solution = solve_policy(point, high_models, **common)
-            self.attempts += 2
-            self.solve_times.extend((
-                contract_solution.solve_time_s,
-                high_solution.solve_time_s,
-            ))
+            self.attempts += 1
+            self.solve_times.append(high_solution.solve_time_s)
             finite = bool(
                 np.isfinite(contract_solution.objective)
                 and np.isfinite(high_solution.objective)
             )
             if not finite:
-                self.failures += int(not np.isfinite(contract_solution.objective))
                 self.failures += int(not np.isfinite(high_solution.objective))
             value = (
                 float(contract_solution.objective - high_solution.objective)

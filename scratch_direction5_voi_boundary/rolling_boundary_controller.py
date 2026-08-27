@@ -66,6 +66,7 @@ class RollingBoundaryController:
         self.attempts = 0; self.failures = 0; self.fallbacks = 0
         self.probe_triggers = 0; self.probe_active_calls = 0
         self.probe_l1 = 0.0; self.solve_times: list[float] = []
+        self.last_solution = None
         self._change_epoch = 0; self._last_residual_large = False
         self._last_actual_poi = np.zeros(2)
 
@@ -118,6 +119,7 @@ class RollingBoundaryController:
             load_forecast_pu=load,
             scales=objective_scales(point.objective),
         )
+        self.last_solution = solution
         self.attempts += 1; self.solve_times.append(solution.solve_time_s)
         if not np.isfinite(solution.objective):
             self.failures += 1; self.fallbacks += 1

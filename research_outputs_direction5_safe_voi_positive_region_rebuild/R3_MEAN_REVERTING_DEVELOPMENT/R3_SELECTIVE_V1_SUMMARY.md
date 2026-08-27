@@ -50,3 +50,28 @@ successful with zero solver failures and zero fallback calls.
 This is a development mechanism point, not evidence for an independent
 positive region.  The next fixed replication paths remain seeds `8103`, `8104`,
 and `8105`; no new seed is selected from the result.
+
+## Fixed high-truth replication
+
+| seed | value-screen evaluations | probe windows | high certified | total grid value (s) | pure information grid value (s) |
+| ---: | ---: | ---: | --- | ---: | ---: |
+| 8103 | 1 | 0 | no | 0 | 0 |
+| 8104 | 0 | 0 | no | 0 | 0 |
+| 8105 | 7 | 0 | no | 0 | 0 |
+| 8256 | 2 | 1 | yes | +0.428061249 | +0.106507751 |
+
+For 8103 the only eligible state had numerical-zero predicted value.  Seed
+8104 never reached the basic binding eligibility condition.  Seed 8105 was
+screened seven times; its largest predicted value was approximately `0.04`,
+below the fixed `0.08` threshold.  Exploit-only and dual were exactly equal to
+contract MPC in all three abstention paths.  This removes the former
+`-0.104568500 s` information loss on seed 8105 without changing the contract
+trajectory.
+
+All four high-truth paths were physically successful with zero solver failures
+and zero fallback calls.  The current development evidence is therefore one
+observed positive state-region entry and three exact abstentions, not four
+positive episode results.  More consecutively fixed development paths are
+needed to estimate how often the registered stochastic process enters the
+region and whether realized pure information value is consistently positive
+conditional on entry.
