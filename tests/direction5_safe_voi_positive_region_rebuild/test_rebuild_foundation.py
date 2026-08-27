@@ -32,6 +32,12 @@ from direction5freq.voi_positive_region.sequential_evidence import (
 )
 from direction5freq.voi_positive_region.scenario_registry import SEED_RANGES
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scratch_direction5_voi_boundary"))
+from voi_boundary_engine import objective_scales
+
 
 def test_seed_firewalls_are_disjoint_and_controller_view_hides_truth() -> None:
     ranges = [set(value) for value in SEED_RANGES.values()]
@@ -367,3 +373,16 @@ def test_development_factorial_has_eight_unique_cells() -> None:
     cells = development_factorial()
     assert len(cells) == 8
     assert len({cell.cell_id for cell in cells}) == 8
+
+
+def test_registered_allocation_axis_keeps_grid_scales_fixed() -> None:
+    names = (
+        "grid_service", "sg_conserving_4", "sg_conserving_16",
+        "sg_conserving_64",
+    )
+    scales = [objective_scales(name) for name in names]
+    assert all(item.frequency_hz == 0.20 for item in scales)
+    assert all(item.ace_pu == 0.05 for item in scales)
+    assert all(item.tie_pu == 0.025 for item in scales)
+    ratios = [(item.bess_move_pu / item.sg_move_pu) ** 2 for item in scales]
+    assert np.allclose(ratios, (1.0, 4.0, 16.0, 64.0))

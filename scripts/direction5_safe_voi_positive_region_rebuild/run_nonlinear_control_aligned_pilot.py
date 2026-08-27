@@ -475,7 +475,11 @@ def parser() -> argparse.ArgumentParser:
     )
     result.add_argument(
         "--objective",
-        choices=("balanced", "regional_responsibility", "resource_economy"),
+        choices=(
+            "balanced", "regional_responsibility", "resource_economy",
+            "grid_service", "sg_conserving_4", "sg_conserving_16",
+            "sg_conserving_64",
+        ),
         default="resource_economy",
     )
     result.add_argument("--run-label", default="")

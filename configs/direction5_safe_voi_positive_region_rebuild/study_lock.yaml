@@ -78,6 +78,12 @@ value:
     frequency_peak_increment_hz_max: 0.005
     ace_relative_worsening_max: 0.01
     tie_relative_worsening_max: 0.01
+  development_allocation_weight_axis:
+    grid_service: {sg_move_scale_pu: 0.030, bess_move_scale_pu: 0.030, relative_sg_penalty: 1}
+    sg_conserving_4: {sg_move_scale_pu: 0.020, bess_move_scale_pu: 0.040, relative_sg_penalty: 4}
+    sg_conserving_16: {sg_move_scale_pu: 0.015, bess_move_scale_pu: 0.060, relative_sg_penalty: 16}
+    sg_conserving_64: {sg_move_scale_pu: 0.010, bess_move_scale_pu: 0.080, relative_sg_penalty: 64}
+    fixed_grid_scales: {frequency_hz: 0.20, ace_pu: 0.05, tie_pu: 0.025}
 
 seeds:
   development: [8100, 8299]

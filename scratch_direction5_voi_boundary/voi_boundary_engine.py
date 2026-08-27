@@ -170,6 +170,26 @@ def objective_scales(name: str) -> ObjectiveScales:
         return ObjectiveScales(ace_pu=0.05, tie_pu=0.025)
     if name == "resource_economy":
         return ObjectiveScales(sg_move_pu=0.02, bess_move_pu=0.04)
+    if name == "grid_service":
+        return ObjectiveScales(
+            frequency_hz=0.20, ace_pu=0.05, tie_pu=0.025,
+            sg_move_pu=0.03, bess_move_pu=0.03,
+        )
+    if name == "sg_conserving_4":
+        return ObjectiveScales(
+            frequency_hz=0.20, ace_pu=0.05, tie_pu=0.025,
+            sg_move_pu=0.02, bess_move_pu=0.04,
+        )
+    if name == "sg_conserving_16":
+        return ObjectiveScales(
+            frequency_hz=0.20, ace_pu=0.05, tie_pu=0.025,
+            sg_move_pu=0.015, bess_move_pu=0.06,
+        )
+    if name == "sg_conserving_64":
+        return ObjectiveScales(
+            frequency_hz=0.20, ace_pu=0.05, tie_pu=0.025,
+            sg_move_pu=0.01, bess_move_pu=0.08,
+        )
     raise ValueError(f"unknown objective preference: {name}")
 
 
