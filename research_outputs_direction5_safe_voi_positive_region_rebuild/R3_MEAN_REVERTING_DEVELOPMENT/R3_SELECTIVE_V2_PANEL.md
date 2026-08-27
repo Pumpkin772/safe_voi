@@ -80,3 +80,29 @@ hard physical violations                0
 All four candidate states had essentially zero decision value for a high-power
 posterior.  This is another strict abstention path, not evidence that the
 positive region is globally empty.
+
+## High-capability seed 8112
+
+The actual and reported capability transition both occurred at
+`136.625620493 s`.  The independent area-1 contingency occurred at
+`267.898503148 s` with magnitude `+0.0496142384 pu`.
+
+```text
+eligible first-stage evaluations       11
+maximum predicted high-posterior value 0.052842445
+first-stage positive states             0
+second-stage evaluations                0
+acquisition windows                     0
+frequency peak                          0.150374477 Hz
+grid-service cost                       56.650930087 s
+attempted optimization calls            192
+solver failures / fallbacks             0 / 0
+hard physical violations                0
+```
+
+The maximum screen value occurred at `308 s` and remained below the frozen
+`0.08` threshold.  This fourth corrected trajectory is therefore also an
+abstention path exactly equal to the contract-set rolling MPC.  The V2 panel is
+currently four safe abstentions from four high-capability trajectories; this
+still measures sparsity, not emptiness, because no state has yet reached the
+second-stage calculation.
