@@ -522,6 +522,11 @@ def guarded(arguments: argparse.Namespace) -> None:
         "--seed",
         str(arguments.seed),
     ]
+    if arguments.minimum_predicted_high_value is not None:
+        command.extend((
+            "--minimum-predicted-high-value",
+            str(arguments.minimum_predicted_high_value),
+        ))
     if arguments.target_distribution:
         command.append("--target-distribution")
     environment = dict(os.environ)
