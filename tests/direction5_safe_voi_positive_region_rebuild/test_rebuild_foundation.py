@@ -18,6 +18,7 @@ from direction5freq.voi_positive_region import (
     generate_scenarios,
     registered_probe_library,
     registered_control_aligned_library,
+    registered_continuation_load_bank,
     trajectory_metrics,
     select_opportunity,
     development_factorial,
@@ -66,6 +67,20 @@ def test_capability_and_load_times_use_independent_reproducible_streams() -> Non
     assert all(item.episode_duration_s == 720.0 for item in first)
     assert all(item.load_magnitude_pu <= 0.050 for item in first)
     assert all(item.regulation_hard_bound_pu == 0.020 for item in first)
+
+
+def test_public_continuation_bank_is_fixed_and_respects_load_envelope() -> None:
+    arguments = dict(
+        current_time_s=324.0,
+        current_load_estimate_pu=np.asarray((0.059, 0.040)),
+        period_s=4.0,
+        duration_s=240.0,
+    )
+    first = registered_continuation_load_bank(**arguments)
+    second = registered_continuation_load_bank(**arguments)
+    assert first.shape == (8, 60, 2)
+    assert np.array_equal(first, second)
+    assert np.max(np.abs(first)) <= 0.070
 
 
 def test_resource_price_boundary_keeps_physical_tradeoff_explicit() -> None:

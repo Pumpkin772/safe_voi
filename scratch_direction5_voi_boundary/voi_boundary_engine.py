@@ -94,6 +94,20 @@ class FixedPrefix:
 
 
 @dataclass(slots=True)
+class RollingPrefix:
+    safe: bool
+    reason: str
+    terminal_state: dict[str, np.ndarray]
+    terminal_power: dict[str, np.ndarray]
+    terminal_energy_mwh: dict[str, np.ndarray]
+    previous_sg_command: dict[str, np.ndarray]
+    previous_bess_command: dict[str, np.ndarray]
+    prefix_cost: dict[str, float]
+    solver_attempts: int
+    solver_failures: int
+
+
+@dataclass(slots=True)
 class ProbeValue:
     probe_id: str
     safe: bool
@@ -125,6 +139,8 @@ class AcquisitionInformationValue:
     posterior_recourse_cost: dict[str, float]
     solver_attempts: int
     solver_failures: int
+    continuation_path_count: int
+    continuation_steps: int
 
 
 @dataclass(slots=True)
@@ -628,6 +644,233 @@ def _fixed_prefix(
     return FixedPrefix(True, "SAFE", states, powers, energies, costs, sg, bess)
 
 
+def _physical_limits_hold(
+    point: BoundaryPoint,
+    parameters: PlantAParameters,
+    state: np.ndarray,
+    energy_mwh: np.ndarray,
+) -> bool:
+    return bool(
+        np.max(np.abs(point.nominal_frequency_hz * state[:2])) <= 1.0 + 1e-10
+        and abs(float(state[2])) <= 0.12 + 1e-10
+        and np.all(state[3:5] >= np.asarray(parameters.valve_lower_pu) - 1e-10)
+        and np.all(state[3:5] <= np.asarray(parameters.valve_upper_pu) + 1e-10)
+        and np.all(state[5:7] >= np.asarray(parameters.sg_power_lower_pu) - 1e-10)
+        and np.all(state[5:7] <= np.asarray(parameters.sg_power_upper_pu) + 1e-10)
+        and np.all(energy_mwh >= parameters.bess.soc_min * parameters.bess.energy_mwh - 1e-10)
+        and np.all(energy_mwh <= parameters.bess.soc_max * parameters.bess.energy_mwh + 1e-10)
+    )
+
+
+def _propagate_truth_interval(
+    point: BoundaryPoint,
+    truth: CapabilityModel,
+    state: np.ndarray,
+    power: np.ndarray,
+    energy_mwh: np.ndarray,
+    sg_command: np.ndarray,
+    bess_command: np.ndarray,
+    previous_bess_command: np.ndarray,
+    load_pu: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
+    """Propagate one control interval on the public 0.2 s evidence grid."""
+
+    parameters = plant_parameters(point.sg_tension, point.nominal_frequency_hz)
+    substeps = int(round(point.period_s / 0.2))
+    step_s = point.period_s / substeps
+    ad, bd = _discrete_grid(parameters, step_s)
+    alpha = exp(-step_s / parameters.bess.actuator_time_constant_s)
+    value = np.asarray(state, dtype=float).copy()
+    actual = np.asarray(power, dtype=float).copy()
+    energy = np.asarray(energy_mwh, dtype=float).copy()
+    for substep in range(substeps):
+        elapsed_s = (substep + 1) * step_s
+        delayed = (
+            previous_bess_command
+            if elapsed_s <= truth.delay_s + 1e-12
+            else bess_command
+        )
+        target = np.clip(
+            alpha * actual + (1.0 - alpha) * delayed,
+            -truth.power_pu,
+            truth.power_pu,
+        )
+        delta = np.clip(
+            target - actual,
+            -truth.ramp_pu_per_s * step_s,
+            truth.ramp_pu_per_s * step_s,
+        )
+        next_actual = actual + delta
+        average = 0.5 * (actual + next_actual)
+        loss_adjusted = np.where(
+            average >= 0.0,
+            average / parameters.bess.eta_discharge,
+            average * parameters.bess.eta_charge,
+        )
+        energy -= (
+            step_s * parameters.system_base_mva * loss_adjusted / 3600.0
+        )
+        actual = next_actual
+        value = ad @ value + bd @ np.r_[sg_command, actual, load_pu]
+        if not _physical_limits_hold(point, parameters, value, energy):
+            return value, actual, energy, False
+    return value, actual, energy, True
+
+
+def _rolling_acquisition_prefix(
+    point: BoundaryPoint,
+    models: Sequence[CapabilityModel],
+    baseline: PolicySolution,
+    probe: Probe,
+    *,
+    horizon_steps: int,
+    scales: ObjectiveScales,
+    initial_grid_state: np.ndarray,
+    initial_bess_power: np.ndarray,
+    previous_sg_command: np.ndarray,
+    previous_bess_command: np.ndarray,
+    initial_energy_mwh: np.ndarray,
+    load_forecast_pu: np.ndarray,
+) -> RollingPrefix:
+    """Recompute contract-set MPC at every pre-certificate control instant."""
+
+    parameters = plant_parameters(point.sg_tension, point.nominal_frequency_hz)
+    terminal_state: dict[str, np.ndarray] = {}
+    terminal_power: dict[str, np.ndarray] = {}
+    terminal_energy: dict[str, np.ndarray] = {}
+    previous_sg: dict[str, np.ndarray] = {}
+    previous_bess: dict[str, np.ndarray] = {}
+    prefix_cost: dict[str, float] = {}
+    attempts = 0
+    failures = 0
+    for truth in models:
+        state = np.asarray(initial_grid_state, dtype=float).copy()
+        power = np.asarray(initial_bess_power, dtype=float).copy()
+        energy = np.asarray(initial_energy_mwh, dtype=float).copy()
+        prior_sg = np.asarray(previous_sg_command, dtype=float).copy()
+        prior_bess = np.asarray(previous_bess_command, dtype=float).copy()
+        cost = 0.0
+        for step, surplus in enumerate(probe.sequence_pu):
+            solution = baseline if step == 0 else solve_policy(
+                point,
+                models,
+                horizon_steps=horizon_steps,
+                initial_grid_state=state,
+                initial_bess_power=power,
+                previous_sg_command=prior_sg,
+                previous_bess_command=prior_bess,
+                initial_energy_mwh=energy,
+                load_forecast_pu=load_forecast_pu,
+                scales=scales,
+            )
+            if step > 0:
+                attempts += 1
+            if not np.isfinite(solution.objective):
+                failures += 1
+                return RollingPrefix(
+                    False, f"PREFIX_SOLVE_{truth.model_id}", {}, {}, {}, {}, {}, {},
+                    attempts, failures,
+                )
+            sg = solution.sg_command[:, 0].copy()
+            bess = solution.bess_command[:, 0].copy()
+            bess[probe.area] += float(surplus)
+            if (
+                np.any(sg < np.asarray(parameters.valve_lower_pu) - 1e-10)
+                or np.any(sg > np.asarray(parameters.valve_upper_pu) + 1e-10)
+                or np.any(np.abs(bess) > parameters.bess.rating_pu + 1e-10)
+            ):
+                return RollingPrefix(
+                    False, f"PREFIX_COMMAND_{truth.model_id}", {}, {}, {}, {}, {}, {},
+                    attempts, failures,
+                )
+            next_state, next_power, next_energy, safe = _propagate_truth_interval(
+                point, truth, state, power, energy, sg, bess, prior_bess,
+                load_forecast_pu,
+            )
+            if not safe:
+                return RollingPrefix(
+                    False, f"PREFIX_PHYSICAL_{truth.model_id}", {}, {}, {}, {}, {}, {},
+                    attempts, failures,
+                )
+            cost += _numeric_stage_cost(
+                next_state, sg, bess, prior_sg, prior_bess, scales,
+                point.period_s, point.nominal_frequency_hz,
+            )
+            state = next_state
+            power = next_power
+            energy = next_energy
+            prior_sg = sg
+            prior_bess = bess
+        terminal_state[truth.model_id] = state
+        terminal_power[truth.model_id] = power
+        terminal_energy[truth.model_id] = energy
+        previous_sg[truth.model_id] = prior_sg
+        previous_bess[truth.model_id] = prior_bess
+        prefix_cost[truth.model_id] = float(cost)
+    return RollingPrefix(
+        True, "SAFE", terminal_state, terminal_power, terminal_energy,
+        previous_sg, previous_bess, prefix_cost, attempts, failures,
+    )
+
+
+def _rolling_continuation_cost(
+    point: BoundaryPoint,
+    truth: CapabilityModel,
+    policy_models: Sequence[CapabilityModel],
+    *,
+    horizon_steps: int,
+    scales: ObjectiveScales,
+    initial_grid_state: np.ndarray,
+    initial_bess_power: np.ndarray,
+    initial_energy_mwh: np.ndarray,
+    previous_sg_command: np.ndarray,
+    previous_bess_command: np.ndarray,
+    load_path_pu: np.ndarray,
+) -> tuple[float, int, int, bool]:
+    state = np.asarray(initial_grid_state, dtype=float).copy()
+    power = np.asarray(initial_bess_power, dtype=float).copy()
+    energy = np.asarray(initial_energy_mwh, dtype=float).copy()
+    prior_sg = np.asarray(previous_sg_command, dtype=float).copy()
+    prior_bess = np.asarray(previous_bess_command, dtype=float).copy()
+    cost = 0.0
+    attempts = 0
+    failures = 0
+    for load in np.asarray(load_path_pu, dtype=float):
+        solution = solve_policy(
+            point,
+            policy_models,
+            horizon_steps=horizon_steps,
+            initial_grid_state=state,
+            initial_bess_power=power,
+            previous_sg_command=prior_sg,
+            previous_bess_command=prior_bess,
+            initial_energy_mwh=energy,
+            load_forecast_pu=load,
+            scales=scales,
+        )
+        attempts += 1
+        if not np.isfinite(solution.objective):
+            failures += 1
+            return float("inf"), attempts, failures, False
+        sg = solution.sg_command[:, 0]
+        bess = solution.bess_command[:, 0]
+        next_state, next_power, next_energy, safe = _propagate_truth_interval(
+            point, truth, state, power, energy, sg, bess, prior_bess, load,
+        )
+        if not safe:
+            return float("inf"), attempts, failures, False
+        cost += _numeric_stage_cost(
+            next_state, sg, bess, prior_sg, prior_bess, scales,
+            point.period_s, point.nominal_frequency_hz,
+        )
+        state = next_state
+        power = next_power
+        energy = next_energy
+        prior_sg = np.asarray(sg, dtype=float).copy()
+        prior_bess = np.asarray(bess, dtype=float).copy()
+    return float(cost), attempts, failures, True
+
+
 def evaluate_acquisition_information_value(
     point: BoundaryPoint,
     models: Sequence[CapabilityModel],
@@ -642,6 +885,7 @@ def evaluate_acquisition_information_value(
     previous_bess_command: np.ndarray,
     initial_energy_mwh: np.ndarray,
     load_forecast_pu: np.ndarray,
+    continuation_load_paths_pu: np.ndarray | None = None,
     high_power_threshold_pu: float = 0.045,
     numerical_margin: float = 1e-7,
 ) -> AcquisitionInformationValue:
@@ -654,12 +898,13 @@ def evaluate_acquisition_information_value(
     every hidden candidate, so no capability prior is read by the controller.
     """
 
-    prefix = _fixed_prefix(
+    prefix = _rolling_acquisition_prefix(
         point,
         models,
         baseline,
         probe,
-        scales,
+        horizon_steps=horizon_steps,
+        scales=scales,
         initial_grid_state=initial_grid_state,
         initial_bess_power=initial_bess_power,
         previous_sg_command=previous_sg_command,
@@ -670,14 +915,7 @@ def evaluate_acquisition_information_value(
     if not prefix.safe:
         return AcquisitionInformationValue(
             False, prefix.reason, {}, -float("inf"), -float("inf"), None,
-            False, {}, {}, 0, 0,
-        )
-
-    remaining = horizon_steps - len(probe.sequence_pu)
-    if remaining <= 0:
-        return AcquisitionInformationValue(
-            True, "NO_POSTERIOR_RECOURSE_TIME", {}, 0.0, 0.0, None,
-            False, {}, {}, 0, 0,
+            False, {}, {}, prefix.solver_attempts, prefix.solver_failures, 0, 0,
         )
 
     high_models = tuple(
@@ -687,47 +925,71 @@ def evaluate_acquisition_information_value(
     if not high_models:
         return AcquisitionInformationValue(
             True, "NO_HIGH_POWER_HYPOTHESIS", {}, 0.0, 0.0, None,
-            False, {}, {}, 0, 0,
+            False, {}, {}, prefix.solver_attempts, prefix.solver_failures, 0, 0,
         )
 
-    attempts = 0
-    failures = 0
+    if continuation_load_paths_pu is None:
+        remaining = max(horizon_steps - len(probe.sequence_pu), 0)
+        load_paths = np.tile(
+            np.asarray(load_forecast_pu, dtype=float), (1, remaining, 1)
+        )
+    else:
+        load_paths = np.asarray(continuation_load_paths_pu, dtype=float)
+    if load_paths.ndim != 3 or load_paths.shape[2] != 2:
+        raise ValueError("continuation load paths must be path-by-time-by-area")
+    if load_paths.shape[1] == 0:
+        return AcquisitionInformationValue(
+            True, "NO_POSTERIOR_RECOURSE_TIME", {}, 0.0, 0.0, None,
+            False, {}, {}, prefix.solver_attempts, prefix.solver_failures,
+            int(load_paths.shape[0]), 0,
+        )
+
+    attempts = prefix.solver_attempts
+    failures = prefix.solver_failures
     branch_value: dict[str, float] = {}
     exploit_cost: dict[str, float] = {}
     posterior_cost: dict[str, float] = {}
     for truth in models:
-        common = dict(
-            horizon_steps=remaining,
-            initial_grid_state=prefix.states[truth.model_id][:, -1],
-            initial_bess_power=prefix.bess_power[truth.model_id][:, -1],
-            previous_sg_command=prefix.sg_command[:, -1],
-            previous_bess_command=prefix.bess_command[:, -1],
-            initial_energy_mwh=prefix.energy_mwh[truth.model_id][:, -1],
-            load_forecast_pu=load_forecast_pu,
-            scales=scales,
-        )
-        exploit = solve_policy(point, models, **common)
-        attempts += 1
-        if truth.power_pu > high_power_threshold_pu + 1e-10:
-            posterior = solve_policy(point, high_models, **common)
-            attempts += 1
-        else:
-            # The causal estimator does not enable surplus capability on a
-            # low or ambiguous observation, so dual and exploit solve the
-            # identical problem in this branch.
-            posterior = exploit
-        finite = bool(
-            np.isfinite(exploit.objective) and np.isfinite(posterior.objective)
-        )
-        failures += int(not np.isfinite(exploit.objective))
-        if posterior is not exploit:
-            failures += int(not np.isfinite(posterior.objective))
-        if not finite:
+        if truth.power_pu <= high_power_threshold_pu + 1e-10:
+            branch_value[truth.model_id] = 0.0
+            exploit_cost[truth.model_id] = 0.0
+            posterior_cost[truth.model_id] = 0.0
             continue
-        exploit_cost[truth.model_id] = float(exploit.objective)
-        posterior_cost[truth.model_id] = float(posterior.objective)
+        exploit_path_costs = []
+        posterior_path_costs = []
+        branch_safe = True
+        for path in load_paths:
+            common = dict(
+                horizon_steps=horizon_steps,
+                scales=scales,
+                initial_grid_state=prefix.terminal_state[truth.model_id],
+                initial_bess_power=prefix.terminal_power[truth.model_id],
+                initial_energy_mwh=prefix.terminal_energy_mwh[truth.model_id],
+                previous_sg_command=prefix.previous_sg_command[truth.model_id],
+                previous_bess_command=prefix.previous_bess_command[truth.model_id],
+                load_path_pu=path,
+            )
+            exploit_value, used, failed, exploit_safe = _rolling_continuation_cost(
+                point, truth, models, **common
+            )
+            attempts += used
+            failures += failed
+            posterior_value, used, failed, posterior_safe = (
+                _rolling_continuation_cost(
+                    point, truth, high_models, **common
+                )
+            )
+            attempts += used
+            failures += failed
+            branch_safe = bool(branch_safe and exploit_safe and posterior_safe)
+            exploit_path_costs.append(exploit_value)
+            posterior_path_costs.append(posterior_value)
+        if not branch_safe:
+            continue
+        exploit_cost[truth.model_id] = float(np.mean(exploit_path_costs))
+        posterior_cost[truth.model_id] = float(np.mean(posterior_path_costs))
         branch_value[truth.model_id] = float(
-            exploit.objective - posterior.objective
+            np.mean(np.asarray(exploit_path_costs) - posterior_path_costs)
         )
 
     if len(branch_value) != len(models):
@@ -735,6 +997,7 @@ def evaluate_acquisition_information_value(
             False, "RECOURSE_SOLVE_FAILURE", branch_value,
             -float("inf"), -float("inf"), None, False,
             exploit_cost, posterior_cost, attempts, failures,
+            int(load_paths.shape[0]), int(load_paths.shape[1]),
         )
 
     low_values = [
@@ -769,6 +1032,8 @@ def evaluate_acquisition_information_value(
         posterior_cost,
         attempts,
         failures,
+        int(load_paths.shape[0]),
+        int(load_paths.shape[1]),
     )
 
 

@@ -24,6 +24,7 @@ from direction5freq.voi_positive_region import (
     DynamicEvidenceConfig,
     StudySplit,
     generate_scenario,
+    registered_continuation_load_bank,
 )
 
 
@@ -204,6 +205,22 @@ def worker(arguments: argparse.Namespace) -> None:
             return {
                 "time_s": float(observation.time_s),
                 "estimated_load_pu": load.tolist(),
+                "public_grid_state": state.tolist(),
+                "actual_bess_poi_power_pu": np.asarray(
+                    observation.bess_actual_power_pu, dtype=float
+                ).tolist(),
+                "measured_soc": np.asarray(
+                    observation.measured_soc, dtype=float
+                ).tolist(),
+                "previous_applied_action": np.asarray(
+                    previous_applied_action, dtype=float
+                ).tolist(),
+                "contract_action": np.asarray((
+                    contract_solution.sg_command[0, 0],
+                    contract_solution.bess_command[0, 0],
+                    contract_solution.sg_command[1, 0],
+                    contract_solution.bess_command[1, 0],
+                )).tolist(),
                 "contract_set_cost": float(contract_solution.objective),
                 "high_posterior_set_cost": float(high_solution.objective),
                 "predicted_high_posterior_value": value,
@@ -253,6 +270,22 @@ def worker(arguments: argparse.Namespace) -> None:
                 sequence_pu=sequence,
                 sg_compensation=False,
             )
+            continuation_duration_s = max(
+                0.0,
+                min(
+                    arguments.certificate_validity - probe.duration_s,
+                    (
+                        target_scenario.episode_duration_s
+                        if target_scenario is not None else arguments.duration
+                    ) - observation.time_s - probe.duration_s,
+                ),
+            )
+            continuation_paths = registered_continuation_load_bank(
+                current_time_s=observation.time_s + probe.duration_s,
+                current_load_estimate_pu=load,
+                period_s=point.period_s,
+                duration_s=continuation_duration_s,
+            )
             result = evaluate_acquisition_information_value(
                 point,
                 self.all_models,
@@ -268,6 +301,7 @@ def worker(arguments: argparse.Namespace) -> None:
                     observation.measured_soc * self.parameters.bess.energy_mwh
                 ),
                 load_forecast_pu=load,
+                continuation_load_paths_pu=continuation_paths,
             )
             self.attempts += result.solver_attempts
             self.failures += result.solver_failures
@@ -288,6 +322,11 @@ def worker(arguments: argparse.Namespace) -> None:
                 "branch_information_value": result.branch_value,
                 "solver_attempts": result.solver_attempts,
                 "solver_failures": result.solver_failures,
+                "continuation_path_count": result.continuation_path_count,
+                "continuation_steps": result.continuation_steps,
+                "continuation_duration_s": (
+                    result.continuation_steps * point.period_s
+                ),
             }
 
         def _update_power_evidence(self, observation) -> None:
@@ -656,7 +695,7 @@ def guarded(arguments: argparse.Namespace) -> None:
         min_available_physical_bytes=5 * GIB,
         max_tree_private_bytes=4 * GIB,
         max_descendant_processes=2,
-        timeout_s=7200.0,
+        timeout_s=14400.0 if arguments.acquisition_value_gate else 7200.0,
         poll_interval_s=0.5,
         preflight_max_system_commit_fraction=0.85,
     )

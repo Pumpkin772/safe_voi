@@ -81,12 +81,33 @@ trajectory receives the paired exploit-only run with the same scenario and
 surplus action.  Low-capability paired runs are performed for admitted paths to
 measure physical safety and downside.
 
-## Current approximation and interpretation
+## Rolling prefix and stochastic continuation
 
-The online second stage uses the controller's current persistent-load forecast
-over the remaining rolling MPC horizon.  The registered 720 s nonlinear paired
-episodes remain the measurement of complete closed-loop value under the
-independent OU-plus-contingency distribution.  Until the relationship between
-predicted and realized pure information value is established on the fixed
-development panel, this rule is a development hypothesis rather than a paper
-result.
+Before the first V2 episode, the preliminary open-loop-prefix implementation
+was replaced by the following closer match to the online controller.
+
+- Contract-set MPC is recomputed at `0`, `4`, and `8 s` on every hidden-model
+  branch.  Exploit and dual use the same branch-specific public trajectory and
+  remain action-identical until the posterior first becomes usable at `12 s`.
+- Physical propagation inside each control interval uses the public `0.2 s`
+  evidence grid and includes power, ramp, delay, actuator lag, SoC, SG, grid,
+  and tie-line limits.
+- Post-certification value uses eight fixed common-random-number integration
+  paths with seeds `57001`--`57008`, which are outside every episode seed
+  range.  Each path follows the registered bounded bivariate OU law and the
+  independent contingency time, magnitude, sign, and area law.
+- The continuation lasts only until the original first-evidence expiry or the
+  episode end.  At every `4 s` step, exploit and posterior policies each solve
+  the same rolling MPC from their own causal state and see the same integration
+  load path.
+
+The integration paths are public numerical nodes, not the current episode's
+future realization.  A current load estimate outside the registered OU-only
+bound causally establishes that the persistent event component has arrived;
+otherwise the bank retains both arrived and future-event paths.  Total load is
+kept inside the registered `0.070 pu` envelope.
+
+The registered 720 s nonlinear paired episodes remain the measurement of
+realized closed-loop value.  Until the relationship between predicted and
+realized pure information value is established on the fixed development panel,
+this rule is a development hypothesis rather than a paper result.

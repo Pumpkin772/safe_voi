@@ -14,6 +14,10 @@ from .control_aligned_policy import (
     ControlAlignedConfig,
     ControlAlignedSequentialProbe,
 )
+from .continuation_bank import (
+    ContinuationBankConfig,
+    registered_continuation_load_bank,
+)
 from .dynamic_capability_estimator import (
     DynamicCapabilityCandidate,
     DynamicCapabilityEstimator,
@@ -37,6 +41,7 @@ __all__ = [
     "ProbeDesign",
     "ControlAlignedConfig",
     "ControlAlignedSequentialProbe",
+    "ContinuationBankConfig",
     "DynamicCapabilityCandidate",
     "DynamicCapabilityEstimator",
     "DynamicEvidenceConfig",
@@ -56,6 +61,7 @@ __all__ = [
     "generate_scenarios",
     "registered_probe_library",
     "registered_control_aligned_library",
+    "registered_continuation_load_bank",
     "trajectory_metrics",
     "select_opportunity",
     "simulate_candidate_response",

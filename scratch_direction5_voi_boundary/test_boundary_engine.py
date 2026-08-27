@@ -170,5 +170,10 @@ def test_control_aligned_acquisition_value_uses_identical_surplus_prefix() -> No
         load_forecast_pu=load,
     )
     assert value.safe
-    assert abs(value.low_branch_value) <= 1e-7
+    assert value.low_branch_value == 0.0
+    assert all(
+        branch == 0.0
+        for model_id, branch in value.branch_value.items()
+        if "P0.0450" in model_id
+    )
     assert value.solver_failures == 0
