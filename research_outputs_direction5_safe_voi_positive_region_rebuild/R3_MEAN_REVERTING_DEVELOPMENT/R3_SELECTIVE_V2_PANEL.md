@@ -214,3 +214,12 @@ the second-stage positive-value region is empty, because the panel contains no
 second-stage observation.  The next scientific question is whether the
 near-boundary state in seed 8110 has positive acquisition-matched value or is a
 genuine zero-value state below the screen.
+
+That question was answered by the separately registered exact diagnostics in
+`research/direction5_safe_voi_positive_region_rebuild/09_NEAR_BOUNDARY_EXACT_DIAGNOSTIC.md`.
+Both fixed near-boundary states had positive worst-high-branch information
+value (`+0.026728090` at 8110/660 s and `+0.252740693` at 8112/308 s), with the
+low branch identically zero.  Therefore the panel's zero online entry rate is
+caused at least in part by false negatives in the local `0.08` computational
+screen; it is not evidence that the acquisition-matched positive region is
+empty.
