@@ -69,8 +69,8 @@ tie IAE, contract / exploit / dual      2.121784 / 2.107300 / 2.088180 pu s
 
 Both the control-aligned acquisition action and subsequent use of the retained
 high-power set improved this high-capability trajectory.  This is a single
-development pair; low-capability acquisition cost and replication across the
-fixed panel remain unresolved.
+development pair; replication across independent trajectories remains
+unresolved.
 
 ### Low-capability branch for seed 8110
 
@@ -96,3 +96,27 @@ quantify low-capability acquisition cost.  The first exploit-only attempt was
 terminated by the system-commit guard after an unrelated machine-wide commit
 spike; the scientific episode produced no result and will be repeated unchanged
 after system memory returns below the preflight limit.
+
+The unchanged repeat and contract reference subsequently completed:
+
+```text
+contract cost                          61.079598040 s
+exploit-only cost                      60.978767786 s
+dual cost                              60.978767786 s
+contract minus exploit                +0.100830254 s
+exploit minus dual (pure information)  0.000000000 s
+contract minus dual (total value)     +0.100830254 s
+frequency peak, all arms                0.203042591 Hz
+ACE IAE, contract / exploit / dual      7.173886 / 7.166737 / 7.166737 pu s
+tie IAE, contract / exploit / dual      2.128790 / 2.123214 / 2.123214 pu s
+BESS throughput, contract / acquisition 26.468688 / 26.422087 pu s
+SG mileage, contract / acquisition      2.450687 / 2.451028 pu
+```
+
+The low-capability dual and exploit-only trajectories are exactly identical in
+every reported closed-loop quantity.  Acquisition improves the registered grid
+objective and ACE/tie response without changing the frequency peak; its only
+adverse resource movement is a `0.000341066 pu` increase in SG mileage.  Thus
+this paired state exhibits the intended structure: low capability is not
+misclassified and is non-adverse in the physical grid metrics, while high
+capability obtains strictly positive incremental information value.
