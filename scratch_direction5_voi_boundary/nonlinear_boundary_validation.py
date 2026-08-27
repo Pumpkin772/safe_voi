@@ -16,6 +16,7 @@ from rolling_boundary_controller import (
 )
 from selective_boundary_policy import FrozenBoundaryLookup
 from voi_boundary_engine import BoundaryPoint, plant_parameters
+from voi_boundary_engine import objective_scales
 
 
 def capability_at(row: dict[str, Any], time_s: float) -> CapabilityRealization:
@@ -162,6 +163,9 @@ def simulate_plant_a(
     ace_normalized_ise = 0.0
     tie_normalized_ise = 0.0
     sg_mileage = 0.0; bess_throughput = 0.0
+    control_scales = objective_scales(template.objective)
+    sg_command_move_cost = 0.0; bess_command_move_cost = 0.0
+    previous_control_command = np.zeros(4)
     previous_mechanical = state.mechanical_power_pu.copy()
     hard = False; command_violation = False; trace_rows = []
     valve_boundary_steps = 0; sg_boundary_steps = 0
@@ -197,6 +201,15 @@ def simulate_plant_a(
                 command = controller.propose_with_truth(causal, capability_at(row, time_s))
             else:
                 command = controller.propose(causal)
+            sg_command_move_cost += template.period_s * float(np.sum(np.square(
+                (command[[0, 2]] - previous_control_command[[0, 2]])
+                / control_scales.sg_move_pu
+            )))
+            bess_command_move_cost += template.period_s * float(np.sum(np.square(
+                (command[[1, 3]] - previous_control_command[[1, 3]])
+                / control_scales.bess_move_pu
+            )))
+            previous_control_command = command.copy()
             command_violation |= bool(
                 np.any(command[[0, 2]] < np.asarray(parameters.valve_lower_pu) - 1e-9)
                 or np.any(command[[0, 2]] > np.asarray(parameters.valve_upper_pu) + 1e-9)
@@ -279,6 +292,15 @@ def simulate_plant_a(
             frequency_normalized_ise
             + ace_normalized_ise
             + tie_normalized_ise
+        ),
+        sg_command_move_cost_s=sg_command_move_cost,
+        bess_command_move_cost_s=bess_command_move_cost,
+        realized_control_objective_s=(
+            frequency_normalized_ise
+            + ace_normalized_ise
+            + tie_normalized_ise
+            + sg_command_move_cost
+            + bess_command_move_cost
         ),
         hard_violation=hard, command_violation=command_violation,
         valve_boundary_steps=valve_boundary_steps,
