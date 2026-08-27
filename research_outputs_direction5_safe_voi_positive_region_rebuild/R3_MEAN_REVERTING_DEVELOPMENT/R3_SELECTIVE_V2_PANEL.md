@@ -174,3 +174,43 @@ hard physical violations                0
 The maximum screen value occurred at `344 s`.  Despite many causally eligible
 states, the high-power posterior did not materially alter the optimized
 allocation, so the controller abstained for the entire trajectory.
+
+## High-capability seed 8119
+
+The actual and reported capability transition both occurred at
+`143.474063161 s`.  The independent area-0 contingency occurred at
+`330.410109018 s` with magnitude `+0.0391756403 pu`.
+
+```text
+eligible first-stage evaluations        9
+maximum predicted high-posterior value 0.013174075
+first-stage positive states             0
+second-stage evaluations                0
+acquisition windows                     0
+frequency peak                          0.111122780 Hz
+grid-service cost                       36.497867715 s
+attempted optimization calls            190
+solver failures / fallbacks             0 / 0
+hard physical violations                0
+```
+
+The maximum screen value occurred at `616 s`.  This final fixed-panel
+trajectory also remained in the action-insensitive abstention region.
+
+## Fixed-panel observation
+
+Across the eight fixed high-capability seeds (8109, 8110, 8111, 8112, 8115,
+8117, 8118, and 8119), all trajectories were physically successful and all
+1,516 attempted online optimization calls completed without solver failure or
+fallback.  There were 67 causally eligible first-stage evaluations, but none
+crossed the frozen `0.08` computational screen; hence no acquisition-matched
+second-stage value was evaluated and no probe was issued.  The largest screen
+value was `0.064491678` in seed 8110.
+
+The observed trigger rate is therefore `0/8` trajectories and `0/67` eligible
+states for this development panel.  This establishes that acquisition is
+sparse under the registered event distribution.  It does not establish that
+the second-stage positive-value region is empty, because the panel contains no
+second-stage observation.  The next scientific question is whether the
+near-boundary state in seed 8110 has positive acquisition-matched value or is a
+genuine zero-value state below the screen.
