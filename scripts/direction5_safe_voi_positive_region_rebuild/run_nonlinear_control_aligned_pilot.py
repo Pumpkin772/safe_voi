@@ -48,7 +48,13 @@ def worker(arguments: argparse.Namespace) -> None:
 
     import nonlinear_boundary_validation as nonlinear
     from rolling_boundary_controller import RollingBoundaryController
-    from voi_boundary_engine import BoundaryPoint, objective_scales, solve_policy
+    from voi_boundary_engine import (
+        BoundaryPoint,
+        Probe,
+        evaluate_acquisition_information_value,
+        objective_scales,
+        solve_policy,
+    )
 
     target_scenario = (
         generate_scenario(StudySplit.DEVELOPMENT, arguments.seed)
@@ -204,6 +210,86 @@ def worker(arguments: argparse.Namespace) -> None:
                 "first_bess_action_separation_pu": action_separation,
             }
 
+        def _causal_acquisition_information_value(
+            self, observation, previous_applied_action, contract_action
+        ) -> dict:
+            load = np.asarray(self.observer._load, dtype=float).copy()
+            point = self._causal_point(observation, load)
+            state = np.r_[
+                observation.frequency_deviation_hz
+                / self.parameters.nominal_frequency_hz,
+                observation.tie_line_pu,
+                observation.valve_pu,
+                observation.sg_mechanical_power_pu,
+            ]
+            bess = np.asarray(contract_action, dtype=float)[[1, 3]]
+            area = int(np.argmax(np.abs(bess)))
+            direction = int(np.sign(bess[area]))
+            if direction == 0:
+                return {
+                    "safe": True,
+                    "reason": "ZERO_CONTRACT_DIRECTION",
+                    "weakly_dominates_without_prior": False,
+                    "solver_attempts": 0,
+                    "solver_failures": 0,
+                }
+            active_sequence = tuple(
+                direction * arguments.amplitude
+                for _ in range(effective_active_steps)
+            )
+            recovery_s = (
+                self.dynamic_estimator.config.post_action_response_s
+                if self.dynamic_estimator is not None else 0.0
+            )
+            recovery_steps = int(np.ceil(recovery_s / point.period_s))
+            sequence = active_sequence + tuple(0.0 for _ in range(recovery_steps))
+            probe = Probe(
+                probe_id="registered_control_aligned_surplus",
+                duration_s=len(sequence) * point.period_s,
+                amplitude_pu=arguments.amplitude,
+                shape="surplus_plateau",
+                area=area,
+                sign=direction,
+                sequence_pu=sequence,
+                sg_compensation=False,
+            )
+            result = evaluate_acquisition_information_value(
+                point,
+                self.all_models,
+                self.last_solution,
+                probe,
+                horizon_steps=int(round(self.horizon_s / point.period_s)),
+                scales=objective_scales(point.objective),
+                initial_grid_state=state,
+                initial_bess_power=observation.bess_actual_power_pu,
+                previous_sg_command=previous_applied_action[[0, 2]],
+                previous_bess_command=previous_applied_action[[1, 3]],
+                initial_energy_mwh=(
+                    observation.measured_soc * self.parameters.bess.energy_mwh
+                ),
+                load_forecast_pu=load,
+            )
+            self.attempts += result.solver_attempts
+            self.failures += result.solver_failures
+            return {
+                "safe": result.safe,
+                "reason": result.reason,
+                "probe_area": area,
+                "probe_direction": direction,
+                "probe_prefix_s": probe.duration_s,
+                "low_branch_information_value": result.low_branch_value,
+                "high_branch_information_value": result.high_branch_value,
+                "break_even_high_probability": (
+                    result.break_even_high_probability
+                ),
+                "weakly_dominates_without_prior": (
+                    result.weakly_dominates_without_prior
+                ),
+                "branch_information_value": result.branch_value,
+                "solver_attempts": result.solver_attempts,
+                "solver_failures": result.solver_failures,
+            }
+
         def _update_power_evidence(self, observation) -> None:
             if self.dynamic_estimator is None:
                 newly_certified = self.aligned_probe.observe_delivery(
@@ -268,12 +354,32 @@ def worker(arguments: argparse.Namespace) -> None:
                 value_record = self._causal_high_posterior_value(
                     observation, previous_applied_action
                 )
-                self._gate_allow_new_window = bool(
+                screen_positive = bool(
                     value_record["predicted_high_posterior_value"]
                     >= arguments.minimum_predicted_high_value
                 )
+                acquisition_record = None
+                if screen_positive and arguments.acquisition_value_gate:
+                    acquisition_record = self._causal_acquisition_information_value(
+                        observation, previous_applied_action, contract
+                    )
+                self._gate_allow_new_window = bool(
+                    screen_positive
+                    and (
+                        not arguments.acquisition_value_gate
+                        or acquisition_record[
+                            "weakly_dominates_without_prior"
+                        ]
+                    )
+                )
                 value_record["minimum_required_value"] = (
                     arguments.minimum_predicted_high_value
+                )
+                value_record["acquisition_value_gate_enabled"] = (
+                    arguments.acquisition_value_gate
+                )
+                value_record["acquisition_information_value"] = (
+                    acquisition_record
                 )
                 value_record["probe_permitted"] = self._gate_allow_new_window
                 self.causal_value_evaluations.append(value_record)
@@ -532,6 +638,8 @@ def guarded(arguments: argparse.Namespace) -> None:
             "--minimum-predicted-high-value",
             str(arguments.minimum_predicted_high_value),
         ))
+    if arguments.acquisition_value_gate:
+        command.append("--acquisition-value-gate")
     if arguments.target_distribution:
         command.append("--target-distribution")
     environment = dict(os.environ)
@@ -590,6 +698,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--certificate-samples", type=int, default=2)
     result.add_argument("--certificate-validity", type=float, default=120.0)
     result.add_argument("--minimum-predicted-high-value", type=float)
+    result.add_argument("--acquisition-value-gate", action="store_true")
     result.add_argument("--evidence-label", default="stacked_ar1")
     result.add_argument(
         "--evidence-engine",

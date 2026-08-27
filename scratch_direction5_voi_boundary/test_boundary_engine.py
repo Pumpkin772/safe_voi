@@ -5,8 +5,11 @@ import pandas as pd
 
 from voi_boundary_engine import (
     BoundaryPoint,
+    Probe,
+    _fixed_prefix,
     candidate_models,
     enumerate_possible_posteriors,
+    evaluate_acquisition_information_value,
     normalized_probe_sequence,
     objective_scales,
     probe_library,
@@ -106,3 +109,66 @@ def test_rolling_policy_uses_signed_causal_area_load_forecast() -> None:
     assert signed.bess_command[0, 0] < 0.0
     assert legacy_unsigned.sg_command[0, 0] > 0.0
     assert legacy_unsigned.bess_command[0, 0] > 0.0
+
+
+def test_control_aligned_acquisition_value_uses_identical_surplus_prefix() -> None:
+    item = point(
+        period_s=4.0,
+        load_magnitude_pu=0.020,
+        power_spread_pu=0.023,
+        ramp_spread_pu_per_s=0.014,
+        objective="sg_conserving_16",
+    )
+    models = candidate_models(item)
+    load = np.asarray((0.020, 0.010))
+    state = np.zeros(7)
+    energy = np.full(2, 25.0)
+    baseline = solve_policy(
+        item,
+        models,
+        horizon_steps=8,
+        initial_grid_state=state,
+        initial_energy_mwh=energy,
+        load_forecast_pu=load,
+        scales=objective_scales(item.objective),
+    )
+    area = int(np.argmax(np.abs(baseline.bess_command[:, 0])))
+    direction = int(np.sign(baseline.bess_command[area, 0]))
+    probe = Probe(
+        "control_aligned", 8.0, 0.006, "surplus", area, direction,
+        (direction * 0.006, direction * 0.006),
+        sg_compensation=False,
+    )
+    prefix = _fixed_prefix(
+        item,
+        models,
+        baseline,
+        probe,
+        objective_scales(item.objective),
+        initial_grid_state=state,
+        initial_bess_power=np.zeros(2),
+        previous_sg_command=np.zeros(2),
+        previous_bess_command=np.zeros(2),
+        initial_energy_mwh=energy,
+        load_forecast_pu=load,
+    )
+    assert prefix.safe
+    assert np.allclose(prefix.sg_command, baseline.sg_command[:, :2])
+
+    value = evaluate_acquisition_information_value(
+        item,
+        models,
+        baseline,
+        probe,
+        horizon_steps=8,
+        scales=objective_scales(item.objective),
+        initial_grid_state=state,
+        initial_bess_power=np.zeros(2),
+        previous_sg_command=np.zeros(2),
+        previous_bess_command=np.zeros(2),
+        initial_energy_mwh=energy,
+        load_forecast_pu=load,
+    )
+    assert value.safe
+    assert abs(value.low_branch_value) <= 1e-7
+    assert value.solver_failures == 0

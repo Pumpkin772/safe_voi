@@ -66,6 +66,7 @@ class Probe:
     area: int
     sign: int
     sequence_pu: tuple[float, ...]
+    sg_compensation: bool = True
 
 
 @dataclass(slots=True)
@@ -105,6 +106,23 @@ class ProbeValue:
     probe_counterfactual_cost: float
     worst_post_probe_cost: float
     observation_intervals: dict[str, tuple[float, float]]
+    solver_attempts: int
+    solver_failures: int
+
+
+@dataclass(slots=True)
+class AcquisitionInformationValue:
+    """Pure information value after an identical causal acquisition prefix."""
+
+    safe: bool
+    reason: str
+    branch_value: dict[str, float]
+    low_branch_value: float
+    high_branch_value: float
+    break_even_high_probability: float | None
+    weakly_dominates_without_prior: bool
+    exploit_recourse_cost: dict[str, float]
+    posterior_recourse_cost: dict[str, float]
     solver_attempts: int
     solver_failures: int
 
@@ -501,17 +519,29 @@ def _fixed_prefix(
     baseline: PolicySolution,
     probe: Probe,
     scales: ObjectiveScales,
+    *,
+    initial_grid_state: np.ndarray | None = None,
+    initial_bess_power: np.ndarray | None = None,
+    previous_sg_command: np.ndarray | None = None,
+    previous_bess_command: np.ndarray | None = None,
+    initial_energy_mwh: np.ndarray | None = None,
+    load_forecast_pu: np.ndarray | None = None,
 ) -> FixedPrefix:
     parameters = plant_parameters(point.sg_tension, point.nominal_frequency_hz)
     ad, bd = _discrete_grid(parameters, point.period_s)
-    load = load_vector(point)
+    load = (
+        load_vector(point)
+        if load_forecast_pu is None
+        else np.asarray(load_forecast_pu, dtype=float)
+    )
     steps = len(probe.sequence_pu)
     if steps > baseline.sg_command.shape[1]:
         return FixedPrefix(False, "PROBE_LONGER_THAN_HORIZON", {}, {}, {}, {}, np.empty((0, 0)), np.empty((0, 0)))
     sg = baseline.sg_command[:, :steps].copy()
     bess = baseline.bess_command[:, :steps].copy()
     q = np.asarray(probe.sequence_pu)
-    sg[probe.area] -= q
+    if probe.sg_compensation:
+        sg[probe.area] -= q
     bess[probe.area] += q
     if np.any(sg < np.asarray(parameters.valve_lower_pu)[:, None] - 1e-10) or np.any(
         sg > np.asarray(parameters.valve_upper_pu)[:, None] + 1e-10
@@ -526,11 +556,32 @@ def _fixed_prefix(
     costs: dict[str, float] = {}
     alpha = exp(-point.period_s / parameters.bess.actuator_time_constant_s)
     for model in models:
-        x = np.zeros((7, steps + 1)); x[:, 0] = initial_state(point)
+        x = np.zeros((7, steps + 1))
+        x[:, 0] = (
+            initial_state(point)
+            if initial_grid_state is None
+            else np.asarray(initial_grid_state, dtype=float)
+        )
         p = np.zeros((2, steps + 1))
-        energy = np.zeros((2, steps + 1)); energy[:, 0] = parameters.bess.energy_mwh * point.soc
+        if initial_bess_power is not None:
+            p[:, 0] = np.asarray(initial_bess_power, dtype=float)
+        energy = np.zeros((2, steps + 1))
+        energy[:, 0] = (
+            parameters.bess.energy_mwh * point.soc
+            if initial_energy_mwh is None
+            else np.asarray(initial_energy_mwh, dtype=float)
+        )
         cost = 0.0
-        previous_sg = np.zeros(2); previous_bess = np.zeros(2)
+        previous_sg = (
+            np.zeros(2)
+            if previous_sg_command is None
+            else np.asarray(previous_sg_command, dtype=float).copy()
+        )
+        previous_bess = (
+            np.zeros(2)
+            if previous_bess_command is None
+            else np.asarray(previous_bess_command, dtype=float).copy()
+        )
         for step in range(steps):
             fraction = min(max(model.delay_s / point.period_s, 0.0), 1.0)
             delayed = (1.0 - fraction) * bess[:, step] + fraction * previous_bess
@@ -575,6 +626,150 @@ def _fixed_prefix(
         energies[model.model_id] = energy
         costs[model.model_id] = float(cost)
     return FixedPrefix(True, "SAFE", states, powers, energies, costs, sg, bess)
+
+
+def evaluate_acquisition_information_value(
+    point: BoundaryPoint,
+    models: Sequence[CapabilityModel],
+    baseline: PolicySolution,
+    probe: Probe,
+    *,
+    horizon_steps: int,
+    scales: ObjectiveScales,
+    initial_grid_state: np.ndarray,
+    initial_bess_power: np.ndarray,
+    previous_sg_command: np.ndarray,
+    previous_bess_command: np.ndarray,
+    initial_energy_mwh: np.ndarray,
+    load_forecast_pu: np.ndarray,
+    high_power_threshold_pu: float = 0.045,
+    numerical_margin: float = 1e-7,
+) -> AcquisitionInformationValue:
+    """Compare exploit and posterior recourse after the same surplus prefix.
+
+    This matches the current one-window estimator: a high-power observation
+    enables the high-power candidate subset, while a low-power or ambiguous
+    observation retains the complete contract set. Ramp and delay remain
+    robust within either power branch. Values are computed separately for
+    every hidden candidate, so no capability prior is read by the controller.
+    """
+
+    prefix = _fixed_prefix(
+        point,
+        models,
+        baseline,
+        probe,
+        scales,
+        initial_grid_state=initial_grid_state,
+        initial_bess_power=initial_bess_power,
+        previous_sg_command=previous_sg_command,
+        previous_bess_command=previous_bess_command,
+        initial_energy_mwh=initial_energy_mwh,
+        load_forecast_pu=load_forecast_pu,
+    )
+    if not prefix.safe:
+        return AcquisitionInformationValue(
+            False, prefix.reason, {}, -float("inf"), -float("inf"), None,
+            False, {}, {}, 0, 0,
+        )
+
+    remaining = horizon_steps - len(probe.sequence_pu)
+    if remaining <= 0:
+        return AcquisitionInformationValue(
+            True, "NO_POSTERIOR_RECOURSE_TIME", {}, 0.0, 0.0, None,
+            False, {}, {}, 0, 0,
+        )
+
+    high_models = tuple(
+        model for model in models
+        if model.power_pu > high_power_threshold_pu + 1e-10
+    )
+    if not high_models:
+        return AcquisitionInformationValue(
+            True, "NO_HIGH_POWER_HYPOTHESIS", {}, 0.0, 0.0, None,
+            False, {}, {}, 0, 0,
+        )
+
+    attempts = 0
+    failures = 0
+    branch_value: dict[str, float] = {}
+    exploit_cost: dict[str, float] = {}
+    posterior_cost: dict[str, float] = {}
+    for truth in models:
+        common = dict(
+            horizon_steps=remaining,
+            initial_grid_state=prefix.states[truth.model_id][:, -1],
+            initial_bess_power=prefix.bess_power[truth.model_id][:, -1],
+            previous_sg_command=prefix.sg_command[:, -1],
+            previous_bess_command=prefix.bess_command[:, -1],
+            initial_energy_mwh=prefix.energy_mwh[truth.model_id][:, -1],
+            load_forecast_pu=load_forecast_pu,
+            scales=scales,
+        )
+        exploit = solve_policy(point, models, **common)
+        attempts += 1
+        if truth.power_pu > high_power_threshold_pu + 1e-10:
+            posterior = solve_policy(point, high_models, **common)
+            attempts += 1
+        else:
+            # The causal estimator does not enable surplus capability on a
+            # low or ambiguous observation, so dual and exploit solve the
+            # identical problem in this branch.
+            posterior = exploit
+        finite = bool(
+            np.isfinite(exploit.objective) and np.isfinite(posterior.objective)
+        )
+        failures += int(not np.isfinite(exploit.objective))
+        if posterior is not exploit:
+            failures += int(not np.isfinite(posterior.objective))
+        if not finite:
+            continue
+        exploit_cost[truth.model_id] = float(exploit.objective)
+        posterior_cost[truth.model_id] = float(posterior.objective)
+        branch_value[truth.model_id] = float(
+            exploit.objective - posterior.objective
+        )
+
+    if len(branch_value) != len(models):
+        return AcquisitionInformationValue(
+            False, "RECOURSE_SOLVE_FAILURE", branch_value,
+            -float("inf"), -float("inf"), None, False,
+            exploit_cost, posterior_cost, attempts, failures,
+        )
+
+    low_values = [
+        branch_value[model.model_id] for model in models
+        if model.power_pu <= high_power_threshold_pu + 1e-10
+    ]
+    high_values = [
+        branch_value[model.model_id] for model in models
+        if model.power_pu > high_power_threshold_pu + 1e-10
+    ]
+    low_value = float(min(low_values))
+    high_value = float(min(high_values))
+    slope = high_value - low_value
+    break_even = None
+    if slope > numerical_margin:
+        break_even = float(np.clip(-low_value / slope, 0.0, 1.0))
+    weak_dominance = bool(
+        low_value >= -numerical_margin
+        and high_value >= -numerical_margin
+        and max(low_value, high_value) > numerical_margin
+    )
+    return AcquisitionInformationValue(
+        True,
+        "POSITIVE_PURE_INFORMATION_VALUE" if weak_dominance
+        else "NONPOSITIVE_OR_BRANCH_ADVERSE_INFORMATION_VALUE",
+        branch_value,
+        low_value,
+        high_value,
+        break_even,
+        weak_dominance,
+        exploit_cost,
+        posterior_cost,
+        attempts,
+        failures,
+    )
 
 
 def observation_intervals(
@@ -1069,9 +1264,11 @@ def evaluate_boundary_point(
 
 
 __all__ = [
-    "BoundaryPoint", "BoundaryResult", "CapabilityModel", "ObjectiveScales",
+    "AcquisitionInformationValue", "BoundaryPoint", "BoundaryResult",
+    "CapabilityModel", "ObjectiveScales",
     "PolicySolution", "Probe", "ProbeValue", "candidate_models",
-    "enumerate_possible_posteriors", "evaluate_boundary_point", "evaluate_probe",
+    "enumerate_possible_posteriors", "evaluate_acquisition_information_value",
+    "evaluate_boundary_point", "evaluate_probe",
     "evaluate_probe_upper",
     "evaluate_probe_strong_convexity_upper",
     "normalized_probe_sequence", "observation_intervals", "probe_library",
