@@ -151,3 +151,26 @@ hard physical violations                0
 No point simultaneously met the binding-command, frequency, ACE, SoC, and
 cooldown conditions.  This is a causal pre-screen abstention and supplies no
 second-stage value observation.
+
+## High-capability seed 8118
+
+The actual and reported capability transition both occurred at
+`108.607941795 s`.  The independent area-1 contingency occurred at
+`224.714025263 s` with magnitude `+0.0475250418 pu`.
+
+```text
+eligible first-stage evaluations       20
+maximum predicted high-posterior value 0.030175097
+first-stage positive states             0
+second-stage evaluations                0
+acquisition windows                     0
+frequency peak                          0.162025933 Hz
+grid-service cost                       63.731916426 s
+attempted optimization calls            201
+solver failures / fallbacks             0 / 0
+hard physical violations                0
+```
+
+The maximum screen value occurred at `344 s`.  Despite many causally eligible
+states, the high-power posterior did not materially alter the optimized
+allocation, so the controller abstained for the entire trajectory.
