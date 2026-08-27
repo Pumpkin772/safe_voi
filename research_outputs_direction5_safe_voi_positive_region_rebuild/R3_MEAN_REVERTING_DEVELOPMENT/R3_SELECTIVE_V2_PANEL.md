@@ -106,3 +106,26 @@ abstention path exactly equal to the contract-set rolling MPC.  The V2 panel is
 currently four safe abstentions from four high-capability trajectories; this
 still measures sparsity, not emptiness, because no state has yet reached the
 second-stage calculation.
+
+## High-capability seed 8115
+
+The actual and reported capability transition both occurred at
+`122.485690109 s`.  The independent both-area contingency occurred at
+`275.278198450 s` with magnitude `+0.0439276893 pu`.
+
+```text
+eligible first-stage evaluations        8
+maximum predicted high-posterior value 0.007206253
+first-stage positive states             0
+second-stage evaluations                0
+acquisition windows                     0
+frequency peak                          0.193486689 Hz
+grid-service cost                       54.039817405 s
+attempted optimization calls            189
+solver failures / fallbacks             0 / 0
+hard physical violations                0
+```
+
+The maximum screen value occurred at `336 s`.  The trajectory therefore lies
+well inside the action-insensitive abstention region and executes the contract
+MPC throughout.
