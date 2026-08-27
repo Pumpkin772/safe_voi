@@ -85,3 +85,17 @@ call.  The `1.4393e-9` value is therefore retained as an invalid diagnostic and
 is not used to accept or reject the myopic screen.  The corrected diagnostic
 passes the pre-solve applied action explicitly and must be recomputed before a
 scientific conclusion is drawn.
+
+The corrected run reproduced the original dual grid cost exactly and evaluated
+both prospective windows:
+
+| time (s) | causal load estimate (pu) | `Vhat_H` | first BESS action gap (pu) |
+| ---: | --- | ---: | ---: |
+| 308 | `[0.0492146, 0.0349468]` | `2.6889e-9` | `3.7657e-9` |
+| 328 | `[0.0613124, 0.0419270]` | `0.150254439` | `0.004751267` |
+
+Thus the myopic calculation is not globally useless: it correctly shows no
+decision relevance at the first window and a material candidate-set relaxation
+20 s later, when the public load estimate crosses the independently mapped
+action-separation region.  It is retained as a cheap state screen, not as a
+complete expected-VoI calculation.

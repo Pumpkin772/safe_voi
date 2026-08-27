@@ -90,3 +90,26 @@ Vhat_H(x_k) = J_contract-set*(x_k) - J_high-posterior-set*(x_k).
 负荷或Oracle结果。首次诊断将最小值设为负数，使既有probe动作完全不变，
 只记录`Vhat_H`和第一步BESS动作差。只有该因果量在development路径中具有
 稳定物理解释时才会形成选择门；否则放弃这个门，不用seed专属规则替代。
+
+## 单窗口状态选择原型
+
+纠正action history后，seed 8256在`308 s`的`Vhat_H`为数值零，在
+`328 s`随公开负荷估计上升到`[0.06131, 0.04193] pu`后增至
+`0.150254`，且低/高候选集的第一步BESS动作相差`0.004751 pu`。
+这与先前独立计算的约`0.05 pu`动作分离边界一致。
+
+下一个development原型固定为：
+
+```text
+amplitude = 0.006 pu
+physical duration = 8 s
+maximum windows = 1
+certificate validity = 240 s
+minimum Vhat_H = 0.08
+```
+
+`0.08`来自SG命令不变、平滑contract基准下BESS增量命令的启动与撤销
+二次动作惩罚：`2 * 4 * (0.006 / 0.060)^2 = 0.08`。它只是状态
+decision-relevance screen，不冒充完整闭环probe cost。完整价值仍由同路径
+`exploit_only - dual`和`contract - dual`计算。若单窗口不能可靠区分能力
+或实现纯信息正值，则该原型保留为负结果，不进入validation。
