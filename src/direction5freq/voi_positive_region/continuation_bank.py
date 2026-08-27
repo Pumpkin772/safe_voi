@@ -21,6 +21,11 @@ class ContinuationBankConfig:
     total_load_bound_pu: float = 0.070
 
 
+SCREEN_CONTINUATION_CONFIG = ContinuationBankConfig(
+    integration_seeds=(57101, 57102, 57103, 57104),
+)
+
+
 def _contingency_vector(magnitude: float, sign: int, area: str) -> np.ndarray:
     signed = float(sign) * float(magnitude)
     if area == "area0":
@@ -105,4 +110,8 @@ def registered_continuation_load_bank(
     return paths
 
 
-__all__ = ["ContinuationBankConfig", "registered_continuation_load_bank"]
+__all__ = [
+    "ContinuationBankConfig",
+    "SCREEN_CONTINUATION_CONFIG",
+    "registered_continuation_load_bank",
+]

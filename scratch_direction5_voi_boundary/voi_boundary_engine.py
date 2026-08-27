@@ -147,6 +147,22 @@ class AcquisitionInformationValue:
 
 
 @dataclass(slots=True)
+class OptimisticContinuationScreen:
+    """Causal future-opportunity screen evaluated on public contract paths."""
+
+    safe: bool
+    reason: str
+    maximum_value_gap: float
+    maximum_path_index: int | None
+    maximum_anchor_time_s: float | None
+    anchor_values: tuple[float, ...]
+    solver_attempts: int
+    solver_failures: int
+    path_count: int
+    anchor_count: int
+
+
+@dataclass(slots=True)
 class BoundaryResult:
     point: BoundaryPoint
     candidate_models: tuple[CapabilityModel, ...]
@@ -900,6 +916,177 @@ def _rolling_continuation_cost(
     return float(cost), attempts, failures, True
 
 
+def evaluate_optimistic_continuation_screen(
+    point: BoundaryPoint,
+    models: Sequence[CapabilityModel],
+    baseline: PolicySolution,
+    *,
+    horizon_steps: int,
+    scales: ObjectiveScales,
+    initial_grid_state: np.ndarray,
+    initial_bess_power: np.ndarray,
+    previous_sg_command: np.ndarray,
+    previous_bess_command: np.ndarray,
+    initial_energy_mwh: np.ndarray,
+    load_forecast_pu: np.ndarray,
+    continuation_load_paths_pu: np.ndarray,
+    current_time_s: float,
+    load_observer: object,
+    prefix_steps: int = 3,
+    anchor_stride_steps: int = 4,
+    high_power_threshold_pu: float = 0.045,
+) -> OptimisticContinuationScreen:
+    """Find future full-vs-high value opportunities on public contract paths.
+
+    The propagation model is the registered contract floor (minimum power and
+    ramp, maximum delay), never the episode's hidden capability.  The screen is
+    intentionally optimistic: a positive gap at any registered path/anchor is
+    enough to send the state to the exact acquisition-matched calculation.
+    """
+
+    paths = np.asarray(continuation_load_paths_pu, dtype=float)
+    if paths.ndim != 3 or paths.shape[2] != 2:
+        raise ValueError("screen load paths must be path-by-time-by-area")
+    if prefix_steps < 0 or anchor_stride_steps <= 0:
+        raise ValueError("screen prefix and anchor stride must be nonnegative")
+    high_models = tuple(
+        model for model in models
+        if model.power_pu > high_power_threshold_pu + 1e-10
+    )
+    if not high_models or paths.shape[1] <= prefix_steps:
+        return OptimisticContinuationScreen(
+            True, "NO_SCREEN_OPPORTUNITY", 0.0, None, None, (), 0, 0,
+            int(paths.shape[0]), 0,
+        )
+
+    minimum_power = min(model.power_pu for model in models)
+    minimum_ramp = min(
+        model.ramp_pu_per_s for model in models
+        if abs(model.power_pu - minimum_power) <= 1e-10
+    )
+    floor_models = [
+        model for model in models
+        if abs(model.power_pu - minimum_power) <= 1e-10
+        and abs(model.ramp_pu_per_s - minimum_ramp) <= 1e-10
+    ]
+    public_model = max(floor_models, key=lambda model: model.delay_s)
+
+    attempts = 0
+    failures = 0
+    maximum_gap = 0.0
+    maximum_path: int | None = None
+    maximum_time: float | None = None
+    anchor_values: list[float] = []
+    anchor_count = 0
+    for path_index, path in enumerate(paths):
+        state = np.asarray(initial_grid_state, dtype=float).copy()
+        power = np.asarray(initial_bess_power, dtype=float).copy()
+        energy = np.asarray(initial_energy_mwh, dtype=float).copy()
+        prior_sg = np.asarray(previous_sg_command, dtype=float).copy()
+        prior_bess = np.asarray(previous_bess_command, dtype=float).copy()
+        observer = deepcopy(load_observer)
+        load_estimate = np.asarray(load_forecast_pu, dtype=float).copy()
+        for step, physical_load in enumerate(path):
+            full_solution = baseline if step == 0 else solve_policy(
+                point,
+                models,
+                horizon_steps=horizon_steps,
+                initial_grid_state=state,
+                initial_bess_power=power,
+                previous_sg_command=prior_sg,
+                previous_bess_command=prior_bess,
+                initial_energy_mwh=energy,
+                load_forecast_pu=load_estimate,
+                scales=scales,
+            )
+            if step > 0:
+                attempts += 1
+            if not np.isfinite(full_solution.objective):
+                failures += 1
+                return OptimisticContinuationScreen(
+                    False, "FULL_SET_SCREEN_SOLVE_FAILURE", float("inf"),
+                    None, None, tuple(anchor_values), attempts, failures,
+                    int(paths.shape[0]), anchor_count,
+                )
+
+            if step >= prefix_steps and (
+                (step - prefix_steps) % anchor_stride_steps == 0
+            ):
+                high_solution = solve_policy(
+                    point,
+                    high_models,
+                    horizon_steps=horizon_steps,
+                    initial_grid_state=state,
+                    initial_bess_power=power,
+                    previous_sg_command=prior_sg,
+                    previous_bess_command=prior_bess,
+                    initial_energy_mwh=energy,
+                    load_forecast_pu=load_estimate,
+                    scales=scales,
+                )
+                attempts += 1
+                anchor_count += 1
+                if not np.isfinite(high_solution.objective):
+                    failures += 1
+                    return OptimisticContinuationScreen(
+                        False, "HIGH_SET_SCREEN_SOLVE_FAILURE", float("inf"),
+                        None, None, tuple(anchor_values), attempts, failures,
+                        int(paths.shape[0]), anchor_count,
+                    )
+                gap = max(
+                    0.0,
+                    float(full_solution.objective - high_solution.objective),
+                )
+                anchor_values.append(gap)
+                if gap > maximum_gap:
+                    maximum_gap = gap
+                    maximum_path = path_index
+                    maximum_time = (
+                        float(current_time_s) + step * point.period_s
+                    )
+
+            sg = full_solution.sg_command[:, 0]
+            bess = full_solution.bess_command[:, 0]
+            next_state, next_power, next_energy, safe = (
+                _propagate_truth_interval(
+                    point, public_model, state, power, energy, sg, bess,
+                    prior_bess, physical_load,
+                )
+            )
+            if not safe:
+                return OptimisticContinuationScreen(
+                    False, "PUBLIC_SCREEN_PROPAGATION_INCONCLUSIVE",
+                    float("inf"), None, None, tuple(anchor_values), attempts,
+                    failures, int(paths.shape[0]), anchor_count,
+                )
+            state = next_state
+            power = next_power
+            energy = next_energy
+            prior_sg = np.asarray(sg, dtype=float).copy()
+            prior_bess = np.asarray(bess, dtype=float).copy()
+            load_estimate = observer.update(LoadObserverInput(
+                current_time_s + (step + 1) * point.period_s,
+                point.nominal_frequency_hz * state[:2],
+                float(state[2]),
+                state[5:7],
+                power,
+                np.zeros(2),
+            )).load_pu
+
+    return OptimisticContinuationScreen(
+        True,
+        "FUTURE_OPPORTUNITY" if maximum_gap > 0.0 else "NO_FUTURE_OPPORTUNITY",
+        float(maximum_gap),
+        maximum_path,
+        maximum_time,
+        tuple(anchor_values),
+        attempts,
+        failures,
+        int(paths.shape[0]),
+        anchor_count,
+    )
+
+
 def evaluate_acquisition_information_value(
     point: BoundaryPoint,
     models: Sequence[CapabilityModel],
@@ -1568,8 +1755,10 @@ def evaluate_boundary_point(
 __all__ = [
     "AcquisitionInformationValue", "BoundaryPoint", "BoundaryResult",
     "CapabilityModel", "ObjectiveScales",
-    "PolicySolution", "Probe", "ProbeValue", "candidate_models",
+    "OptimisticContinuationScreen", "PolicySolution", "Probe", "ProbeValue",
+    "candidate_models",
     "enumerate_possible_posteriors", "evaluate_acquisition_information_value",
+    "evaluate_optimistic_continuation_screen",
     "evaluate_boundary_point", "evaluate_probe",
     "evaluate_probe_upper",
     "evaluate_probe_strong_convexity_upper",

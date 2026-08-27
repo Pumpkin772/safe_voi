@@ -16,6 +16,7 @@ from .control_aligned_policy import (
 )
 from .continuation_bank import (
     ContinuationBankConfig,
+    SCREEN_CONTINUATION_CONFIG,
     registered_continuation_load_bank,
 )
 from .dynamic_capability_estimator import (
@@ -42,6 +43,7 @@ __all__ = [
     "ControlAlignedConfig",
     "ControlAlignedSequentialProbe",
     "ContinuationBankConfig",
+    "SCREEN_CONTINUATION_CONFIG",
     "DynamicCapabilityCandidate",
     "DynamicCapabilityEstimator",
     "DynamicEvidenceConfig",

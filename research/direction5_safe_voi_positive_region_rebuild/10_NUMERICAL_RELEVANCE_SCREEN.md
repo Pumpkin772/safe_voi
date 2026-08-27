@@ -36,3 +36,17 @@ This rerun corrects a falsified computational shortcut on the already fixed
 development panel.  It is not independent validation.  No new seed, larger
 event, longer information lifetime, altered objective, or changed probe is
 introduced.
+
+## Development outcome and limitation
+
+V3 seed 8110 entered at `520 s`.  Its high-capability paired closed loop showed
+`+0.224043875 s` pure information value and `+0.636232895 s` total value.  The
+matched low-capability branch had zero pure information value, no false high
+certification, and `+0.100830254 s` total value relative to contract MPC.
+
+This establishes a positive development prototype, but it does not prove that
+the local sign screen has no false negatives when the current gap is numerical
+zero.  Before continuing the remaining old-panel episodes, the final screening
+question is therefore moved to the future-lifetime opportunity calculation
+registered in `11_OPTIMISTIC_CONTINUATION_SCREEN.md`.  The completed V3 results
+are retained and are not reclassified as independent evidence.

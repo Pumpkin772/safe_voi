@@ -11,6 +11,7 @@ from direction5freq.voi_positive_region import (
     BinaryPriorValueBoundary,
     OpportunityValuePoint,
     OutcomeValueComponents,
+    SCREEN_CONTINUATION_CONFIG,
     StudySplit,
     VectorObservationTube,
     causal_posterior,
@@ -37,7 +38,14 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scratch_direction5_voi_boundary"))
-from voi_boundary_engine import objective_scales
+from direction5freq.estimation.grid_load_mhe import ConstrainedGridLoadMHE
+from voi_boundary_engine import (
+    BoundaryPoint,
+    candidate_models,
+    evaluate_optimistic_continuation_screen,
+    objective_scales,
+    solve_policy,
+)
 
 
 def test_seed_firewalls_are_disjoint_and_controller_view_hides_truth() -> None:
@@ -81,6 +89,72 @@ def test_public_continuation_bank_is_fixed_and_respects_load_envelope() -> None:
     assert first.shape == (8, 60, 2)
     assert np.array_equal(first, second)
     assert np.max(np.abs(first)) <= 0.070
+
+
+def test_screen_continuation_bank_is_independent_and_has_four_paths() -> None:
+    paths = registered_continuation_load_bank(
+        current_time_s=324.0,
+        current_load_estimate_pu=np.asarray((0.059, 0.040)),
+        period_s=4.0,
+        duration_s=32.0,
+        config=SCREEN_CONTINUATION_CONFIG,
+    )
+    assert paths.shape == (4, 8, 2)
+    assert set(SCREEN_CONTINUATION_CONFIG.integration_seeds).isdisjoint(
+        {57001, 57002, 57003, 57004, 57005, 57006, 57007, 57008}
+    )
+
+
+def test_optimistic_screen_uses_public_contract_path_and_sparse_anchor() -> None:
+    point = BoundaryPoint(
+        "screen", 4.0, "medium", 0.04, 0.023, 0.014, 1.3,
+        0.0015, 0.5, 0.0, "sg_conserving_16",
+    )
+    models = candidate_models(point)
+    load = np.asarray((0.020, 0.010))
+    energy = np.full(2, 25.0)
+    baseline = solve_policy(
+        point,
+        models,
+        horizon_steps=4,
+        initial_grid_state=np.zeros(7),
+        initial_energy_mwh=energy,
+        load_forecast_pu=load,
+        scales=objective_scales(point.objective),
+    )
+    observer = ConstrainedGridLoadMHE(
+        nominal_frequency_hz=50.0,
+        inertia_s=(5.0, 5.0),
+        damping_pu_per_pu_frequency=(1.0, 1.0),
+        derivative_filter=0.40,
+        warmup_samples=8,
+        window_samples=6,
+    )
+    observer._load = load.copy()
+    result = evaluate_optimistic_continuation_screen(
+        point,
+        models,
+        baseline,
+        horizon_steps=4,
+        scales=objective_scales(point.objective),
+        initial_grid_state=np.zeros(7),
+        initial_bess_power=np.zeros(2),
+        previous_sg_command=np.zeros(2),
+        previous_bess_command=np.zeros(2),
+        initial_energy_mwh=energy,
+        load_forecast_pu=load,
+        continuation_load_paths_pu=np.tile(load, (1, 7, 1)),
+        current_time_s=100.0,
+        load_observer=observer,
+        prefix_steps=3,
+        anchor_stride_steps=4,
+    )
+    assert result.safe
+    assert result.path_count == 1
+    assert result.anchor_count == 1
+    assert result.solver_attempts == 7
+    assert result.solver_failures == 0
+    assert result.maximum_value_gap >= 0.0
 
 
 def test_resource_price_boundary_keeps_physical_tradeoff_explicit() -> None:

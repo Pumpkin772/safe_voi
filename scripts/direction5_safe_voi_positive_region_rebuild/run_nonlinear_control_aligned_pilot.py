@@ -43,6 +43,7 @@ def worker(arguments: argparse.Namespace) -> None:
         DynamicCapabilityCandidate,
         DynamicCapabilityEstimator,
         DynamicEvidenceConfig,
+        SCREEN_CONTINUATION_CONFIG,
         StudySplit,
         generate_scenario,
         registered_continuation_load_bank,
@@ -53,6 +54,7 @@ def worker(arguments: argparse.Namespace) -> None:
         BoundaryPoint,
         Probe,
         evaluate_acquisition_information_value,
+        evaluate_optimistic_continuation_screen,
         objective_scales,
         solve_policy,
     )
@@ -331,6 +333,90 @@ def worker(arguments: argparse.Namespace) -> None:
                 ),
             }
 
+        def _causal_optimistic_continuation_screen(
+            self, observation, previous_applied_action
+        ) -> dict:
+            load = np.asarray(self.observer._load, dtype=float).copy()
+            point = self._causal_point(observation, load)
+            state = np.r_[
+                observation.frequency_deviation_hz
+                / self.parameters.nominal_frequency_hz,
+                observation.tie_line_pu,
+                observation.valve_pu,
+                observation.sg_mechanical_power_pu,
+            ]
+            recovery_s = (
+                self.dynamic_estimator.config.post_action_response_s
+                if self.dynamic_estimator is not None else 0.0
+            )
+            prefix_steps = effective_active_steps + int(
+                np.ceil(recovery_s / point.period_s)
+            )
+            prefix_duration_s = prefix_steps * point.period_s
+            remaining_duration_s = max(
+                0.0,
+                min(
+                    arguments.certificate_validity - prefix_duration_s,
+                    (
+                        target_scenario.episode_duration_s
+                        if target_scenario is not None else arguments.duration
+                    ) - observation.time_s - prefix_duration_s,
+                ),
+            )
+            future_paths = registered_continuation_load_bank(
+                current_time_s=observation.time_s + prefix_duration_s,
+                current_load_estimate_pu=load,
+                period_s=point.period_s,
+                duration_s=remaining_duration_s,
+                config=SCREEN_CONTINUATION_CONFIG,
+            )
+            prefix = np.tile(
+                load,
+                (len(SCREEN_CONTINUATION_CONFIG.integration_seeds), prefix_steps, 1),
+            )
+            paths = np.concatenate((prefix, future_paths), axis=1)
+            result = evaluate_optimistic_continuation_screen(
+                point,
+                self.all_models,
+                self.last_solution,
+                horizon_steps=int(round(self.horizon_s / point.period_s)),
+                scales=objective_scales(point.objective),
+                initial_grid_state=state,
+                initial_bess_power=observation.bess_actual_power_pu,
+                previous_sg_command=previous_applied_action[[0, 2]],
+                previous_bess_command=previous_applied_action[[1, 3]],
+                initial_energy_mwh=(
+                    observation.measured_soc * self.parameters.bess.energy_mwh
+                ),
+                load_forecast_pu=load,
+                continuation_load_paths_pu=paths,
+                current_time_s=observation.time_s,
+                load_observer=self.observer,
+                prefix_steps=prefix_steps,
+                anchor_stride_steps=max(
+                    1,
+                    int(round(arguments.screen_anchor_duration_s / point.period_s)),
+                ),
+            )
+            self.attempts += result.solver_attempts
+            self.failures += result.solver_failures
+            return {
+                "safe": result.safe,
+                "reason": result.reason,
+                "maximum_value_gap": result.maximum_value_gap,
+                "maximum_path_index": result.maximum_path_index,
+                "maximum_anchor_time_s": result.maximum_anchor_time_s,
+                "solver_attempts": result.solver_attempts,
+                "solver_failures": result.solver_failures,
+                "path_count": result.path_count,
+                "anchor_count": result.anchor_count,
+                "prefix_steps": prefix_steps,
+                "anchor_stride_steps": max(
+                    1,
+                    int(round(arguments.screen_anchor_duration_s / point.period_s)),
+                ),
+            }
+
         def _update_power_evidence(self, observation) -> None:
             if self.dynamic_estimator is None:
                 newly_certified = self.aligned_probe.observe_delivery(
@@ -395,8 +481,19 @@ def worker(arguments: argparse.Namespace) -> None:
                 value_record = self._causal_high_posterior_value(
                     observation, previous_applied_action
                 )
+                optimistic_screen_record = None
+                screen_value = value_record["predicted_high_posterior_value"]
+                if arguments.optimistic_continuation_screen:
+                    optimistic_screen_record = (
+                        self._causal_optimistic_continuation_screen(
+                            observation, previous_applied_action
+                        )
+                    )
+                    screen_value = optimistic_screen_record[
+                        "maximum_value_gap"
+                    ]
                 screen_positive = bool(
-                    value_record["predicted_high_posterior_value"]
+                    screen_value
                     >= arguments.minimum_predicted_high_value
                 )
                 diagnostic_requested = bool(
@@ -408,7 +505,10 @@ def worker(arguments: argparse.Namespace) -> None:
                 )
                 acquisition_record = None
                 if (
-                    (screen_positive or diagnostic_requested)
+                    (
+                        diagnostic_requested
+                        or (screen_positive and not arguments.screen_only)
+                    )
                     and arguments.acquisition_value_gate
                 ):
                     acquisition_record = self._causal_acquisition_information_value(
@@ -416,6 +516,7 @@ def worker(arguments: argparse.Namespace) -> None:
                     )
                 self._gate_allow_new_window = bool(
                     screen_positive
+                    and not arguments.screen_only
                     and arguments.offline_second_stage_time_s is None
                     and (
                         not arguments.acquisition_value_gate
@@ -426,6 +527,15 @@ def worker(arguments: argparse.Namespace) -> None:
                 )
                 value_record["minimum_required_value"] = (
                     arguments.minimum_predicted_high_value
+                )
+                value_record["decision_screen_kind"] = (
+                    "optimistic_continuation_max"
+                    if arguments.optimistic_continuation_screen
+                    else "local_high_posterior_gap"
+                )
+                value_record["decision_screen_value"] = screen_value
+                value_record["optimistic_continuation_screen"] = (
+                    optimistic_screen_record
                 )
                 value_record["acquisition_value_gate_enabled"] = (
                     arguments.acquisition_value_gate
@@ -559,6 +669,11 @@ def worker(arguments: argparse.Namespace) -> None:
     result["offline_second_stage_time_s"] = (
         arguments.offline_second_stage_time_s
     )
+    result["optimistic_continuation_screen_enabled"] = (
+        arguments.optimistic_continuation_screen
+    )
+    result["screen_anchor_duration_s"] = arguments.screen_anchor_duration_s
+    result["screen_only"] = arguments.screen_only
     result["probe_amplitude_pu"] = (
         0.0 if arguments.method in {"contract", "oracle"} else arguments.amplitude
     )
@@ -712,6 +827,14 @@ def guarded(arguments: argparse.Namespace) -> None:
             "--offline-second-stage-time-s",
             str(arguments.offline_second_stage_time_s),
         ))
+    if arguments.optimistic_continuation_screen:
+        command.append("--optimistic-continuation-screen")
+    if arguments.screen_only:
+        command.append("--screen-only")
+    command.extend((
+        "--screen-anchor-duration-s",
+        str(arguments.screen_anchor_duration_s),
+    ))
     if arguments.target_distribution:
         command.append("--target-distribution")
     environment = dict(os.environ)
@@ -772,6 +895,9 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--minimum-predicted-high-value", type=float)
     result.add_argument("--acquisition-value-gate", action="store_true")
     result.add_argument("--offline-second-stage-time-s", type=float)
+    result.add_argument("--optimistic-continuation-screen", action="store_true")
+    result.add_argument("--screen-only", action="store_true")
+    result.add_argument("--screen-anchor-duration-s", type=float, default=16.0)
     result.add_argument("--evidence-label", default="stacked_ar1")
     result.add_argument(
         "--evidence-engine",
