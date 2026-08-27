@@ -37,7 +37,18 @@ Both branches were physically successful.  Every trajectory attempted 181
 rolling optimizations with zero solver failures and zero fallback calls.  This
 is a positive development mechanism point, not independent evidence.
 
-Before any replication result is calculated, high-capability development
-seeds `8100`, `8101`, and `8102` are fixed as the first replication set.  Each
-uses contract, exploit-only, and dual on the same paired path.  The
-configuration is not changed between those seeds.
+Before any replication result was calculated, high-capability development
+seeds `8100`, `8101`, and `8102` were fixed as the first replication set.
+Seed 8100 then exposed an operationally important design fact before either
+exploit-only or dual was run: its 2 s / 32 s contract trajectory needed
+`698.9 s` for 361 MPC calls, with a maximum solve time of `7.90 s` and peak
+system commit fraction `0.909`.  It completed safely with zero solver failures,
+but was not suitable for a first multi-seed screen.  No paired value for seed
+8100 had been observed when this rule was changed.
+
+Seed 8100 is retained as a 2 s computation sensitivity.  The primary
+replication set is now the first three development seeds, in numeric order,
+whose registered control period is 4 s: `8103`, `8104`, and `8105`.  This rule
+uses only public design metadata and not trajectory performance.  Each uses
+contract, exploit-only, and dual without changing the SG-conserving-16,
+estimator, action, or validity configuration.
