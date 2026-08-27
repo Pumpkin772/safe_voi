@@ -536,6 +536,12 @@ def worker(arguments: argparse.Namespace) -> None:
     result["comparison_group"] = arguments.comparison_group
     result["candidate_delay_spread_s"] = point.delay_spread_s
     result["objective_preference"] = arguments.objective
+    result["decision_relevance_screen_threshold"] = (
+        arguments.minimum_predicted_high_value
+    )
+    result["acquisition_value_gate_enabled"] = (
+        arguments.acquisition_value_gate
+    )
     result["probe_amplitude_pu"] = (
         0.0 if arguments.method in {"contract", "oracle"} else arguments.amplitude
     )
