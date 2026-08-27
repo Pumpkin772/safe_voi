@@ -51,3 +51,23 @@ leaving ramp and delay uncertain.  Relative to the identical no-probe contract
 trajectory (`60.833668059 s`), total grid-service cost decreased by
 `0.636232895 s`.  A matched exploit-only run is required before attributing any
 part of this total difference specifically to information.
+
+The matched exploit-only run completed with the same acquisition window and no
+certificate use.  The paired decomposition is:
+
+```text
+contract cost                          60.833668059 s
+exploit-only cost                      60.421479039 s
+dual cost                              60.197435164 s
+contract minus exploit                +0.412189020 s
+exploit minus dual (pure information) +0.224043875 s
+contract minus dual (total value)     +0.636232895 s
+frequency peak, all arms                0.203042591 Hz
+ACE IAE, contract / exploit / dual      7.152914 / 7.109346 / 7.074935 pu s
+tie IAE, contract / exploit / dual      2.121784 / 2.107300 / 2.088180 pu s
+```
+
+Both the control-aligned acquisition action and subsequent use of the retained
+high-power set improved this high-capability trajectory.  This is a single
+development pair; low-capability acquisition cost and replication across the
+fixed panel remain unresolved.
