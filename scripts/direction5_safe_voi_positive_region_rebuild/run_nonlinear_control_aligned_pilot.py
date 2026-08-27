@@ -399,13 +399,24 @@ def worker(arguments: argparse.Namespace) -> None:
                     value_record["predicted_high_posterior_value"]
                     >= arguments.minimum_predicted_high_value
                 )
+                diagnostic_requested = bool(
+                    arguments.offline_second_stage_time_s is not None
+                    and abs(
+                        float(observation.time_s)
+                        - arguments.offline_second_stage_time_s
+                    ) <= 0.5 * period_s
+                )
                 acquisition_record = None
-                if screen_positive and arguments.acquisition_value_gate:
+                if (
+                    (screen_positive or diagnostic_requested)
+                    and arguments.acquisition_value_gate
+                ):
                     acquisition_record = self._causal_acquisition_information_value(
                         observation, previous_applied_action, contract
                     )
                 self._gate_allow_new_window = bool(
                     screen_positive
+                    and arguments.offline_second_stage_time_s is None
                     and (
                         not arguments.acquisition_value_gate
                         or acquisition_record[
@@ -421,6 +432,9 @@ def worker(arguments: argparse.Namespace) -> None:
                 )
                 value_record["acquisition_information_value"] = (
                     acquisition_record
+                )
+                value_record["offline_second_stage_diagnostic"] = (
+                    diagnostic_requested
                 )
                 value_record["probe_permitted"] = self._gate_allow_new_window
                 self.causal_value_evaluations.append(value_record)
@@ -541,6 +555,9 @@ def worker(arguments: argparse.Namespace) -> None:
     )
     result["acquisition_value_gate_enabled"] = (
         arguments.acquisition_value_gate
+    )
+    result["offline_second_stage_time_s"] = (
+        arguments.offline_second_stage_time_s
     )
     result["probe_amplitude_pu"] = (
         0.0 if arguments.method in {"contract", "oracle"} else arguments.amplitude
@@ -690,6 +707,11 @@ def guarded(arguments: argparse.Namespace) -> None:
         ))
     if arguments.acquisition_value_gate:
         command.append("--acquisition-value-gate")
+    if arguments.offline_second_stage_time_s is not None:
+        command.extend((
+            "--offline-second-stage-time-s",
+            str(arguments.offline_second_stage_time_s),
+        ))
     if arguments.target_distribution:
         command.append("--target-distribution")
     environment = dict(os.environ)
@@ -749,6 +771,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--certificate-validity", type=float, default=120.0)
     result.add_argument("--minimum-predicted-high-value", type=float)
     result.add_argument("--acquisition-value-gate", action="store_true")
+    result.add_argument("--offline-second-stage-time-s", type=float)
     result.add_argument("--evidence-label", default="stacked_ar1")
     result.add_argument(
         "--evidence-engine",
