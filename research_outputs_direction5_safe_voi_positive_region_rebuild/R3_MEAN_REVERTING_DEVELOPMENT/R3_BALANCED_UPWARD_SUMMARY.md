@@ -76,3 +76,12 @@ before any active threshold experiment.  A defensible gate must use the
 registered future-event distribution and the same frozen controller objective;
 pathwise `J_grid` remains a reported outcome, not the online optimization
 criterion.
+
+Post-run code inspection found that this first diagnostic used the just-solved
+contract command, rather than the previously applied command, as the movement
+reference in both counterfactual optimizations.  The two counterfactuals were
+internally paired but did not match the action history used by the actual MPC
+call.  The `1.4393e-9` value is therefore retained as an invalid diagnostic and
+is not used to accept or reject the myopic screen.  The corrected diagnostic
+passes the pre-solve applied action explicitly and must be recomputed before a
+scientific conclusion is drawn.

@@ -145,7 +145,9 @@ def worker(arguments: argparse.Namespace) -> None:
                 )
             )
 
-        def _causal_high_posterior_value(self, observation) -> dict:
+        def _causal_high_posterior_value(
+            self, observation, previous_applied_action
+        ) -> dict:
             load = np.asarray(self.observer._load, dtype=float).copy()
             point = self._causal_point(observation, load)
             state = np.r_[
@@ -159,8 +161,8 @@ def worker(arguments: argparse.Namespace) -> None:
                 horizon_steps=int(round(self.horizon_s / point.period_s)),
                 initial_grid_state=state,
                 initial_bess_power=observation.bess_actual_power_pu,
-                previous_sg_command=self.last_action[[0, 2]],
-                previous_bess_command=self.last_action[[1, 3]],
+                previous_sg_command=previous_applied_action[[0, 2]],
+                previous_bess_command=previous_applied_action[[1, 3]],
                 initial_energy_mwh=(
                     observation.measured_soc * self.parameters.bess.energy_mwh
                 ),
@@ -241,6 +243,7 @@ def worker(arguments: argparse.Namespace) -> None:
                 self._update_power_evidence(observation)
 
         def propose(self, observation):
+            previous_applied_action = self.last_action.copy()
             if arguments.method == "dual":
                 if not arguments.target_distribution:
                     self._update_power_evidence(observation)
@@ -265,7 +268,9 @@ def worker(arguments: argparse.Namespace) -> None:
                 and self._probe_start_eligible(contract, observation)
                 and observation.time_s >= self._next_gate_evaluation_s
             ):
-                value_record = self._causal_high_posterior_value(observation)
+                value_record = self._causal_high_posterior_value(
+                    observation, previous_applied_action
+                )
                 self._gate_allow_new_window = bool(
                     value_record["predicted_high_posterior_value"]
                     >= arguments.minimum_predicted_high_value
