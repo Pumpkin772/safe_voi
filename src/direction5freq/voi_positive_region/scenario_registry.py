@@ -39,6 +39,12 @@ class ControllerScenarioContext:
     measured_initial_soc: float
     public_event_count: int
     public_event_time_window_s: tuple[float, float]
+    public_load_process: str
+    public_regulation_start_s: float
+    public_regulation_update_period_s: float
+    public_regulation_time_constant_s: float
+    public_regulation_stationary_std_pu: float
+    public_regulation_hard_bound_pu: float
 
 
 @dataclass(frozen=True)
@@ -59,6 +65,14 @@ class ScenarioSpec:
     load_magnitude_pu: float
     load_sign: int
     load_area: str
+    load_process_kind: str
+    regulation_seed: int
+    regulation_start_time_s: float
+    regulation_update_period_s: float
+    regulation_time_constant_s: float
+    regulation_stationary_std_pu: float
+    regulation_hard_bound_pu: float
+    regulation_area_correlation: float
     true_power_pu: float
     true_ramp_pu_per_s: float
     true_delay_s: float
@@ -83,6 +97,8 @@ class ScenarioSpec:
             raise ValueError("load sign must be -1 or 1")
         if self.load_area not in {"area0", "area1", "both"}:
             raise ValueError("unregistered load area")
+        if self.load_process_kind != "bounded_bivariate_ou_plus_contingency":
+            raise ValueError("unregistered load process")
 
     def controller_context(self) -> ControllerScenarioContext:
         """Return a truth-free public view for the ordinary controller."""
@@ -95,6 +111,12 @@ class ScenarioSpec:
             measured_initial_soc=self.initial_soc,
             public_event_count=1,
             public_event_time_window_s=(210.0, 390.0),
+            public_load_process=self.load_process_kind,
+            public_regulation_start_s=self.regulation_start_time_s,
+            public_regulation_update_period_s=self.regulation_update_period_s,
+            public_regulation_time_constant_s=self.regulation_time_constant_s,
+            public_regulation_stationary_std_pu=self.regulation_stationary_std_pu,
+            public_regulation_hard_bound_pu=self.regulation_hard_bound_pu,
         )
 
     def evaluation_record(self) -> dict[str, Any]:
@@ -116,7 +138,7 @@ def generate_scenario(split: StudySplit, seed: int) -> ScenarioSpec:
 
     if seed not in SEED_RANGES[split]:
         raise ValueError(f"seed {seed} is outside the {split.value} firewall")
-    streams = np.random.SeedSequence(seed).spawn(7)
+    streams = np.random.SeedSequence(seed).spawn(8)
     timing_capability = _rng(streams[0])
     timing_load = _rng(streams[1])
     load = _rng(streams[2])
@@ -124,6 +146,7 @@ def generate_scenario(split: StudySplit, seed: int) -> ScenarioSpec:
     state = _rng(streams[4])
     design = _rng(streams[5])
     noise = _rng(streams[6])
+    regulation = _rng(streams[7])
 
     period_s = float(design.choice((2.0, 4.0)))
     rolling_horizon_s = float(design.choice((24.0, 32.0)))
@@ -161,9 +184,19 @@ def generate_scenario(split: StudySplit, seed: int) -> ScenarioSpec:
         initial_soc=float(state.uniform(0.35, 0.65)),
         capability_transition_time_s=float(timing_capability.uniform(90.0, 150.0)),
         load_event_time_s=float(timing_load.uniform(210.0, 390.0)),
-        load_magnitude_pu=float(load.uniform(0.025, 0.070)),
+        # The 0.020 pu bounded regulation component and the contingency sum to
+        # at most the predecessor's 0.070 pu registered load envelope.
+        load_magnitude_pu=float(load.uniform(0.025, 0.050)),
         load_sign=int(load.choice((-1, 1))),
         load_area=str(load.choice(("area0", "area1", "both"))),
+        load_process_kind="bounded_bivariate_ou_plus_contingency",
+        regulation_seed=int(regulation.integers(0, 2**32, dtype=np.uint32)),
+        regulation_start_time_s=60.0,
+        regulation_update_period_s=4.0,
+        regulation_time_constant_s=60.0,
+        regulation_stationary_std_pu=0.012,
+        regulation_hard_bound_pu=0.020,
+        regulation_area_correlation=0.4,
         true_power_pu=power,
         true_ramp_pu_per_s=ramp,
         true_delay_s=delay,

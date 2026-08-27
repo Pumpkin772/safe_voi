@@ -1,5 +1,12 @@
 # Model and scenario registry
 
+> 2026-08-27 addition: the R3 development distribution adds a bounded,
+> controller-independent, bivariate mean-reverting regulation load.  Its
+> parameters and physical rationale are fixed in
+> `07_MEAN_REVERTING_LOAD_PREREGISTRATION.md`.  The contingency magnitude is
+> reduced so the combined load remains inside the prior `0.070 pu` envelope;
+> R1 and R2 outputs remain unchanged.
+
 ## Two time scales
 
 - rolling MPC horizon: 24 or 32 s;

@@ -21,13 +21,24 @@ development_factorial:
   controller_comparison: [contract, exploit_only, dual]
 
 physical_ranges:
-  load_magnitude_pu: [0.025, 0.070]
+  total_load_envelope_pu: 0.070
+  contingency_magnitude_pu: [0.025, 0.050]
   performance_power_pu: [0.045, 0.080]
   ramp_pu_per_s: [0.025, 0.050]
   delay_s: [0.2, 1.5]
   initial_soc: [0.35, 0.65]
   capability_transition_time_s: [90.0, 150.0]
   load_event_time_s: [210.0, 390.0]
+
+load_process:
+  kind: bounded_bivariate_ou_plus_contingency
+  start_time_s: 60.0
+  update_period_s: 4.0
+  time_constant_s: 60.0
+  stationary_std_pu: 0.012
+  hard_bound_pu: 0.020
+  area_correlation: 0.4
+  independent_of: [controller, capability, contingency]
 
 probe_library:
   modes: [allocation_neutral, control_aligned_surplus]

@@ -42,6 +42,54 @@ def load_at(row: dict[str, Any], time_s: float) -> np.ndarray:
     return np.array((magnitude, 0.65 * magnitude))
 
 
+def load_profile(
+    row: dict[str, Any], duration_s: float, dt_s: float
+) -> tuple[np.ndarray, np.ndarray]:
+    """Generate the paired, truth-side load path before closed-loop control.
+
+    The mean-reverting regulation path is independent of controller actions,
+    hidden capability, and the contingency draw.  It is piecewise constant at
+    the registered 4 s regulation-update scale and hard bounded so that its
+    sum with the contingency remains inside the predecessor load envelope.
+    """
+
+    steps = int(round(duration_s / dt_s))
+    background = np.zeros((steps + 1, 2), dtype=float)
+    if row.get("load_process_kind") != "bounded_bivariate_ou_plus_contingency":
+        total = np.asarray(
+            [load_at(row, step * dt_s) for step in range(steps + 1)],
+            dtype=float,
+        )
+        return total, background
+
+    rng = np.random.default_rng(int(row["regulation_seed"]))
+    start_s = float(row["regulation_start_time_s"])
+    update_s = float(row["regulation_update_period_s"])
+    tau_s = float(row["regulation_time_constant_s"])
+    stationary_std = float(row["regulation_stationary_std_pu"])
+    hard_bound = float(row["regulation_hard_bound_pu"])
+    correlation = float(row["regulation_area_correlation"])
+    phi = float(np.exp(-update_s / tau_s))
+    innovation_std = stationary_std * np.sqrt(1.0 - phi ** 2)
+    correlation_matrix = np.asarray(((1.0, correlation), (correlation, 1.0)))
+    cholesky = np.linalg.cholesky(correlation_matrix)
+    state = np.zeros(2)
+    next_update_s = start_s
+    for step in range(steps + 1):
+        time_s = step * dt_s
+        if time_s + 1e-10 >= next_update_s:
+            innovation = innovation_std * (cholesky @ rng.normal(size=2))
+            state = np.clip(phi * state + innovation, -hard_bound, hard_bound)
+            next_update_s += update_s
+        if time_s >= start_s:
+            background[step] = state
+    contingency = np.asarray(
+        [load_at(row, step * dt_s) for step in range(steps + 1)],
+        dtype=float,
+    )
+    return background + contingency, background
+
+
 def noisy_observation(
     observation: PublicObservation,
     rng: np.random.Generator,
@@ -108,6 +156,7 @@ def simulate_plant_a(
         row.get("poi_observation_period_s", template.period_s)
     )
     duration_s = float(row["duration_s"]); steps = int(round(duration_s / dt_s))
+    episode_load, regulation_load = load_profile(row, duration_s, dt_s)
     frequency_peak = 0.0; ace_iae = 0.0; tie_iae = 0.0
     frequency_normalized_ise = 0.0
     ace_normalized_ise = 0.0
@@ -181,7 +230,7 @@ def simulate_plant_a(
             terminal_ace.append(float(np.max(np.abs(public.ace_pu))))
         if step < steps:
             state, diagnostics = plant.step(
-                state, command, load_at(row, time_s), capability_at(row, time_s),
+                state, command, episode_load[step], capability_at(row, time_s),
                 np.zeros(2),
             )
             sg_mileage += float(np.sum(np.abs(state.mechanical_power_pu - previous_mechanical)))
@@ -218,6 +267,9 @@ def simulate_plant_a(
         frequency_peak_hz=frequency_peak, ace_iae_pu_s=ace_iae,
         tie_iae_pu_s=tie_iae, sg_mechanical_mileage_pu=sg_mileage,
         bess_energy_throughput_pu_s=bess_throughput,
+        regulation_load_rms_pu=float(np.sqrt(np.mean(regulation_load ** 2))),
+        regulation_load_peak_pu=float(np.max(np.abs(regulation_load))),
+        total_load_peak_pu=float(np.max(np.abs(episode_load))),
         poi_observation_period_s=poi_observation_period_s,
         poi_noise_correlation=poi_noise_correlation,
         frequency_normalized_ise_s=frequency_normalized_ise,
@@ -246,4 +298,4 @@ def simulate_plant_a(
     return result
 
 
-__all__ = ["capability_at", "load_at", "simulate_plant_a"]
+__all__ = ["capability_at", "load_at", "load_profile", "simulate_plant_a"]

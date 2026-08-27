@@ -33,7 +33,7 @@ OUTPUT = ROOT / "research_outputs_direction5_safe_voi_positive_region_rebuild" /
 TARGET_OUTPUT = (
     ROOT
     / "research_outputs_direction5_safe_voi_positive_region_rebuild"
-    / "R2_TARGET_DISTRIBUTION"
+    / "R3_MEAN_REVERTING_DEVELOPMENT"
 )
 sys.path.insert(0, str(SCRATCH))
 
@@ -195,7 +195,7 @@ def worker(arguments: argparse.Namespace) -> None:
     if arguments.seed != 8100:
         suffix_parts.append(f"S{arguments.seed}")
     run_suffix = "_" + "_".join(suffix_parts) if suffix_parts else ""
-    stage = "R2" if arguments.target_distribution else "R1"
+    stage = "R3" if arguments.target_distribution else "R1"
     row = {
         "scenario_id": (
             f"{stage}_{arguments.capability.upper()}_{arguments.method.upper()}_"
@@ -347,7 +347,7 @@ def worker(arguments: argparse.Namespace) -> None:
 def guarded(arguments: argparse.Namespace) -> None:
     output = output_directory(arguments)
     output.mkdir(parents=True, exist_ok=True)
-    stage = "R2" if arguments.target_distribution else "R1"
+    stage = "R3" if arguments.target_distribution else "R1"
     stem = (
         f"{stage}_{arguments.capability.upper()}_{arguments.method.upper()}_"
         f"{arguments.objective.upper()}"

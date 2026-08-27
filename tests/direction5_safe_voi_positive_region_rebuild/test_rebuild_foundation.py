@@ -43,6 +43,8 @@ def test_seed_firewalls_are_disjoint_and_controller_view_hides_truth() -> None:
     assert "load_event_time_s" not in public
     assert "capability_transition_time_s" not in public
     assert public["public_event_time_window_s"] == (210.0, 390.0)
+    assert public["public_load_process"] == "bounded_bivariate_ou_plus_contingency"
+    assert "regulation_seed" not in public
 
 
 def test_capability_and_load_times_use_independent_reproducible_streams() -> None:
@@ -56,6 +58,8 @@ def test_capability_and_load_times_use_independent_reproducible_streams() -> Non
     assert all(item.true_ramp_pu_per_s >= 0.025 for item in first)
     assert all(item.true_delay_s <= 1.5 for item in first)
     assert all(item.episode_duration_s == 720.0 for item in first)
+    assert all(item.load_magnitude_pu <= 0.050 for item in first)
+    assert all(item.regulation_hard_bound_pu == 0.020 for item in first)
 
 
 def test_resource_price_boundary_keeps_physical_tradeoff_explicit() -> None:
