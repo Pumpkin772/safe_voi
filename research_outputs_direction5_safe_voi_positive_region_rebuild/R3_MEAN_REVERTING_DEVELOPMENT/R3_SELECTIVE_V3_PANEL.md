@@ -71,3 +71,28 @@ Both the control-aligned acquisition action and subsequent use of the retained
 high-power set improved this high-capability trajectory.  This is a single
 development pair; low-capability acquisition cost and replication across the
 fixed panel remain unresolved.
+
+### Low-capability branch for seed 8110
+
+The ordinary controller again entered at `520 s` without knowing the true
+capability.  The actual-POI estimator retained all four and only the low-power
+candidates; it did not issue a high-power certificate and did not report model
+inconsistency.
+
+```text
+acquisition windows                     1
+false high-power certification          0
+frequency peak                          0.203042591 Hz
+grid-service cost                       60.978767786 s
+ACE IAE                                  7.166736747 pu s
+tie IAE                                  2.123213852 pu s
+attempted optimization calls            3212
+solver failures / fallbacks             0 / 0
+hard physical violations                0
+```
+
+The matched exploit-only and contract references are still required to
+quantify low-capability acquisition cost.  The first exploit-only attempt was
+terminated by the system-commit guard after an unrelated machine-wide commit
+spike; the scientific episode produced no result and will be repeated unchanged
+after system memory returns below the preflight limit.
