@@ -57,3 +57,26 @@ The maximum screen value occurred at `660 s` and remained below the frozen
 sufficient for information acquisition.  Since no surplus window or posterior
 update occurred, the executed method is the same contract-set rolling MPC by
 construction; no duplicate exploit-only episode is needed for this path.
+
+## High-capability seed 8111
+
+The actual and reported capability transition both occurred at
+`142.347745428 s`.  The independent area-1 contingency occurred at
+`324.930131471 s` with magnitude `-0.0311114054 pu`.
+
+```text
+eligible first-stage evaluations        4
+maximum predicted high-posterior value 1.4688e-08
+first-stage positive states             0
+second-stage evaluations                0
+acquisition windows                     0
+frequency peak                          0.094318438 Hz
+grid-service cost                       38.544750902 s
+attempted optimization calls            185
+solver failures / fallbacks             0 / 0
+hard physical violations                0
+```
+
+All four candidate states had essentially zero decision value for a high-power
+posterior.  This is another strict abstention path, not evidence that the
+positive region is globally empty.
