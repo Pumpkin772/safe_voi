@@ -486,6 +486,7 @@ def worker(arguments: argparse.Namespace) -> None:
         row.update(
             scenario_id=method_scenario_id,
             duration_s=scenario.episode_duration_s,
+            capability_change_time_s=scenario.capability_transition_time_s,
             information_validity_horizon_s=arguments.certificate_validity,
             design_cell=f"registered_event_distribution|{arguments.objective}",
             # The paired binary development cell isolates usable power.  Ramp
@@ -494,6 +495,8 @@ def worker(arguments: argparse.Namespace) -> None:
             true_power_pu=0.045 if arguments.capability == "low" else 0.068,
             true_ramp_pu_per_s=0.039,
             true_delay_s=1.50,
+            source_scenario_known_ood=scenario.known_ood,
+            known_ood="known",
             frequency_noise_std_hz=0.001,
             poi_noise_std_pu=scenario.measurement_noise_std_pu,
             poi_observation_period_s=0.2,

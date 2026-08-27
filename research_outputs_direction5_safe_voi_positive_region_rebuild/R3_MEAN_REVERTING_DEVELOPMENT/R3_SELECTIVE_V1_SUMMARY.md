@@ -1,5 +1,13 @@
 # R3 state-selective single-window prototype
 
+> Subsequent pre-V2 inspection found that these V1 runs recorded the registered
+> random `capability_transition_time_s` but the simulator actually read the
+> unchanged default `capability_change_time_s=90`.  Some paired binary candidate
+> runs also inherited an unrelated source-scenario known/OOD label.  The V1
+> controller comparisons remain development diagnostics, but they do not
+> establish randomized-transition or OOD evidence.  V2 corrects both fields
+> before generating a new result and leaves every V1 file unchanged.
+
 The prototype was fixed before its paired nonlinear result:
 
 ```text

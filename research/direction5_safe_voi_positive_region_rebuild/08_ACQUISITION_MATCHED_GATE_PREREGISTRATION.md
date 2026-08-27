@@ -86,6 +86,14 @@ measure physical safety and downside.
 Before the first V2 episode, the preliminary open-loop-prefix implementation
 was replaced by the following closer match to the online controller.
 
+The same pre-result inspection also found that V1 recorded the random
+`capability_transition_time_s` but the simulator read a separate default
+`capability_change_time_s=90`.  V2 binds both fields to the registered random
+transition.  The paired low/high development truths are finite candidate-set
+vertices and are therefore labelled `known`; the source scenario's unused
+known/OOD draw is retained separately.  V1 files remain unchanged but cannot
+support claims about randomized transition timing or OOD capability.
+
 - Contract-set MPC is recomputed at `0`, `4`, and `8 s` on every hidden-model
   branch.  Exploit and dual use the same branch-specific public trajectory and
   remain action-identical until the posterior first becomes usable at `12 s`.
