@@ -48,7 +48,7 @@ def worker(arguments: argparse.Namespace) -> None:
 
     import nonlinear_boundary_validation as nonlinear
     from rolling_boundary_controller import RollingBoundaryController
-    from voi_boundary_engine import BoundaryPoint
+    from voi_boundary_engine import BoundaryPoint, objective_scales, solve_policy
 
     target_scenario = (
         generate_scenario(StudySplit.DEVELOPMENT, arguments.seed)
@@ -117,7 +117,90 @@ def worker(arguments: argparse.Namespace) -> None:
                 )
             self.power_certificate_active = False
             self.power_certificate_time_s = None
+            self.causal_value_evaluations = []
+            self._gate_allow_new_window = True
+            self._next_gate_evaluation_s = -float("inf")
             created_controllers.append(self)
+
+        def _probe_start_eligible(self, contract, observation) -> bool:
+            bess = np.asarray(contract)[[1, 3]]
+            return bool(
+                self.aligned_probe._remaining_active == 0
+                and self.aligned_probe._remaining_cooldown == 0
+                and self.aligned_probe.windows_started
+                < self.aligned_probe.config.maximum_windows
+                and not self.aligned_probe.futility_stopped
+                and np.max(np.abs(bess))
+                >= self.aligned_probe.config.binding_command_pu
+                and np.max(np.abs(observation.frequency_deviation_hz))
+                <= self.aligned_probe.config.maximum_frequency_hz
+                and np.max(np.abs(observation.ace_pu))
+                <= self.aligned_probe.config.maximum_ace_pu
+                and np.all(
+                    (observation.measured_soc >= 0.25)
+                    & (observation.measured_soc <= 0.75)
+                )
+            )
+
+        def _causal_high_posterior_value(self, observation) -> dict:
+            load = np.asarray(self.observer._load, dtype=float).copy()
+            point = self._causal_point(observation, load)
+            state = np.r_[
+                observation.frequency_deviation_hz
+                / self.parameters.nominal_frequency_hz,
+                observation.tie_line_pu,
+                observation.valve_pu,
+                observation.sg_mechanical_power_pu,
+            ]
+            common = dict(
+                horizon_steps=int(round(self.horizon_s / point.period_s)),
+                initial_grid_state=state,
+                initial_bess_power=observation.bess_actual_power_pu,
+                previous_sg_command=self.last_action[[0, 2]],
+                previous_bess_command=self.last_action[[1, 3]],
+                initial_energy_mwh=(
+                    observation.measured_soc * self.parameters.bess.energy_mwh
+                ),
+                load_forecast_pu=load,
+                scales=objective_scales(point.objective),
+            )
+            contract_solution = solve_policy(point, self.all_models, **common)
+            high_models = tuple(
+                model for model in self.all_models
+                if model.power_pu > 0.045 + 1e-8
+            )
+            high_solution = solve_policy(point, high_models, **common)
+            self.attempts += 2
+            self.solve_times.extend((
+                contract_solution.solve_time_s,
+                high_solution.solve_time_s,
+            ))
+            finite = bool(
+                np.isfinite(contract_solution.objective)
+                and np.isfinite(high_solution.objective)
+            )
+            if not finite:
+                self.failures += int(not np.isfinite(contract_solution.objective))
+                self.failures += int(not np.isfinite(high_solution.objective))
+            value = (
+                float(contract_solution.objective - high_solution.objective)
+                if finite else -float("inf")
+            )
+            action_separation = (
+                float(np.max(np.abs(
+                    contract_solution.bess_command[:, 0]
+                    - high_solution.bess_command[:, 0]
+                )))
+                if finite else 0.0
+            )
+            return {
+                "time_s": float(observation.time_s),
+                "estimated_load_pu": load.tolist(),
+                "contract_set_cost": float(contract_solution.objective),
+                "high_posterior_set_cost": float(high_solution.objective),
+                "predicted_high_posterior_value": value,
+                "first_bess_action_separation_pu": action_separation,
+            }
 
         def _update_power_evidence(self, observation) -> None:
             if self.dynamic_estimator is None:
@@ -174,6 +257,24 @@ def worker(arguments: argparse.Namespace) -> None:
             contract = super().propose(observation)
             if arguments.method == "dual" and self.power_certificate_active:
                 return contract
+            if (
+                arguments.minimum_predicted_high_value is not None
+                and self._probe_start_eligible(contract, observation)
+                and observation.time_s >= self._next_gate_evaluation_s
+            ):
+                value_record = self._causal_high_posterior_value(observation)
+                self._gate_allow_new_window = bool(
+                    value_record["predicted_high_posterior_value"]
+                    >= arguments.minimum_predicted_high_value
+                )
+                value_record["minimum_required_value"] = (
+                    arguments.minimum_predicted_high_value
+                )
+                value_record["probe_permitted"] = self._gate_allow_new_window
+                self.causal_value_evaluations.append(value_record)
+                self._next_gate_evaluation_s = (
+                    float(observation.time_s) + effective_cooldown_steps * period_s
+                )
             windows_before = self.aligned_probe.windows_started
             action = self.aligned_probe.overlay(
                 contract,
@@ -181,6 +282,7 @@ def worker(arguments: argparse.Namespace) -> None:
                 observation.frequency_deviation_hz,
                 observation.ace_pu,
                 observation.measured_soc,
+                allow_new_window=self._gate_allow_new_window,
             )
             self.probe_triggers += self.aligned_probe.windows_started - windows_before
             if action is not contract:
@@ -345,6 +447,7 @@ def worker(arguments: argparse.Namespace) -> None:
                 }
                 for window in controller.dynamic_estimator.window_results
             ]
+        result["causal_value_evaluations"] = controller.causal_value_evaluations
     output = output_directory(arguments)
     output.mkdir(parents=True, exist_ok=True)
     destination = output / f"{row['scenario_id']}.json"
@@ -476,6 +579,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--poi-residual-bound", type=float, default=0.00025)
     result.add_argument("--certificate-samples", type=int, default=2)
     result.add_argument("--certificate-validity", type=float, default=120.0)
+    result.add_argument("--minimum-predicted-high-value", type=float)
     result.add_argument("--evidence-label", default="stacked_ar1")
     result.add_argument(
         "--evidence-engine",

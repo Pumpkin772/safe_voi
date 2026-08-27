@@ -110,6 +110,8 @@ class ControlAlignedSequentialProbe:
         frequency_deviation_hz: np.ndarray,
         ace_pu: np.ndarray,
         measured_soc: np.ndarray,
+        *,
+        allow_new_window: bool = True,
     ) -> np.ndarray:
         action = np.asarray(contract_action, dtype=float)
         if self._remaining_cooldown > 0 and self._remaining_active == 0:
@@ -127,7 +129,8 @@ class ControlAlignedSequentialProbe:
             area = int(np.argmax(np.abs(bess)))
             direction = float(np.sign(bess[area]))
             eligible = bool(
-                self.windows_started < self.config.maximum_windows
+                allow_new_window
+                and self.windows_started < self.config.maximum_windows
                 and not self.futility_stopped
                 and direction != 0.0
                 and abs(bess[area]) >= self.config.binding_command_pu

@@ -181,6 +181,21 @@ def test_control_aligned_probe_keeps_sg_action_and_uses_current_state_only() -> 
     assert policy.windows_started == 1
 
 
+def test_control_aligned_probe_can_abstain_without_changing_contract_action() -> None:
+    policy = ControlAlignedSequentialProbe()
+    contract = np.asarray((0.04, 0.041, 0.02, 0.01))
+    result = policy.overlay(
+        contract,
+        time_s=100.0,
+        frequency_deviation_hz=np.zeros(2),
+        ace_pu=np.zeros(2),
+        measured_soc=np.full(2, 0.5),
+        allow_new_window=False,
+    )
+    assert np.array_equal(result, contract)
+    assert policy.windows_started == 0
+
+
 def test_delivery_certificate_is_causal_and_expires() -> None:
     policy = ControlAlignedSequentialProbe()
     policy.overlay(
