@@ -10,6 +10,28 @@ actual capability-change time to the registered random transition.  It remains
 historical development output but must be rerun under V2 before entering the
 V2 panel denominator.
 
+## High-capability seed 8109
+
+The actual and reported capability transition both occurred at
+`145.812047580 s`.  No state in the complete 720 s trajectory satisfied the
+basic binding-command, frequency, ACE, SoC, and cooldown conditions for a
+first-stage value evaluation.
+
+```text
+eligible first-stage evaluations        0
+first-stage positive states             0
+second-stage evaluations                0
+acquisition windows                     0
+frequency peak                          0.102435273 Hz
+grid-service cost                       48.672952982 s
+attempted optimization calls            181
+solver failures / fallbacks             0 / 0
+hard physical violations                0
+```
+
+This is a pre-screen abstention rather than a negative second-stage value.  The
+executed controller is the contract-set rolling MPC by construction.
+
 ## High-capability seed 8110
 
 The actual and reported capability transition both occurred at
