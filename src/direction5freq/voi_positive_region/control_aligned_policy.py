@@ -30,7 +30,7 @@ class ControlAlignedConfig:
     # registered AR(1) correlations 0.0, 0.2, and 0.4; 0.04 did not.
     false_optimism_rate: float = 0.03
     maximum_evidence_samples: int = 20
-    futility_minimum_samples: int = 1
+    futility_minimum_samples: int = 2
     futility_delivery_margin_pu: float = 0.0005
 
 

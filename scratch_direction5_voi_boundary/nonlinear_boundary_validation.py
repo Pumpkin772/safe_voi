@@ -47,9 +47,20 @@ def noisy_observation(
     rng: np.random.Generator,
     frequency_noise_std_hz: float,
     poi_noise_std_pu: float,
+    *,
+    frequency_noise_hz: np.ndarray | None = None,
+    poi_noise_pu: np.ndarray | None = None,
 ) -> PublicObservation:
-    frequency = observation.frequency_deviation_hz + rng.normal(0.0, frequency_noise_std_hz, 2)
-    poi = observation.bess_actual_power_pu + rng.normal(0.0, poi_noise_std_pu, 2)
+    frequency_noise = (
+        rng.normal(0.0, frequency_noise_std_hz, 2)
+        if frequency_noise_hz is None else np.asarray(frequency_noise_hz, dtype=float)
+    )
+    poi_noise = (
+        rng.normal(0.0, poi_noise_std_pu, 2)
+        if poi_noise_pu is None else np.asarray(poi_noise_pu, dtype=float)
+    )
+    frequency = observation.frequency_deviation_hz + frequency_noise
+    poi = observation.bess_actual_power_pu + poi_noise
     omega = frequency / 50.0
     ace = np.array((21.0 * omega[0] + observation.tie_line_pu,
                     21.0 * omega[1] - observation.tie_line_pu))
@@ -71,24 +82,36 @@ def simulate_plant_a(
     parameters = plant_parameters(template.sg_tension, template.nominal_frequency_hz)
     plant = PlantAFull(parameters, dt_s=dt_s)
     state = plant.equilibrium((float(row["initial_soc"]), float(row["initial_soc"])))
+    horizon_s = float(row.get("rolling_horizon_s", 24.0))
     if method == "perfect_capability_oracle":
         controller: RollingBoundaryController = PerfectCapabilityBoundaryOracle(
-            template, parameters, horizon_s=24.0, observation_dt_s=dt_s,
+            template, parameters, horizon_s=horizon_s, observation_dt_s=dt_s,
         )
     elif method == "selective_voi_accr_mpc":
         controller = RollingBoundaryController(
-            template, parameters, lookup=lookup, horizon_s=24.0, observation_dt_s=dt_s,
+            template, parameters, lookup=lookup, horizon_s=horizon_s, observation_dt_s=dt_s,
         )
     elif method == "contract_mpc":
         controller = RollingBoundaryController(
-            template, parameters, lookup=None, horizon_s=24.0, observation_dt_s=dt_s,
+            template, parameters, lookup=None, horizon_s=horizon_s, observation_dt_s=dt_s,
         )
     else:
         raise ValueError(method)
-    rng = np.random.default_rng(int(row["seed"]))
+    control_seed, poi_seed = np.random.SeedSequence(int(row["seed"])).spawn(2)
+    control_rng = np.random.default_rng(control_seed)
+    poi_rng = np.random.default_rng(poi_seed)
     command = np.zeros(4); next_control = 0.0
+    next_poi_observation = 0.0
+    poi_noise_state = np.zeros(2)
+    poi_noise_correlation = float(row.get("poi_noise_correlation", 0.0))
+    poi_observation_period_s = float(
+        row.get("poi_observation_period_s", template.period_s)
+    )
     duration_s = float(row["duration_s"]); steps = int(round(duration_s / dt_s))
     frequency_peak = 0.0; ace_iae = 0.0; tie_iae = 0.0
+    frequency_normalized_ise = 0.0
+    ace_normalized_ise = 0.0
+    tie_normalized_ise = 0.0
     sg_mileage = 0.0; bess_throughput = 0.0
     previous_mechanical = state.mechanical_power_pu.copy()
     hard = False; command_violation = False; trace_rows = []
@@ -99,10 +122,26 @@ def simulate_plant_a(
     for step in range(steps + 1):
         time_s = step * dt_s
         public = plant.public_observation(time_s, state, command)
-        controller.observe_actual(public)
+        if time_s + 1e-10 >= next_poi_observation:
+            poi_noise_state = (
+                poi_noise_correlation * poi_noise_state
+                + np.sqrt(1.0 - poi_noise_correlation ** 2)
+                * poi_rng.normal(0.0, float(row["poi_noise_std_pu"]), 2)
+            )
+            controller.observe_actual(noisy_observation(
+                public,
+                poi_rng,
+                float(row["frequency_noise_std_hz"]),
+                float(row["poi_noise_std_pu"]),
+                frequency_noise_hz=poi_rng.normal(
+                    0.0, float(row["frequency_noise_std_hz"]), 2
+                ),
+                poi_noise_pu=poi_noise_state,
+            ))
+            next_poi_observation += poi_observation_period_s
         if time_s + 1e-10 >= next_control:
             causal = noisy_observation(
-                public, rng, float(row["frequency_noise_std_hz"]),
+                public, control_rng, float(row["frequency_noise_std_hz"]),
                 float(row["poi_noise_std_pu"]),
             )
             if method == "perfect_capability_oracle":
@@ -132,6 +171,11 @@ def simulate_plant_a(
         )
         ace_iae += float(np.sum(np.abs(public.ace_pu))) * dt_s
         tie_iae += abs(float(public.tie_line_pu)) * dt_s
+        frequency_normalized_ise += float(np.sum(
+            (public.frequency_deviation_hz / 0.20) ** 2
+        )) * dt_s
+        ace_normalized_ise += float(np.sum((public.ace_pu / 0.05) ** 2)) * dt_s
+        tie_normalized_ise += float((public.tie_line_pu / 0.025) ** 2) * dt_s
         if time_s >= duration_s - 30.0:
             terminal_frequency.append(float(np.max(np.abs(public.frequency_deviation_hz))))
             terminal_ace.append(float(np.max(np.abs(public.ace_pu))))
@@ -174,6 +218,16 @@ def simulate_plant_a(
         frequency_peak_hz=frequency_peak, ace_iae_pu_s=ace_iae,
         tie_iae_pu_s=tie_iae, sg_mechanical_mileage_pu=sg_mileage,
         bess_energy_throughput_pu_s=bess_throughput,
+        poi_observation_period_s=poi_observation_period_s,
+        poi_noise_correlation=poi_noise_correlation,
+        frequency_normalized_ise_s=frequency_normalized_ise,
+        ace_normalized_ise_s=ace_normalized_ise,
+        tie_normalized_ise_s=tie_normalized_ise,
+        grid_service_cost_s=(
+            frequency_normalized_ise
+            + ace_normalized_ise
+            + tie_normalized_ise
+        ),
         hard_violation=hard, command_violation=command_violation,
         valve_boundary_steps=valve_boundary_steps,
         sg_boundary_steps=sg_boundary_steps,

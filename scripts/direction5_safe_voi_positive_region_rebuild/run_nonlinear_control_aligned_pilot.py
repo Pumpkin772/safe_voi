@@ -19,13 +19,27 @@ from direction5freq.accr.resource_guard import (
 from direction5freq.voi_positive_region import (
     ControlAlignedConfig,
     ControlAlignedSequentialProbe,
+    DynamicCapabilityCandidate,
+    DynamicCapabilityEstimator,
+    DynamicEvidenceConfig,
+    StudySplit,
+    generate_scenario,
 )
 
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRATCH = ROOT / "scratch_direction5_voi_boundary"
 OUTPUT = ROOT / "research_outputs_direction5_safe_voi_positive_region_rebuild" / "R1_NONLINEAR_PILOT"
+TARGET_OUTPUT = (
+    ROOT
+    / "research_outputs_direction5_safe_voi_positive_region_rebuild"
+    / "R2_TARGET_DISTRIBUTION"
+)
 sys.path.insert(0, str(SCRATCH))
+
+
+def output_directory(arguments: argparse.Namespace) -> Path:
+    return TARGET_OUTPUT if arguments.target_distribution else OUTPUT
 
 
 def worker(arguments: argparse.Namespace) -> None:
@@ -36,6 +50,21 @@ def worker(arguments: argparse.Namespace) -> None:
     from rolling_boundary_controller import RollingBoundaryController
     from voi_boundary_engine import BoundaryPoint
 
+    target_scenario = (
+        generate_scenario(StudySplit.DEVELOPMENT, arguments.seed)
+        if arguments.target_distribution else None
+    )
+    period_s = 4.0 if target_scenario is None else target_scenario.period_s
+    effective_active_steps = (
+        arguments.active_steps
+        if arguments.active_duration_s <= 0.0
+        else int(round(arguments.active_duration_s / period_s))
+    )
+    effective_cooldown_steps = (
+        arguments.cooldown_steps
+        if arguments.cooldown_duration_s <= 0.0
+        else int(round(arguments.cooldown_duration_s / period_s))
+    )
     created_controllers = []
 
     class ControlAlignedController(RollingBoundaryController):
@@ -48,30 +77,93 @@ def worker(arguments: argparse.Namespace) -> None:
                     if arguments.second_window_amplitude <= 0.0
                     else arguments.second_window_amplitude
                 ),
-                active_steps=arguments.active_steps,
-                cooldown_steps=arguments.cooldown_steps,
+                active_steps=effective_active_steps,
+                cooldown_steps=effective_cooldown_steps,
                 maximum_windows=arguments.maximum_windows,
                 certificate_samples=arguments.certificate_samples,
                 certificate_validity_s=arguments.certificate_validity,
+                measurement_noise_std_pu=0.0015,
                 observation_residual_bound_pu=arguments.poi_residual_bound,
             ))
             self.all_models = self.models
+            self.dynamic_estimator = None
+            if arguments.evidence_engine == "dynamic_vector":
+                self.dynamic_estimator = DynamicCapabilityEstimator(
+                    (
+                        DynamicCapabilityCandidate(
+                            model.model_id,
+                            model.power_pu,
+                            model.ramp_pu_per_s,
+                            model.delay_s,
+                        )
+                        for model in self.all_models
+                    ),
+                    DynamicEvidenceConfig(
+                        actuator_time_constant_s=(
+                            self.parameters.bess.actuator_time_constant_s
+                        ),
+                        pfr_gain_pu_power_per_pu_frequency=(
+                            self.parameters.bess.pfr_gain_pu_power_per_pu_frequency
+                        ),
+                        nominal_frequency_hz=self.parameters.nominal_frequency_hz,
+                        measurement_noise_std_pu=0.0015,
+                        ar1_correlation=arguments.poi_correlation,
+                        deterministic_residual_bound_pu=(
+                            arguments.dynamic_model_residual_bound
+                        ),
+                        maximum_windows=arguments.maximum_windows,
+                        information_validity_s=arguments.certificate_validity,
+                    ),
+                )
             self.power_certificate_active = False
             self.power_certificate_time_s = None
             created_controllers.append(self)
 
-        def propose(self, observation):
-            if arguments.method == "dual":
+        def _update_power_evidence(self, observation) -> None:
+            if self.dynamic_estimator is None:
                 newly_certified = self.aligned_probe.observe_delivery(
                     observation.time_s,
                     self.last_action[[1, 3]],
                     observation.bess_actual_power_pu,
                 )
-                if newly_certified and self.power_certificate_time_s is None:
-                    self.power_certificate_time_s = float(observation.time_s)
-                self.power_certificate_active = self.aligned_probe.power_certified(
-                    observation.time_s
+            else:
+                newly_certified = self.dynamic_estimator.observe(
+                    observation.time_s,
+                    self.last_action[[1, 3]],
+                    observation.bess_actual_power_pu,
+                    observation.frequency_deviation_hz,
                 )
+                self.aligned_probe.power_certified_until_s = (
+                    self.dynamic_estimator.power_certified_until_s
+                )
+                if (
+                    self.dynamic_estimator.window_results
+                    and not self.dynamic_estimator.high_capability_still_possible
+                ):
+                    self.aligned_probe.futility_stopped = True
+            if newly_certified and self.power_certificate_time_s is None:
+                self.power_certificate_time_s = float(observation.time_s)
+            self.power_certificate_active = (
+                self.aligned_probe.power_certified(observation.time_s)
+                if self.dynamic_estimator is None
+                else self.dynamic_estimator.power_certified(observation.time_s)
+            )
+
+        def observe_actual(self, observation) -> None:
+            super().observe_actual(observation)
+            if arguments.target_distribution and arguments.method == "dual":
+                self._update_power_evidence(observation)
+
+        def propose(self, observation):
+            if arguments.method == "dual":
+                if not arguments.target_distribution:
+                    self._update_power_evidence(observation)
+                else:
+                    self.power_certificate_active = (
+                        self.aligned_probe.power_certified(observation.time_s)
+                        if self.dynamic_estimator is None
+                        else self.dynamic_estimator.power_certified(observation.time_s)
+                    )
             self.models = (
                 tuple(
                     model for model in self.all_models
@@ -97,32 +189,20 @@ def worker(arguments: argparse.Namespace) -> None:
             self.last_action = np.asarray(action, dtype=float)
             return self.last_action
 
-    point = BoundaryPoint(
-        "R1_NONLINEAR_CONTROL_ALIGNED",
-        4.0,
-        "medium",
-        0.070,
-        0.023,
-        0.014,
-        0.0,
-        0.0010,
-        0.50,
-        0.0,
-        arguments.objective,
-    )
     suffix_parts = []
     if arguments.run_label:
         suffix_parts.append(arguments.run_label.upper())
     if arguments.seed != 8100:
         suffix_parts.append(f"S{arguments.seed}")
     run_suffix = "_" + "_".join(suffix_parts) if suffix_parts else ""
+    stage = "R2" if arguments.target_distribution else "R1"
     row = {
         "scenario_id": (
-            f"R1_{arguments.capability.upper()}_{arguments.method.upper()}_"
+            f"{stage}_{arguments.capability.upper()}_{arguments.method.upper()}_"
             f"{arguments.objective.upper()}{run_suffix}"
             if arguments.method == "contract"
             else (
-                f"R1_{arguments.capability.upper()}_{arguments.method.upper()}_"
+                f"{stage}_{arguments.capability.upper()}_{arguments.method.upper()}_"
                 f"A{arguments.amplitude:.4f}_W{arguments.maximum_windows}_"
                 f"{arguments.evidence_label.upper()}_{arguments.objective.upper()}"
                 f"{run_suffix}"
@@ -144,6 +224,40 @@ def worker(arguments: argparse.Namespace) -> None:
         "frequency_noise_std_hz": 0.001,
         "poi_noise_std_pu": 0.001,
     }
+    if arguments.target_distribution:
+        assert target_scenario is not None
+        scenario = target_scenario
+        method_scenario_id = str(row["scenario_id"])
+        row.update(scenario.evaluation_record())
+        row.update(
+            scenario_id=method_scenario_id,
+            duration_s=scenario.episode_duration_s,
+            information_validity_horizon_s=arguments.certificate_validity,
+            design_cell=f"registered_event_distribution|{arguments.objective}",
+            # The paired binary development cell isolates usable power.  Ramp
+            # and delay are identical across the two truth branches and remain
+            # uncertain inside the ordinary controller.
+            true_power_pu=0.045 if arguments.capability == "low" else 0.068,
+            true_ramp_pu_per_s=0.039,
+            true_delay_s=1.50,
+            frequency_noise_std_hz=0.001,
+            poi_noise_std_pu=scenario.measurement_noise_std_pu,
+            poi_observation_period_s=0.2,
+            poi_noise_correlation=arguments.poi_correlation,
+        )
+    point = BoundaryPoint(
+        f"{stage}_NONLINEAR_CONTROL_ALIGNED",
+        float(row.get("period_s", 4.0)),
+        "medium",
+        float(row["load_magnitude_pu"]),
+        0.023,
+        0.014,
+        1.30 if arguments.target_distribution else 0.0,
+        0.0015 if arguments.target_distribution else float(row["poi_noise_std_pu"]),
+        float(row["initial_soc"]),
+        0.0,
+        arguments.objective,
+    )
 
     original = nonlinear.RollingBoundaryController
     try:
@@ -158,6 +272,8 @@ def worker(arguments: argparse.Namespace) -> None:
     finally:
         nonlinear.RollingBoundaryController = original
     result["method"] = arguments.method
+    result["comparison_group"] = arguments.comparison_group
+    result["candidate_delay_spread_s"] = point.delay_spread_s
     result["objective_preference"] = arguments.objective
     result["probe_amplitude_pu"] = (
         0.0 if arguments.method == "contract" else arguments.amplitude
@@ -171,8 +287,17 @@ def worker(arguments: argparse.Namespace) -> None:
     result["evidence_model"] = (
         "none" if arguments.method != "dual" else arguments.evidence_label
     )
+    result["evidence_engine"] = (
+        "none" if arguments.method != "dual" else arguments.evidence_engine
+    )
     result["certificate_validity_s"] = (
         0.0 if arguments.method != "dual" else arguments.certificate_validity
+    )
+    result["probe_window_duration_s"] = (
+        0.0 if arguments.method == "contract" else effective_active_steps * period_s
+    )
+    result["probe_cooldown_duration_s"] = (
+        0.0 if arguments.method == "contract" else effective_cooldown_steps * period_s
     )
     if arguments.method != "contract" and created_controllers:
         controller = created_controllers[0]
@@ -188,8 +313,31 @@ def worker(arguments: argparse.Namespace) -> None:
         )
         result["signed_delivery_evidence_pu"] = controller.aligned_probe.signed_delivery_samples
         result["futility_stopped"] = controller.aligned_probe.futility_stopped
-    OUTPUT.mkdir(parents=True, exist_ok=True)
-    destination = OUTPUT / f"{row['scenario_id']}.json"
+        if controller.dynamic_estimator is not None:
+            result["dynamic_retained_candidate_ids"] = (
+                controller.dynamic_estimator.retained_candidate_ids
+            )
+            result["dynamic_model_inconsistent"] = (
+                controller.dynamic_estimator.model_inconsistent
+            )
+            result["dynamic_windows"] = [
+                {
+                    "start_time_s": window.start_time_s,
+                    "end_time_s": window.end_time_s,
+                    "area": window.area,
+                    "direction": window.direction,
+                    "raw_samples": window.raw_samples,
+                    "scored_samples": window.scored_samples,
+                    "window_alpha": window.window_alpha,
+                    "likelihood_radius": window.likelihood_radius,
+                    "retained_candidate_ids": window.retained_candidate_ids,
+                    "score_by_candidate": window.score_by_candidate,
+                }
+                for window in controller.dynamic_estimator.window_results
+            ]
+    output = output_directory(arguments)
+    output.mkdir(parents=True, exist_ok=True)
+    destination = output / f"{row['scenario_id']}.json"
     destination.write_text(
         json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -197,13 +345,15 @@ def worker(arguments: argparse.Namespace) -> None:
 
 
 def guarded(arguments: argparse.Namespace) -> None:
-    OUTPUT.mkdir(parents=True, exist_ok=True)
+    output = output_directory(arguments)
+    output.mkdir(parents=True, exist_ok=True)
+    stage = "R2" if arguments.target_distribution else "R1"
     stem = (
-        f"R1_{arguments.capability.upper()}_{arguments.method.upper()}_"
+        f"{stage}_{arguments.capability.upper()}_{arguments.method.upper()}_"
         f"{arguments.objective.upper()}"
         if arguments.method == "contract"
         else (
-            f"R1_{arguments.capability.upper()}_{arguments.method.upper()}_"
+            f"{stage}_{arguments.capability.upper()}_{arguments.method.upper()}_"
             f"A{arguments.amplitude:.4f}_W{arguments.maximum_windows}_"
             f"{arguments.evidence_label.upper()}_{arguments.objective.upper()}"
         )
@@ -226,10 +376,14 @@ def guarded(arguments: argparse.Namespace) -> None:
         str(arguments.amplitude),
         "--active-steps",
         str(arguments.active_steps),
+        "--active-duration-s",
+        str(arguments.active_duration_s),
         "--second-window-amplitude",
         str(arguments.second_window_amplitude),
         "--cooldown-steps",
         str(arguments.cooldown_steps),
+        "--cooldown-duration-s",
+        str(arguments.cooldown_duration_s),
         "--maximum-windows",
         str(arguments.maximum_windows),
         "--poi-residual-bound",
@@ -240,13 +394,23 @@ def guarded(arguments: argparse.Namespace) -> None:
         str(arguments.certificate_validity),
         "--evidence-label",
         arguments.evidence_label,
+        "--evidence-engine",
+        arguments.evidence_engine,
+        "--poi-correlation",
+        str(arguments.poi_correlation),
+        "--dynamic-model-residual-bound",
+        str(arguments.dynamic_model_residual_bound),
         "--objective",
         arguments.objective,
         "--run-label",
         arguments.run_label,
+        "--comparison-group",
+        arguments.comparison_group,
         "--seed",
         str(arguments.seed),
     ]
+    if arguments.target_distribution:
+        command.append("--target-distribution")
     environment = dict(os.environ)
     environment.update(
         DIRECTION5_RESOURCE_GUARDED="1",
@@ -267,7 +431,7 @@ def guarded(arguments: argparse.Namespace) -> None:
     )
     wait_for_memory_preflight(
         limits,
-        log_path=OUTPUT / f"{stem}_preflight.jsonl",
+        log_path=output / f"{stem}_preflight.jsonl",
         timeout_s=1800.0,
         poll_interval_s=5.0,
     )
@@ -276,8 +440,8 @@ def guarded(arguments: argparse.Namespace) -> None:
         cwd=ROOT,
         environment=environment,
         limits=limits,
-        monitor_log=OUTPUT / f"{stem}_memory.jsonl",
-        summary_path=OUTPUT / f"{stem}_resource.json",
+        monitor_log=output / f"{stem}_memory.jsonl",
+        summary_path=output / f"{stem}_resource.json",
     )
     if code:
         raise SystemExit(code)
@@ -291,20 +455,33 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--duration", type=float, default=300.0)
     result.add_argument("--amplitude", type=float, default=0.003)
     result.add_argument("--active-steps", type=int, default=2)
+    result.add_argument("--active-duration-s", type=float, default=0.0)
     result.add_argument("--second-window-amplitude", type=float, default=0.0)
     result.add_argument("--cooldown-steps", type=int, default=4)
-    result.add_argument("--maximum-windows", type=int, default=10)
+    result.add_argument("--cooldown-duration-s", type=float, default=0.0)
+    result.add_argument("--maximum-windows", type=int, default=2)
     result.add_argument("--poi-residual-bound", type=float, default=0.00025)
     result.add_argument("--certificate-samples", type=int, default=2)
     result.add_argument("--certificate-validity", type=float, default=120.0)
     result.add_argument("--evidence-label", default="stacked_ar1")
+    result.add_argument(
+        "--evidence-engine",
+        choices=("mean_ar1", "dynamic_vector"),
+        default="dynamic_vector",
+    )
+    result.add_argument("--poi-correlation", type=float, default=0.2)
+    result.add_argument(
+        "--dynamic-model-residual-bound", type=float, default=0.0005
+    )
     result.add_argument(
         "--objective",
         choices=("balanced", "regional_responsibility", "resource_economy"),
         default="resource_economy",
     )
     result.add_argument("--run-label", default="")
+    result.add_argument("--comparison-group", default="")
     result.add_argument("--seed", type=int, default=8100)
+    result.add_argument("--target-distribution", action="store_true")
     return result
 
 

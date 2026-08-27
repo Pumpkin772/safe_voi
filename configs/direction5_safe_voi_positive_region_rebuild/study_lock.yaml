@@ -7,7 +7,7 @@ predecessor:
   immutable: true
 
 time_scales:
-  episode_duration_s: 480.0
+  episode_duration_s: 720.0
   warmup_s: 60.0
   rolling_mpc_horizon_s: [24.0, 32.0]
   information_validity_horizon_s: [120.0, 180.0, 240.0, 300.0]
@@ -15,16 +15,16 @@ time_scales:
 
 development_factorial:
   information_validity_s: [24.0, 240.0]
-  observation: [scalar, vector]
+  observation: [settled_mean_ar1, dynamic_vector_likelihood_set]
   acquisition: [allocation_neutral, control_aligned]
   prior_axis: continuous_break_even
   controller_comparison: [contract, exploit_only, dual]
 
 physical_ranges:
   load_magnitude_pu: [0.025, 0.070]
-  performance_power_pu: [0.040, 0.080]
-  ramp_pu_per_s: [0.020, 0.050]
-  delay_s: [0.2, 1.8]
+  performance_power_pu: [0.045, 0.080]
+  ramp_pu_per_s: [0.025, 0.050]
+  delay_s: [0.2, 1.5]
   initial_soc: [0.35, 0.65]
   capability_transition_time_s: [90.0, 150.0]
   load_event_time_s: [210.0, 390.0]
@@ -35,11 +35,19 @@ probe_library:
   control_aligned_requires_current_binding_need: true
   physical_duration_s: [4.0, 8.0, 12.0]
   amplitude_pu: [0.0005, 0.0010, 0.0015, 0.0025, 0.0035, 0.0050, 0.0075, 0.0100, 0.0150]
-  observation: causal_vector_actual_poi_power_tube
+  observation: causal_command_to_actual_dynamic_likelihood_set
+  actual_poi_observation_period_s: 0.2
+  actual_poi_ar1_correlation: 0.2
+  actuator_time_constant_s: 0.15
+  settling_exclusion_s: 1.5
+  post_action_response_s: 2.0
+  dynamic_model_residual_bound_pu: 0.0005
+  dynamic_familywise_false_optimism: 0.01
+  dynamic_maximum_windows: 2
   shapes: [biphasic, ternary, short_prbs]
   sequential_total_alpha: 0.03
   empirical_false_optimism_target: 0.01
-  futility_after_samples: 1
+  futility_after_samples: 2
   futility_delivery_margin_pu: 0.0005
   adaptive_control_aligned_amplitudes_pu: [0.003, 0.004]
 
@@ -50,6 +58,11 @@ value:
   secondary: [capability_min, evidence_based_bayesian_point, cvar_0_95, worst_episode]
   objective_terms: [frequency, ace, tie, sg_movement, bess_movement, energy]
   all_grid_terms_nonzero: true
+  grid_service_scales:
+    frequency_hz: 0.20
+    ace_pu: 0.05
+    tie_pu: 0.025
+  resource_value_form: explicit_nonnegative_price_boundary
   low_capability_downside:
     frequency_peak_increment_hz_max: 0.005
     ace_relative_worsening_max: 0.01

@@ -25,20 +25,27 @@ used as the primary result without an external prior.
 - energy: measured SoC and device energy rating;
 - availability: folded into deliverable power/ramp hypotheses;
 - contract floor: unchanged from the public capability contract;
-- online envelope: causal set-membership set from actual POI power;
+- online envelope: causal command-to-actual dynamic likelihood set from issued
+  SFR, measured frequency, and actual POI power;
+- actual-POI evidence sampling: 0.2 s, independent of the 2/4 s MPC update;
 - transition: unannounced to the controller and persistent for at least the
   registered information-validity horizon.
 
 ## Episode structure
 
-Each 480 s core episode contains:
+Each 720 s core episode contains:
 
 1. 0–60 s nominal warm-up;
 2. an unannounced capability transition sampled independently at 90–150 s;
 3. a causal quiet eligibility window in which probing is allowed only when
    measured frequency, ACE, tie, command, and constraint margins are safe;
 4. one load/regulation event independently sampled from `U[210,390] s`;
-5. rolling control through the entire 480 s episode.
+5. rolling control through the entire 720 s episode.
+
+The duration is fixed before validation so that even the latest registered
+390 s event is followed by the full 300 s information-validity interval and a
+30 s recovery observation.  A shorter 480 s episode would censor late-event
+information value for administrative rather than physical reasons.
 
 Exact future event times, signs, areas, and magnitudes are evaluation-only.
 The controller may know only the frozen event distribution.
@@ -47,9 +54,9 @@ The controller may know only the frozen event distribution.
 
 - control period: 2 or 4 s;
 - load magnitude: 0.025–0.070 pu, with independent sign and area;
-- performance-envelope power: 0.040–0.080 pu;
-- ramp: 0.020–0.050 pu/s;
-- delay: 0.2–1.8 s;
+- performance-envelope power: 0.045–0.080 pu;
+- ramp: 0.025–0.050 pu/s;
+- delay: 0.2–1.5 s;
 - initial SoC: 0.35–0.65;
 - probe amplitude: 0.0005–0.015 pu;
 - physical probe duration: 4, 8, or 12 s.
@@ -60,8 +67,20 @@ contract-safe base action before actual surplus delivery is observed. It is
 triggered by current measured need and binding command margin, not by a future
 event label.
 
+The estimator receives a causal, noisy 5 Hz POI measurement stream during an
+eligible action. Faster measurement does not create extra MPC solves and does
+not expose true capability. The primary method scores complete candidate
+responses after AR(1) whitening; it does not count the 5 Hz observations as
+independent samples. Each completed physical response window is one decision.
+The settled-mean AR(1) effective-sample calculation is reported only as an
+ablation.
+
 The event range is not enlarged beyond the predecessor nonlinear validation.
 The change is the persistence and causal time available to use information.
+The lower power/ramp values and upper delay are the public contract limits;
+ordinary study episodes do not silently place true capability below that
+contract.  A below-floor realization is a separate contract-violation study,
+not part of the primary operating distribution.
 
 ## Seed firewall
 

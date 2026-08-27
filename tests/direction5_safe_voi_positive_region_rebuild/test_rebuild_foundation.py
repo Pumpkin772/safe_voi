@@ -5,8 +5,12 @@ import numpy as np
 from direction5freq.voi_positive_region import (
     NestedValueInputs,
     ControlAlignedSequentialProbe,
+    DynamicCapabilityCandidate,
+    DynamicCapabilityEstimator,
+    DynamicEvidenceConfig,
     BinaryPriorValueBoundary,
     OpportunityValuePoint,
+    OutcomeValueComponents,
     StudySplit,
     VectorObservationTube,
     causal_posterior,
@@ -48,6 +52,24 @@ def test_capability_and_load_times_use_independent_reproducible_streams() -> Non
     capability_times = np.asarray([item.capability_transition_time_s for item in first])
     load_times = np.asarray([item.load_event_time_s for item in first])
     assert not np.allclose(capability_times - capability_times.mean(), load_times - load_times.mean())
+    assert all(item.true_power_pu >= 0.045 for item in first)
+    assert all(item.true_ramp_pu_per_s >= 0.025 for item in first)
+    assert all(item.true_delay_s <= 1.5 for item in first)
+    assert all(item.episode_duration_s == 720.0 for item in first)
+
+
+def test_resource_price_boundary_keeps_physical_tradeoff_explicit() -> None:
+    low = OutcomeValueComponents(-0.1, 0.02, -0.2)
+    high = OutcomeValueComponents(0.5, 0.04, -0.4)
+    mixed = low.mix(high, 0.5)
+    assert np.isclose(mixed.grid_service_s, 0.2)
+    assert np.isclose(mixed.priced_value(
+        sg_mileage_price_s_per_pu=1.0,
+        bess_throughput_price=0.1,
+    ), 0.2)
+    assert np.isclose(mixed.break_even_bess_throughput_price(
+        sg_mileage_price_s_per_pu=1.0,
+    ), 0.23 / 0.3)
 
 
 def test_probe_library_is_physical_time_normalized() -> None:
@@ -204,6 +226,53 @@ def test_low_delivery_stops_second_information_window_causally() -> None:
         )
     assert policy.futility_stopped
     assert policy.windows_started == 1
+
+
+def _feed_dynamic_window(
+    estimator: DynamicCapabilityEstimator,
+    truth: DynamicCapabilityCandidate,
+) -> None:
+    from direction5freq.voi_positive_region import simulate_candidate_response
+
+    config = estimator.config
+    times = np.arange(0.0, 15.0 + 1e-9, config.sample_period_s)
+    issued = np.full_like(times, 0.045)
+    issued[(times >= 3.0) & (times < 11.0)] = 0.050
+    frequency = np.zeros_like(times)
+    actual = simulate_candidate_response(
+        times, issued, frequency, 0.0, truth, config
+    )
+    for time_s, command, power in zip(times, issued, actual, strict=True):
+        estimator.observe(
+            float(time_s),
+            np.asarray((command, 0.0)),
+            np.asarray((power, 0.0)),
+            np.zeros(2),
+        )
+
+
+def test_dynamic_vector_evidence_certifies_high_power_without_truth_input() -> None:
+    low = DynamicCapabilityCandidate("low", 0.045, 0.039, 1.5)
+    high = DynamicCapabilityCandidate("high", 0.068, 0.039, 1.5)
+    estimator = DynamicCapabilityEstimator(
+        (low, high),
+        DynamicEvidenceConfig(maximum_windows=2, information_validity_s=240.0),
+    )
+    _feed_dynamic_window(estimator, high)
+    assert estimator.power_certificate_time_s is not None
+    assert estimator.retained_candidate_ids == ("high",)
+    assert estimator.window_results[0].raw_samples > 40
+    assert estimator.window_results[0].scored_samples > 30
+
+
+def test_dynamic_vector_evidence_retains_contract_power_for_low_truth() -> None:
+    low = DynamicCapabilityCandidate("low", 0.045, 0.039, 1.5)
+    high = DynamicCapabilityCandidate("high", 0.068, 0.039, 1.5)
+    estimator = DynamicCapabilityEstimator((low, high))
+    _feed_dynamic_window(estimator, low)
+    assert estimator.power_certificate_time_s is None
+    assert estimator.retained_candidate_ids == ("low",)
+    assert not estimator.high_capability_still_possible
 
 
 def test_second_window_can_increase_amplitude_after_causal_evidence() -> None:

@@ -179,7 +179,46 @@ registered performance downside must satisfy
 This prevents a high-capability prior from hiding a materially adverse low
 branch.
 
-## 8. Selective amplitude and mechanism
+## 8. Grid-service and resource-price boundary
+
+The physical grid-service cost is frozen before validation as
+
+\[
+J_{\rm grid}
+=\int\left[
+\sum_{i=1}^{2}\left(\frac{\Delta f_i}{0.20\ {\rm Hz}}\right)^2
++\sum_{i=1}^{2}\left(\frac{{\rm ACE}_i}{0.05\ {\rm pu}}\right)^2
++\left(\frac{P_{\rm tie}}{0.025\ {\rm pu}}\right)^2
+\right]dt.
+\]
+
+Frequency, ACE, and tie-line quality therefore all have nonzero, physically
+stated scales.  SG mechanical mileage and BESS energy throughput are not hidden
+inside optimizer smoothing penalties.  Paired value is retained in three
+coordinates,
+
+\[
+(\Delta J_{\rm grid},\Delta M_{\rm SG},\Delta E_{\rm BESS}),
+\]
+
+and priced value is
+
+\[
+V(c_g,c_b)
+=\Delta J_{\rm grid}
++c_g\Delta M_{\rm SG}
++c_b\Delta E_{\rm BESS},
+\qquad c_g,c_b\ge0.
+\]
+
+The paper reports the complete nonnegative resource-price half-space rather
+than choosing an unreferenced SG/BESS price after seeing results.  A positive
+claim requires an interior prior--price rectangle whose paired confidence
+lower bound remains positive after the rectangle is frozen and rerun on
+independent seeds.  Pareto-dominated actions are classified as no-probe without
+reference to any price.
+
+## 9. Selective amplitude and mechanism
 
 For each causal state, prior interval, and validity horizon, the selected
 information action is
@@ -204,7 +243,13 @@ scalar versus vector observation, and allocation-neutral versus
 control-aligned acquisition. For every cell the complete \(V(p)\) and \(p^*\)
 are reported.
 
-## 9. Current evidence status
+Futility is not declared from one noisy delivery sample. Development target-
+distribution runs showed that a single sample can fall below the contract
+margin even in a true high-capability branch because of delay and measurement
+noise. At least two causal samples are required before stopping a second
+information window; this rule is frozen before validation.
+
+## 10. Current evidence status
 
 Across six paired nonlinear development seeds, the adaptive 0.003--0.004 pu
 control-aligned action established positive pure information ACE value in all

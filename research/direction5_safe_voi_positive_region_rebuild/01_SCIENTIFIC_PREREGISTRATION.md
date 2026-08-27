@@ -18,8 +18,9 @@ Three modelling choices are now explicit scientific hypotheses:
 - H1: separating a 24 s rolling control horizon from a 180–300 s information
   validity horizon increases registered perfect-information materiality without
   giving the controller future-event truth.
-- H2: causal vector observation tubes over actual POI power distinguish
-  power/ramp/delay hypotheses with lower probe energy than a scalar statistic.
+- H2: a causal command-to-actual dynamic likelihood set over 5 Hz POI power
+  distinguishes power/ramp/delay hypotheses with lower probe energy than a
+  settled-mean statistic.
 - H3: a safe allocation-neutral probe can have positive expected closed-loop
   value when capability changes persist and later regulation events are sampled
   independently from a frozen distribution.
@@ -69,7 +70,8 @@ prior to make the result positive.
   need, the SG contract-safe command is unchanged, and all capability branches
   remain physically safe;
 - capability persistence and independent load-event hazard within the locked
-  480 s episode;
+  720 s episode; this duration contains the latest event, the full maximum
+  information-validity interval, and the terminal recovery observation;
 - three fixed, nonzero frequency/ACE/tie objective preferences.
 
 No validation result may be used to choose among these alternatives.
@@ -78,6 +80,23 @@ Sequential evidence may accumulate over non-overlapping eligible windows while
 the capability state remains unchanged. Certificate expiry is enforced at the
 registered information-validity time. Correlated-window sensitivity must be
 reported; independent-window calculations are development screens only.
+
+The primary dynamic estimator is fixed before nonlinear development as follows:
+
+- public actuator time constant 0.15 s and local PFR gain 2.5 pu/pu;
+- 0.2 s actual-POI sampling with registered AR(1) correlation 0.2;
+- the first `max(3 tau, d_max) = 1.5 s` of every action is excluded from
+  likelihood scoring for every candidate, not selected after seeing data;
+- the action trace is followed for a fixed 2.0 s recovery response;
+- candidate responses contain SFR delay, local PFR, total-power clipping, ramp
+  clipping, and actuator lag;
+- a ±0.0005 pu deterministic residual is removed before AR(1) whitening;
+- no sample-level sequential looks are used.  Each completed response window
+  produces one likelihood set, with total false-optimism probability 0.01
+  divided over at most two windows.
+
+The previous settled signed mean with an AR(1) effective-sample correction is
+retained only as a low-complexity ablation.
 
 ## Required comparisons
 

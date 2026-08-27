@@ -139,13 +139,13 @@ def generate_scenario(split: StudySplit, seed: int) -> ScenarioSpec:
         )
 
     if known:
-        power = float(capability.choice((0.040, 0.060, 0.080)))
-        ramp = float(capability.choice((0.020, 0.035, 0.050)))
-        delay = float(capability.choice((0.2, 1.0, 1.8)))
+        power = float(capability.choice((0.045, 0.060, 0.080)))
+        ramp = float(capability.choice((0.025, 0.035, 0.050)))
+        delay = float(capability.choice((0.2, 1.0, 1.5)))
     else:
-        power = float(capability.uniform(0.042, 0.078))
-        ramp = float(capability.uniform(0.022, 0.048))
-        delay = float(capability.uniform(0.3, 1.7))
+        power = float(capability.uniform(0.047, 0.078))
+        ramp = float(capability.uniform(0.027, 0.048))
+        delay = float(capability.uniform(0.3, 1.4))
 
     return ScenarioSpec(
         scenario_id=f"D5PVR_{split.value.upper()}_{seed}",
@@ -156,7 +156,7 @@ def generate_scenario(split: StudySplit, seed: int) -> ScenarioSpec:
         period_s=period_s,
         rolling_horizon_s=rolling_horizon_s,
         information_validity_horizon_s=validity_s,
-        episode_duration_s=3600.0 if split is StudySplit.NORMAL1H else 480.0,
+        episode_duration_s=3600.0 if split is StudySplit.NORMAL1H else 720.0,
         warmup_s=60.0,
         initial_soc=float(state.uniform(0.35, 0.65)),
         capability_transition_time_s=float(timing_capability.uniform(90.0, 150.0)),
