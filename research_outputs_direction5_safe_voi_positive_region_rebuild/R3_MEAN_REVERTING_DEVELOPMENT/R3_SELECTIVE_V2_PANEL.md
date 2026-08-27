@@ -40,7 +40,7 @@ with magnitude `-0.0486420863 pu` in both areas.  Fifteen causally eligible
 states were evaluated after the event.
 
 ```text
-eligible first-stage evaluations       15
+eligible first-stage evaluations       16
 maximum predicted high-posterior value 0.064491678
 first-stage positive states             0
 second-stage evaluations                0
@@ -202,12 +202,12 @@ trajectory also remained in the action-insensitive abstention region.
 Across the eight fixed high-capability seeds (8109, 8110, 8111, 8112, 8115,
 8117, 8118, and 8119), all trajectories were physically successful and all
 1,516 attempted online optimization calls completed without solver failure or
-fallback.  There were 67 causally eligible first-stage evaluations, but none
+fallback.  There were 68 causally eligible first-stage evaluations, but none
 crossed the frozen `0.08` computational screen; hence no acquisition-matched
 second-stage value was evaluated and no probe was issued.  The largest screen
 value was `0.064491678` in seed 8110.
 
-The observed trigger rate is therefore `0/8` trajectories and `0/67` eligible
+The observed trigger rate is therefore `0/8` trajectories and `0/68` eligible
 states for this development panel.  This establishes that acquisition is
 sparse under the registered event distribution.  It does not establish that
 the second-stage positive-value region is empty, because the panel contains no
