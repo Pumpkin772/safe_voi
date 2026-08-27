@@ -8,23 +8,11 @@ import os
 from pathlib import Path
 import sys
 
-import numpy as np
-
 from direction5freq.accr.resource_guard import (
     GIB,
     ResourceLimits,
     run_guarded,
     wait_for_memory_preflight,
-)
-from direction5freq.voi_positive_region import (
-    ControlAlignedConfig,
-    ControlAlignedSequentialProbe,
-    DynamicCapabilityCandidate,
-    DynamicCapabilityEstimator,
-    DynamicEvidenceConfig,
-    StudySplit,
-    generate_scenario,
-    registered_continuation_load_bank,
 )
 
 
@@ -47,6 +35,18 @@ def worker(arguments: argparse.Namespace) -> None:
     if os.environ.get("DIRECTION5_RESOURCE_GUARDED") != "1":
         raise SystemExit("refusing unguarded nonlinear pilot")
 
+    import numpy as np
+
+    from direction5freq.voi_positive_region import (
+        ControlAlignedConfig,
+        ControlAlignedSequentialProbe,
+        DynamicCapabilityCandidate,
+        DynamicCapabilityEstimator,
+        DynamicEvidenceConfig,
+        StudySplit,
+        generate_scenario,
+        registered_continuation_load_bank,
+    )
     import nonlinear_boundary_validation as nonlinear
     from rolling_boundary_controller import RollingBoundaryController
     from voi_boundary_engine import (
