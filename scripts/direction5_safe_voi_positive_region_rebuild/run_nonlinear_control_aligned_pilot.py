@@ -200,7 +200,7 @@ def worker(arguments: argparse.Namespace) -> None:
         "scenario_id": (
             f"{stage}_{arguments.capability.upper()}_{arguments.method.upper()}_"
             f"{arguments.objective.upper()}{run_suffix}"
-            if arguments.method == "contract"
+            if arguments.method in {"contract", "oracle"}
             else (
                 f"{stage}_{arguments.capability.upper()}_{arguments.method.upper()}_"
                 f"A{arguments.amplitude:.4f}_W{arguments.maximum_windows}_"
@@ -261,11 +261,15 @@ def worker(arguments: argparse.Namespace) -> None:
 
     original = nonlinear.RollingBoundaryController
     try:
-        if arguments.method != "contract":
+        if arguments.method not in {"contract", "oracle"}:
             nonlinear.RollingBoundaryController = ControlAlignedController
+        simulation_method = (
+            "perfect_capability_oracle"
+            if arguments.method == "oracle" else "contract_mpc"
+        )
         result = nonlinear.simulate_plant_a(
             row,
-            "contract_mpc",
+            simulation_method,
             point,
             dt_s=0.02,
         )
@@ -276,13 +280,15 @@ def worker(arguments: argparse.Namespace) -> None:
     result["candidate_delay_spread_s"] = point.delay_spread_s
     result["objective_preference"] = arguments.objective
     result["probe_amplitude_pu"] = (
-        0.0 if arguments.method == "contract" else arguments.amplitude
+        0.0 if arguments.method in {"contract", "oracle"} else arguments.amplitude
     )
     result["second_window_amplitude_pu"] = (
-        0.0 if arguments.method == "contract" else arguments.second_window_amplitude
+        0.0
+        if arguments.method in {"contract", "oracle"}
+        else arguments.second_window_amplitude
     )
     result["maximum_probe_windows"] = (
-        0 if arguments.method == "contract" else arguments.maximum_windows
+        0 if arguments.method in {"contract", "oracle"} else arguments.maximum_windows
     )
     result["evidence_model"] = (
         "none" if arguments.method != "dual" else arguments.evidence_label
@@ -294,12 +300,16 @@ def worker(arguments: argparse.Namespace) -> None:
         0.0 if arguments.method != "dual" else arguments.certificate_validity
     )
     result["probe_window_duration_s"] = (
-        0.0 if arguments.method == "contract" else effective_active_steps * period_s
+        0.0
+        if arguments.method in {"contract", "oracle"}
+        else effective_active_steps * period_s
     )
     result["probe_cooldown_duration_s"] = (
-        0.0 if arguments.method == "contract" else effective_cooldown_steps * period_s
+        0.0
+        if arguments.method in {"contract", "oracle"}
+        else effective_cooldown_steps * period_s
     )
-    if arguments.method != "contract" and created_controllers:
+    if arguments.method not in {"contract", "oracle"} and created_controllers:
         controller = created_controllers[0]
         result["power_certified"] = controller.power_certificate_time_s is not None
         result["power_certificate_active_at_end"] = controller.power_certificate_active
@@ -351,7 +361,7 @@ def guarded(arguments: argparse.Namespace) -> None:
     stem = (
         f"{stage}_{arguments.capability.upper()}_{arguments.method.upper()}_"
         f"{arguments.objective.upper()}"
-        if arguments.method == "contract"
+        if arguments.method in {"contract", "oracle"}
         else (
             f"{stage}_{arguments.capability.upper()}_{arguments.method.upper()}_"
             f"A{arguments.amplitude:.4f}_W{arguments.maximum_windows}_"
@@ -451,7 +461,10 @@ def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser()
     result.add_argument("--worker", action="store_true")
     result.add_argument("--capability", choices=("low", "high"), required=True)
-    result.add_argument("--method", choices=("contract", "exploit_only", "dual"), required=True)
+    result.add_argument(
+        "--method", choices=("contract", "exploit_only", "dual", "oracle"),
+        required=True,
+    )
     result.add_argument("--duration", type=float, default=300.0)
     result.add_argument("--amplitude", type=float, default=0.003)
     result.add_argument("--active-steps", type=int, default=2)
