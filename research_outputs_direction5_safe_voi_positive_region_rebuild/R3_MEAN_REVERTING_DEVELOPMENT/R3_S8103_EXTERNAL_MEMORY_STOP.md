@@ -12,3 +12,13 @@ terminated or modified.  When that external workload later fell to three
 processes, free virtual memory rose from 6.19 GiB to 17.44 GiB.  The same seed
 and scientific configuration may then be rerun under the unchanged memory
 limits.  No scientific episode result was written by the stopped attempt.
+
+## Seed 8104 contract stop
+
+The first seed 8104 contract attempt was likewise stopped before producing an
+episode result.  It ran for 166.984 s; total system commit briefly reached
+0.96562 while the Direction5 tree used only 445,894,656 bytes.  The coincident
+external workload contained a 200-episode RSR-MASAC process and an independent
+information-aligned MPC tuning process with four `multiprocessing.spawn`
+workers.  The Direction5 0.92 limit was not raised.  Seed 8104 remains pending
+with its scientific configuration unchanged.
