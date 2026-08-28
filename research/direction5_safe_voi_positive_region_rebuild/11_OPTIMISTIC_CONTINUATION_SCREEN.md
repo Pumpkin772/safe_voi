@@ -17,12 +17,19 @@ continuation paths with integration seeds:
 ```
 
 These are independent of the eight-path exact-value bank and every episode
-seed.  The first 12 s use the current causal MHE load, matching the acquisition
-and recovery prefix.  The remaining path follows the registered bounded
+seed.  The first 10 s use the current causal MHE load, matching the implemented
+8 s acquisition action and 2 s estimator response prefix.  The remaining path follows the registered bounded
 OU-plus-contingency law.  A contract-set MPC is rolled every 4 s along a fixed
 public contract-floor model (minimum power, minimum ramp, maximum delay).  At
-16 s anchors beginning at `t + 12 s`, the full-set and high-power-set MPC values
+16 s anchors beginning after the 10 s prefix, the full-set and high-power-set MPC values
 are evaluated at the same public predicted state.
+
+The initial version of this paragraph incorrectly said `12 s`.  The executable
+definition has always derived the prefix from the physical timing above and
+used five 2 s steps, i.e. `10 s`, in both the screen-only seed-8120 trajectory
+and its exact audit.  This development-stage documentation correction was made
+after inspecting the first exact result; it changes no code, trajectory, seed,
+threshold, continuation path, or reported value.
 
 The screen value is
 

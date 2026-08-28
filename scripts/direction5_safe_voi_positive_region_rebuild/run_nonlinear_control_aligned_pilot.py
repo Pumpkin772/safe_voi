@@ -495,7 +495,10 @@ def worker(arguments: argparse.Namespace) -> None:
                 )
                 optimistic_screen_record = None
                 screen_value = value_record["predicted_high_posterior_value"]
-                if arguments.optimistic_continuation_screen:
+                if (
+                    arguments.optimistic_continuation_screen
+                    and not diagnostic_only
+                ):
                     optimistic_screen_record = (
                         self._causal_optimistic_continuation_screen(
                             observation, previous_applied_action
@@ -535,11 +538,21 @@ def worker(arguments: argparse.Namespace) -> None:
                     arguments.minimum_predicted_high_value
                 )
                 value_record["decision_screen_kind"] = (
-                    "optimistic_continuation_max"
-                    if arguments.optimistic_continuation_screen
-                    else "local_high_posterior_gap"
+                    "preselected_from_screen_only_trajectory"
+                    if diagnostic_only
+                    and arguments.optimistic_continuation_screen
+                    else (
+                        "optimistic_continuation_max"
+                        if arguments.optimistic_continuation_screen
+                        else "local_high_posterior_gap"
+                    )
                 )
-                value_record["decision_screen_value"] = screen_value
+                value_record["decision_screen_value"] = (
+                    None
+                    if diagnostic_only
+                    and arguments.optimistic_continuation_screen
+                    else screen_value
+                )
                 value_record["optimistic_continuation_screen"] = (
                     optimistic_screen_record
                 )

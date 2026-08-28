@@ -57,5 +57,42 @@ the machine-wide system-commit guard.  Peak total-system commit was 96.73%,
 while this research process tree used at most 0.518 GiB and one descendant.
 Four workers from an unrelated `peee-py311` fit started immediately before the
 commit spike.  No exact scientific result was produced.  The same `422 s`
-calculation will be repeated after total-system commit returns below the
-unchanged preflight limit.
+calculation was repeated after total-system commit returned below the unchanged
+preflight limit.
+
+## Exact result at the maximum-S state
+
+The unchanged repeat completed at `422 s`.  The implemented common acquisition
+prefix is 10 s: 8 s of control-aligned surplus followed by the estimator's 2 s
+post-action response.  The original V4 prose incorrectly stated 12 s; both the
+screen and exact calculation used the same physical 10 s prefix, and the prose
+was corrected before running the remaining audit states.
+
+```text
+screen S                                0.0180883641
+current local gap                      -0.0000000496
+low-power branch information values     0, 0, 0, 0
+high-power branch information values   +0.0364397906
+                                       +0.0012033051
+                                       +0.0378244662
+                                       +0.0025709752
+worst high-power value                 +0.0012033051
+continuation paths / steps               8 / 115
+continuation duration                    230 s
+internal exact solves / failures         7392 / 0
+weak-Pareto information decision         positive
+hard / command / contract violations     0 / 0 / 0
+fallbacks                                0
+```
+
+Thus the future-opportunity screen successfully recalled a state that the local
+`1e-6` screen would reject.  The result is also highly branch dependent: the
+two 1.5 s-delay high-power candidates have much smaller information value than
+the 0.2 s-delay candidates, but the most conservative high branch remains
+strictly positive.  This is one screen-positive development state; it measures
+recall and over-optimism at that state, not the false-negative rate of V4.
+
+Subsequent exact-only audit runs use the states already selected in their
+screen-only files and do not recompute the 400--536 screen solves.  The exact
+acquisition prefix, eight continuation paths, four distinct high-capability
+truths, and separate exploit/posterior closed loops are unchanged.
