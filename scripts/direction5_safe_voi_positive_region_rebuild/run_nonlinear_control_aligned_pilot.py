@@ -454,6 +454,17 @@ def worker(arguments: argparse.Namespace) -> None:
 
         def propose(self, observation):
             previous_applied_action = self.last_action.copy()
+            diagnostic_only = bool(
+                arguments.screen_only
+                and arguments.offline_second_stage_time_s is not None
+            )
+            at_diagnostic_time = bool(
+                diagnostic_only
+                and abs(
+                    float(observation.time_s)
+                    - arguments.offline_second_stage_time_s
+                ) <= 0.5 * period_s
+            )
             if arguments.method == "dual":
                 if not arguments.target_distribution:
                     self._update_power_evidence(observation)
@@ -477,6 +488,7 @@ def worker(arguments: argparse.Namespace) -> None:
                 arguments.minimum_predicted_high_value is not None
                 and self._probe_start_eligible(contract, observation)
                 and observation.time_s >= self._next_gate_evaluation_s
+                and (not diagnostic_only or at_diagnostic_time)
             ):
                 value_record = self._causal_high_posterior_value(
                     observation, previous_applied_action
@@ -496,13 +508,7 @@ def worker(arguments: argparse.Namespace) -> None:
                     screen_value
                     >= arguments.minimum_predicted_high_value
                 )
-                diagnostic_requested = bool(
-                    arguments.offline_second_stage_time_s is not None
-                    and abs(
-                        float(observation.time_s)
-                        - arguments.offline_second_stage_time_s
-                    ) <= 0.5 * period_s
-                )
+                diagnostic_requested = at_diagnostic_time
                 acquisition_record = None
                 if (
                     (
