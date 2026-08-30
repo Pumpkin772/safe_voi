@@ -136,3 +136,65 @@ screen has useful recall but is not by itself a safe trigger: exact information
 value changes sign across eligible states on the same physical trajectory.
 No probe was issued in the valid exact-only run, all `5834` attempted solves
 completed, and the ordinary controller did not read hidden truth.
+
+## High-capability seed 8121: screen-only trajectory
+
+The second preregistered development trajectory completed without probing and
+produced six causally eligible states.  The current local value remained below
+the `1e-6` entry level at every state, whereas every future-opportunity screen
+was positive:
+
+| time (s) | current local gap | optimistic future value `S` | screen solves | failures |
+| ---: | ---: | ---: | ---: | ---: |
+| 492 | +0.0000001305 | 0.0076048086 | 508 | 0 |
+| 508 | +0.0000000006 | 0.0056097478 | 472 | 0 |
+| 564 | +0.0000002704 | 0.0098489236 | 348 | 0 |
+| 580 | +0.0000000289 | 0.0079397219 | 312 | 0 |
+| 600 | -0.0000001290 | 0.0092189879 | 264 | 0 |
+| 616 | -0.0000000220 | 0.0080191885 | 228 | 0 |
+
+```text
+causally eligible states                6
+states above S > 1e-6                   6
+exact second-stage evaluations          0
+acquisition windows                     0
+frequency peak                          0.107679720 Hz
+ACE IAE                                  5.118000322 pu s
+tie IAE                                  1.581808440 pu s
+attempted optimization calls            2499
+solver failures / fallbacks             0 / 0
+hard / command / contract violations    0 / 0 / 0
+```
+
+The maximum-`S` rule selected `564 s`.  The independently fixed RNG seed
+`58100 + 8121` selected index 3 of the time-sorted states, hence `580 s`.
+
+## Seed 8121 exact result at the maximum-S state
+
+The exact acquisition-and-recourse counterfactual at `564 s` was positive in
+all four high-power capability branches:
+
+```text
+screen S from screen-only trajectory     0.0098489236
+current local gap                       +0.0000002704
+low-power branch information values      0, 0, 0, 0
+high-power branch information values    +0.1055752595
+                                        +0.0148639527
+                                        +0.1070791649
+                                        +0.0142762861
+worst high-power value                  +0.0142762861
+continuation paths / steps                8 / 73
+continuation duration                     146 s
+internal exact solves / failures          4704 / 0
+weak-Pareto information decision          positive
+hard / command / contract violations      0 / 0 / 0
+fallbacks                                 0
+```
+
+This is a second development trajectory with a strictly positive exact state.
+The conservative branch value is more than an order of magnitude larger than
+the positive seed-8120 maximum-S state, despite a local one-step value below the
+numerical entry level.  The two 1.5 s-delay branches again provide the limiting
+values, but remain positive here.  The result reproduces the existence of a
+future-only positive information-value state in development; it does not yet
+establish its frequency or independent-validation performance.
