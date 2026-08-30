@@ -198,3 +198,33 @@ numerical entry level.  The two 1.5 s-delay branches again provide the limiting
 values, but remain positive here.  The result reproduces the existence of a
 future-only positive information-value state in development; it does not yet
 establish its frequency or independent-validation performance.
+
+## Seed 8121 exact result at the fixed-uniform state
+
+The independently selected `580 s` state was not positive after the complete
+counterfactual:
+
+```text
+screen S from screen-only trajectory     0.0079397219
+current local gap                       +0.0000000289
+low-power branch information values      0, 0, 0, 0
+high-power branch information values    +0.0436937957
+                                        -0.0105516305
+                                        +0.0553769327
+                                        -0.0123004172
+worst high-power value                  -0.0123004172
+continuation paths / steps                8 / 65
+continuation duration                     130 s
+internal exact solves / failures          4192 / 0
+weak-Pareto information decision          nonpositive
+hard / command / contract violations      0 / 0 / 0
+fallbacks                                 0
+```
+
+As in seed 8120, the fixed-uniform screen-positive state is a false positive
+because both 1.5 s-delay high-power branches are adverse.  After two
+development seeds, the maximum-screen state is exact-positive in `2/2`
+trajectories, while the fixed-uniform screen-positive state is exact-positive
+in `0/2`.  This small sample supports the ranking value of `S`, but rejects a
+plain `S > 0` acquisition trigger.  The remaining preregistered seeds are
+needed before fixing a selective rule.
