@@ -377,3 +377,32 @@ trajectories.  The fourth conservative value is substantially larger than the
 first three, while its local one-step value is again numerically zero.  This is
 the strongest current evidence that the relevant information value is temporal
 and that ranking by the registered future-opportunity screen can locate it.
+
+## Seed 8123 exact result at the fixed-uniform state
+
+The independently selected `392 s` state was also positive in every
+high-power branch:
+
+```text
+screen S from screen-only trajectory     0.1454385661
+current local gap                       +0.0000000049
+low-power branch information values      0, 0, 0, 0
+high-power branch information values    +0.2003948156
+                                        +0.1647460478
+                                        +0.2003948156
+                                        +0.1647460478
+worst high-power value                  +0.1647460478
+continuation paths / steps                8 / 57
+continuation duration                     228 s
+internal exact solves / failures          3664 / 0
+weak-Pareto information decision          positive
+hard / command / contract violations      0 / 0 / 0
+fallbacks                                 0
+```
+
+After four development seeds, maximum-screen states are exact-positive in
+`4/4`, and fixed-uniform eligible states are exact-positive in `2/4`.  The
+seed-8123 random state has a conservative value more than ten times the
+smallest positive maximum-screen result seen so far.  Positive continuation
+value is therefore not merely a selection artifact, although the two negative
+random states show that it remains state dependent.
