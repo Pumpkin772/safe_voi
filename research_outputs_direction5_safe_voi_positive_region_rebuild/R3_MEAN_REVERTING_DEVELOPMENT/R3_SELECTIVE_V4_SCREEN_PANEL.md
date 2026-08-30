@@ -318,3 +318,62 @@ maximum or a short end-of-episode interval: it includes an independently chosen
 early state with 230 s of remaining recourse value.  The mixed fixed-uniform
 outcomes also preserve the boundary evidence rather than turning V4 into an
 unconditional probe rule.
+
+## High-capability seed 8123: screen-only trajectory
+
+The fourth preregistered trajectory produced five eligible states, all with
+large positive future-opportunity screens:
+
+| time (s) | current local gap | optimistic future value `S` | screen solves | failures |
+| ---: | ---: | ---: | ---: | ---: |
+| 320 | -0.0000000220 | 0.1418437507 | 296 | 0 |
+| 336 | +0.0027540068 | 0.1280725957 | 296 | 0 |
+| 352 | -0.0000000117 | 0.1775979645 | 296 | 0 |
+| 368 | -0.0000002333 | 0.1717924017 | 296 | 0 |
+| 392 | +0.0000000049 | 0.1454385661 | 296 | 0 |
+
+```text
+causally eligible states                5
+states above S > 1e-6                   5
+exact second-stage evaluations          0
+acquisition windows                     0
+frequency peak                          0.150017655 Hz
+ACE IAE                                  6.207829109 pu s
+tie IAE                                  1.558705057 pu s
+attempted optimization calls            1666
+solver failures / fallbacks             0 / 0
+hard / command / contract violations    0 / 0 / 0
+```
+
+The maximum-`S` state is `352 s`.  Fixed RNG seed `58100 + 8123` selected
+index 4 of the time-sorted states, namely `392 s`.  The `336 s` state is the
+first in this V4 panel with a clearly positive local one-step gap, but neither
+preselected exact rule was changed after observing it.
+
+## Seed 8123 exact result at the maximum-S state
+
+The exact counterfactual at `352 s` was strongly positive in every high-power
+branch:
+
+```text
+screen S from screen-only trajectory     0.1775979645
+current local gap                       -0.0000000117
+low-power branch information values      0, 0, 0, 0
+high-power branch information values    +0.3661747482
+                                        +0.3049376902
+                                        +0.3661747482
+                                        +0.3049376902
+worst high-power value                  +0.3049376902
+continuation paths / steps                8 / 57
+continuation duration                     228 s
+internal exact solves / failures          3664 / 0
+weak-Pareto information decision          positive
+hard / command / contract violations      0 / 0 / 0
+fallbacks                                 0
+```
+
+Maximum-screen selection is now exact-positive on `4/4` completed development
+trajectories.  The fourth conservative value is substantially larger than the
+first three, while its local one-step value is again numerically zero.  This is
+the strongest current evidence that the relevant information value is temporal
+and that ranking by the registered future-opportunity screen can locate it.
