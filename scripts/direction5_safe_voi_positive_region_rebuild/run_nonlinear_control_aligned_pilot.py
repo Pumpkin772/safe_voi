@@ -127,7 +127,7 @@ def worker(arguments: argparse.Namespace) -> None:
             self.power_certificate_active = False
             self.power_certificate_time_s = None
             self.causal_value_evaluations = []
-            self._gate_allow_new_window = True
+            self._gate_allow_new_window = not arguments.screen_only
             self._next_gate_evaluation_s = -float("inf")
             created_controllers.append(self)
 

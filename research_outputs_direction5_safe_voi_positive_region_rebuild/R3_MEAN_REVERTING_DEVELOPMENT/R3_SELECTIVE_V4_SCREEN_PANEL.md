@@ -96,3 +96,43 @@ Subsequent exact-only audit runs use the states already selected in their
 screen-only files and do not recompute the 400--536 screen solves.  The exact
 acquisition prefix, eight continuation paths, four distinct high-capability
 truths, and separate exploit/posterior closed loops are unchanged.
+
+## Exact result at the fixed-uniform state
+
+The first exact-only attempt at `540 s` was scientifically invalid: suppressing
+the earlier diagnostic times left the controller's initial acquisition-window
+flag enabled, so it probed before the selected state and produced zero causal
+value evaluations.  The run is retained as an implementation failure
+(`361` attempted solves, one unintended probe, no physical violation).  The
+flag initialization was corrected so that `--screen-only` diagnostic runs can
+open a window only at the explicitly selected time.  The first corrected run
+was interrupted externally after 6451 s and produced no scientific result.
+
+The unchanged corrected repeat completed at the independently fixed-uniform
+state `540 s`:
+
+```text
+screen S from screen-only trajectory     0.0051120756
+current local gap                       +0.0000000262
+low-power branch information values      0, 0, 0, 0
+high-power branch information values    +0.0011800515
+                                        -0.0082777363
+                                        +0.0012844332
+                                        -0.0085705992
+worst high-power value                  -0.0085705992
+continuation paths / steps                8 / 85
+continuation duration                     170 s
+internal exact solves / failures          5472 / 0
+weak-Pareto information decision          nonpositive
+hard / command / contract violations      0 / 0 / 0
+fallbacks                                 0
+```
+
+The fixed-uniform state is therefore a V4 false positive: its optimistic
+future-opportunity value is positive, but information is harmful in both
+1.5 s-delay high-power branches after the full acquisition and recourse
+counterfactual is included.  Together, the two seed-8120 audits show that the
+screen has useful recall but is not by itself a safe trigger: exact information
+value changes sign across eligible states on the same physical trajectory.
+No probe was issued in the valid exact-only run, all `5834` attempted solves
+completed, and the ordinary controller did not read hidden truth.
