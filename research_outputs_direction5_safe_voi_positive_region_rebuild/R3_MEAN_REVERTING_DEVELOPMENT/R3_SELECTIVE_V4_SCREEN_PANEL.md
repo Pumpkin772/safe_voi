@@ -228,3 +228,63 @@ trajectories, while the fixed-uniform screen-positive state is exact-positive
 in `0/2`.  This small sample supports the ranking value of `S`, but rejects a
 plain `S > 0` acquisition trigger.  The remaining preregistered seeds are
 needed before fixing a selective rule.
+
+## High-capability seed 8122: screen-only trajectory
+
+The third preregistered trajectory produced seven eligible states.  Six had a
+strictly positive screen; the final `714 s` state had no remaining continuation
+anchor and therefore zero screen value:
+
+| time (s) | current local gap | optimistic future value `S` | screen solves | failures |
+| ---: | ---: | ---: | ---: | ---: |
+| 330 | +0.0000000034 | 0.0828631116 | 536 | 0 |
+| 350 | -0.0000000002 | 0.0910195543 | 536 | 0 |
+| 366 | -0.0000000642 | 0.0714912201 | 536 | 0 |
+| 610 | +0.0000000158 | 0.1095560385 | 244 | 0 |
+| 636 | +0.0000000132 | 0.0928335993 | 184 | 0 |
+| 652 | +0.0000000016 | 0.0108827557 | 148 | 0 |
+| 714 | -0.0000003118 | 0.0000000000 | 0 | 0 |
+
+```text
+causally eligible states                7
+states above S > 1e-6                   6
+exact second-stage evaluations          0
+acquisition windows                     0
+frequency peak                          0.215795414 Hz
+ACE IAE                                  5.456747482 pu s
+tie IAE                                  1.233610400 pu s
+attempted optimization calls            2552
+solver failures / fallbacks             0 / 0
+hard / command / contract violations    0 / 0 / 0
+```
+
+The maximum-`S` state is `610 s`.  Fixed RNG seed `58100 + 8122` selected
+index 0 of the time-sorted eligible states, namely `330 s`.
+
+## Seed 8122 exact result at the maximum-S state
+
+The exact counterfactual at `610 s` was positive in every high-power branch:
+
+```text
+screen S from screen-only trajectory     0.1095560385
+current local gap                       +0.0000000158
+low-power branch information values      0, 0, 0, 0
+high-power branch information values    +0.0415124841
+                                        +0.0184103686
+                                        +0.0413305025
+                                        +0.0184455168
+worst high-power value                  +0.0184103686
+continuation paths / steps                8 / 50
+continuation duration                     100 s
+internal exact solves / failures          3232 / 0
+weak-Pareto information decision          positive
+hard / command / contract violations      0 / 0 / 0
+fallbacks                                 0
+```
+
+The maximum-screen rule has now selected an exact-positive state on all three
+completed development trajectories.  The conservative exact values are
+`+0.0012033`, `+0.0142763`, and `+0.0184104`; local one-step values at all three
+states were below `1e-6`.  This strengthens the evidence that `S` contains
+useful temporal-ranking information, while the fixed-uniform audits continue
+to measure whether that ranking is selective enough.
