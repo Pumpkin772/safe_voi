@@ -288,3 +288,33 @@ completed development trajectories.  The conservative exact values are
 states were below `1e-6`.  This strengthens the evidence that `S` contains
 useful temporal-ranking information, while the fixed-uniform audits continue
 to measure whether that ranking is selective enough.
+
+## Seed 8122 exact result at the fixed-uniform state
+
+Unlike the first two fixed-uniform audits, the independently selected `330 s`
+state was positive in all high-power branches:
+
+```text
+screen S from screen-only trajectory     0.0828631116
+current local gap                       +0.0000000034
+low-power branch information values      0, 0, 0, 0
+high-power branch information values    +0.0742052885
+                                        +0.0336386712
+                                        +0.0734507639
+                                        +0.0351050518
+worst high-power value                  +0.0336386712
+continuation paths / steps                8 / 115
+continuation duration                     230 s
+internal exact solves / failures          7392 / 0
+weak-Pareto information decision          positive
+hard / command / contract violations      0 / 0 / 0
+fallbacks                                 0
+```
+
+After three development seeds, maximum-screen states are exact-positive in
+`3/3`, and fixed-uniform eligible states are exact-positive in `1/3`.  The
+seed-8122 result shows that the positive region is not confined to one selected
+maximum or a short end-of-episode interval: it includes an independently chosen
+early state with 230 s of remaining recourse value.  The mixed fixed-uniform
+outcomes also preserve the boundary evidence rather than turning V4 into an
+unconditional probe rule.
