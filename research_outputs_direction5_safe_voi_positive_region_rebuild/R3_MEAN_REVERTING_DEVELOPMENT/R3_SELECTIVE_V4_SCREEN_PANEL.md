@@ -406,3 +406,30 @@ seed-8123 random state has a conservative value more than ten times the
 smallest positive maximum-screen result seen so far.  Positive continuation
 value is therefore not merely a selection artifact, although the two negative
 random states show that it remains state dependent.
+
+## High-capability seed 8124: no eligible state
+
+The fifth preregistered trajectory completed the full 720 s closed loop but
+produced no causally eligible state.  In accordance with the registered rule,
+no maximum state, fixed-uniform state, or replacement episode was invented and
+no exact second stage was run.
+
+```text
+causally eligible states                0
+states above S > 1e-6                   0
+exact second-stage evaluations          0
+acquisition windows                     0
+frequency peak                          0.118086713 Hz
+ACE IAE                                  4.927529732 pu s
+tie IAE                                  1.356033047 pu s
+attempted optimization calls             361
+solver failures / fallbacks             0 / 0
+hard / command / contract violations    0 / 0 / 0
+ordinary-controller truth read          false
+```
+
+This is a selective abstention trajectory, not a negative exact-value sample.
+The maximum-screen exact-positive count therefore remains `4/4` among
+trajectories where the registered causal conditions expose at least one state,
+and the fixed-uniform count remains `2/4`.  Across all five completed episode
+seeds, one trajectory has no admissible information-acquisition opportunity.
