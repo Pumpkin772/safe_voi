@@ -433,3 +433,29 @@ The maximum-screen exact-positive count therefore remains `4/4` among
 trajectories where the registered causal conditions expose at least one state,
 and the fixed-uniform count remains `2/4`.  Across all five completed episode
 seeds, one trajectory has no admissible information-acquisition opportunity.
+
+## High-capability seed 8125: no eligible state
+
+The sixth preregistered trajectory also completed without exposing a causally
+eligible information-acquisition state.  The registered treatment is again
+abstention with no exact-state replacement:
+
+```text
+causally eligible states                0
+states above S > 1e-6                   0
+exact second-stage evaluations          0
+acquisition windows                     0
+frequency peak                          0.110694792 Hz
+ACE IAE                                  5.267321857 pu s
+tie IAE                                  1.438460938 pu s
+attempted optimization calls             361
+solver failures / fallbacks             0 / 0
+hard / command / contract violations    0 / 0 / 0
+ordinary-controller truth read          false
+```
+
+Across six completed development trajectories, four expose at least one
+eligible state and two remain in the abstention region.  Conditional on an
+eligible state, the maximum-screen exact-positive count remains `4/4` and the
+fixed-uniform exact-positive count remains `2/4`; the abstention episodes are
+not added to either exact-value denominator.
